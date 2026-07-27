@@ -88,6 +88,7 @@ p { margin: 0; line-height: 1.55; }
 }
 .user .avatar { background: #3730a3; }
 .bubble { padding: 13px 15px; border-radius: 4px 14px 14px; background: #10233b; }
+.bubble p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .user .bubble { background: #312e81; border-radius: 14px 4px 14px 14px; }
 
 .command-preview {
@@ -107,6 +108,7 @@ code { display: block; color: #fde68a; margin: 5px 0; }
   background: #67e8f9; font-weight: 750;
 }
 .danger { color: white; background: #e11d48; }
+button:disabled { cursor: not-allowed; opacity: .55; }
 
 .composer {
   display: grid;

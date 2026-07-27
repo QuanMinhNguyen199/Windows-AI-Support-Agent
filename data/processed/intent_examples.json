@@ -1,0 +1,18 @@
+{
+  "greeting": ["xin chào", "chào bạn", "hello", "hi"],
+  "software_recommendation": ["nên cài ứng dụng gì", "gợi ý phần mềm", "app phổ biến"],
+  "software_installation": ["tôi muốn cài", "cài đặt", "cài", "install", "winget install"],
+  "software_check": ["đã cài chưa", "kiểm tra phần mềm", "check app", "có cài"],
+  "installation_troubleshooting": ["cài rồi nhưng không chạy", "không nhận lệnh", "not recognized", "lỗi path"],
+  "software_update": ["cập nhật phần mềm", "update app", "nâng cấp ứng dụng"],
+  "network_status": ["kiểm tra mạng", "trạng thái mạng", "network status"],
+  "internet_connection_issue": ["không vào mạng", "mất internet", "no internet", "không truy cập internet"],
+  "network_speed_test": ["tốc độ mạng", "speed test", "đo download", "đo upload"],
+  "slow_network_diagnosis": ["mạng chậm", "internet chậm", "wifi chậm", "lag"],
+  "wifi_diagnosis": ["wifi yếu", "sóng yếu", "kiểm tra wifi", "trạng thái wifi", "wifi hay ngắt"],
+  "dns_diagnosis": ["dns", "lỗi dns", "kiểm tra dns", "không mở được website", "nslookup"],
+  "packet_loss_diagnosis": ["packet loss", "mất gói", "kiểm tra ping", "ping cao"],
+  "system_information": ["thông tin máy", "cấu hình máy", "windows version", "system information"],
+  "help": ["bạn làm được gì", "trợ giúp", "hướng dẫn sử dụng", "help"],
+  "fallback": []
+}

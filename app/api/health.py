@@ -1,21 +1,26 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.config import get_settings
 from app.models.health import HealthResponse, ServiceStatus
+from app.services.ollama_service import OllamaService, get_ollama_service
 
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/api/health", response_model=HealthResponse)
-async def health_check() -> HealthResponse:
+async def health_check(
+    ollama: OllamaService = Depends(get_ollama_service),
+) -> HealthResponse:
     settings = get_settings()
+    ollama_health = await ollama.health()
+    ready = ollama_health.available and ollama_health.model_available
     return HealthResponse(
         status="ok",
         application=settings.app_name,
         version=settings.app_version,
         ollama=ServiceStatus(
-            status="not_checked",
-            detail="Kiểm tra Ollama sẽ được triển khai ở Giai đoạn 5.",
+            status="available" if ready else "unavailable",
+            detail=ollama_health.detail,
         ),
     )

@@ -1,16 +1,12 @@
 import asyncio
 import locale
-import re
 import subprocess
 import time
 
 from app.core.command_registry import CommandRegistry
+from app.core.redaction import redact_text
 from app.core.risk_policy import RiskPolicy
 from app.models.command import CommandDefinition, CommandResult
-
-
-_MAC_ADDRESS = re.compile(r"(?i)\b(?:[0-9a-f]{2}[-:]){5}[0-9a-f]{2}\b")
-_WINDOWS_USER_PATH = re.compile(r"(?i)([a-z]:\\users\\)[^\\\r\n]+")
 
 
 class CommandRunner:
@@ -18,10 +14,11 @@ class CommandRunner:
         self,
         *,
         policy: RiskPolicy | None = None,
+        registry: CommandRegistry | None = None,
         max_output_chars: int = 16_000,
     ) -> None:
         self._policy = policy or RiskPolicy()
-        self._registry = CommandRegistry()
+        self._registry = registry or CommandRegistry()
         self._max_output_chars = max(256, max_output_chars)
 
     async def run(
@@ -75,8 +72,8 @@ class CommandRunner:
             )
 
         duration_ms = round((time.perf_counter() - started) * 1000)
-        stdout = self._sanitize(self._decode(stdout_bytes))
-        stderr = self._sanitize(self._decode(stderr_bytes))
+        stdout = redact_text(self._decode(stdout_bytes))
+        stderr = redact_text(self._decode(stderr_bytes))
         return CommandResult(
             command_id=definition.id,
             executable=definition.executable,
@@ -110,8 +107,3 @@ class CommandRunner:
             return value.strip()
         marker = "\n… [output đã được rút gọn]"
         return value[: self._max_output_chars - len(marker)].rstrip() + marker
-
-    @staticmethod
-    def _sanitize(value: str) -> str:
-        value = _MAC_ADDRESS.sub("[MAC_REDACTED]", value)
-        return _WINDOWS_USER_PATH.sub(r"\1[USER]", value)

@@ -67,7 +67,7 @@ Chưa có:
 
 **Hoàn thành khi:** phân biệt được lỗi adapter, DHCP, gateway, Internet và DNS.
 
-### 4. Software Catalog và Consent
+### 4. Software Catalog và Consent — Đã hoàn thành
 
 Catalog MVP gồm một số ứng dụng đã kiểm duyệt:
 
@@ -81,7 +81,7 @@ Luồng cài đặt phải tạo pending action, hết hạn sau năm phút và 
 
 **Hoàn thành khi:** frontend không thể thay command trong bước confirm.
 
-### 5. Local AI
+### 5. Local AI — Đã hoàn thành
 
 - Rule-based intent router hỗ trợ tiếng Việt có dấu/không dấu.
 - Ollama classification và summary với output schema cố định.
@@ -96,11 +96,32 @@ Luồng cài đặt phải tạo pending action, hết hạn sau năm phút và 
 - Speed-test provider và trạng thái chưa khả dụng.
 - Các repair `LOW_RISK`: flush DNS, release/renew IP.
 - UI hiển thị bước kiểm tra, kết quả, command preview và confirm/cancel.
+- Khu vực **Suggestions** hiển thị danh sách ứng dụng Windows phổ biến theo nhóm:
+  trình duyệt, văn phòng, tiện ích, media và công cụ phát triển.
+- Mỗi ứng dụng hiển thị tên, publisher, trạng thái và các biểu tượng hành động
+  phù hợp ngay cạnh tên hoặc thanh tiến trình:
+  - **Cài đặt:** kiểm tra package, hiển thị command preview rồi yêu cầu xác nhận.
+  - **Hủy:** hủy pending action; khi installer đã bắt đầu, chỉ gửi yêu cầu dừng
+    an toàn và không force-kill tiến trình nếu có nguy cơ để lại trạng thái lỗi.
+  - **Gỡ cài đặt:** hiển thị hướng dẫn thủ công trong MVP; backend không tự chạy
+    vì uninstall vẫn thuộc `HIGH_RISK`.
+- Cài đặt chạy dưới dạng background action. Frontend theo dõi trạng thái qua
+  polling hoặc SSE, không giữ HTTP request confirm mở cho tới khi hoàn tất.
+- Progress bar hiển thị các bước `đang chuẩn bị → đang cài → đang xác minh →
+  hoàn tất/thất bại`, kèm thời gian đã chạy. Dùng progress không xác định khi
+  winget không cung cấp phần trăm; không hiển thị phần trăm/thời gian còn lại giả.
+- Icon phải có text/tooltip, trạng thái disabled và nhãn truy cập bàn phím; màu
+  sắc không được là dấu hiệu duy nhất để phân biệt hành động.
 - Checklist “Thiết lập máy mới” theo nhu cầu: văn phòng, học tập, giải trí,
   họp trực tuyến hoặc lập trình.
 
-**Hoàn thành khi:** các luồng chat → diagnostic và install → confirm/cancel có
-integration test.
+**Hoàn thành khi:**
+
+- Các luồng chat → diagnostic và install → confirm/cancel có integration test.
+- Chọn app trong Suggestions không thể bỏ qua command preview và xác nhận.
+- UI phản ánh đúng trạng thái action sau refresh và không tạo cài đặt trùng khi
+  người dùng bấm icon nhiều lần.
+- Cancel pending action không chạy command; uninstall icon không tự chạy lệnh.
 
 ### 7. Hỗ trợ Windows phổ thông
 

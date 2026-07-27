@@ -15,12 +15,13 @@ def _definition(
     arguments: tuple[str, ...],
     description: str,
     timeout_seconds: int = 20,
+    risk_level: RiskLevel = RiskLevel.READ_ONLY,
 ) -> CommandDefinition:
     return CommandDefinition(
         id=command_id,
         executable=executable,
         arguments=arguments,
-        risk_level=RiskLevel.READ_ONLY,
+        risk_level=risk_level,
         requires_admin=False,
         timeout_seconds=timeout_seconds,
         description=description,
@@ -107,11 +108,65 @@ _COMMANDS = {
 
 class CommandRegistry:
     ALLOWED_EXECUTABLES = frozenset(
-        {"ipconfig", "ping", "nslookup", "netsh", "powershell"}
+        {
+            "ipconfig",
+            "ping",
+            "nslookup",
+            "netsh",
+            "powershell",
+            "where",
+            "winget",
+            "git",
+            "python",
+            "py",
+            "node",
+            "npm",
+            "ollama",
+        }
     )
 
-    def __init__(self) -> None:
-        self._commands: Mapping[str, CommandDefinition] = MappingProxyType(_COMMANDS)
+    def __init__(
+        self,
+        software_commands: Mapping[str, tuple[tuple[str, ...], ...]] | None = None,
+        software_packages: Mapping[str, str] | None = None,
+    ) -> None:
+        commands = dict(_COMMANDS)
+        self._software_check_ids: dict[str, tuple[str, ...]] = {}
+        self._software_install_ids: dict[str, str] = {}
+        packages = software_packages or {}
+        checks = software_commands or {}
+        if set(packages) != set(checks):
+            raise CommandRegistryError("Software package và check command không đồng bộ.")
+        for software_id, package_id in packages.items():
+            check_ids: list[str] = []
+            for index, command in enumerate(checks[software_id]):
+                if not command:
+                    raise CommandRegistryError("Software check command bị rỗng.")
+                executable, *arguments = command
+                if executable.casefold() not in self.ALLOWED_EXECUTABLES:
+                    raise CommandRegistryError(
+                        f"Executable catalog không được phép: {executable}"
+                    )
+                command_id = f"software.check.{software_id}.{index}"
+                commands[command_id] = _definition(
+                    command_id,
+                    executable,
+                    tuple(arguments),
+                    f"Kiểm tra trạng thái cài đặt của {software_id}.",
+                )
+                check_ids.append(command_id)
+            install_id = f"software.install.{software_id}"
+            commands[install_id] = _definition(
+                install_id,
+                "winget",
+                ("install", "--id", package_id, "--exact", "--disable-interactivity"),
+                f"Cài package {package_id} từ winget.",
+                timeout_seconds=120,
+                risk_level=RiskLevel.LOW_RISK,
+            )
+            self._software_check_ids[software_id] = tuple(check_ids)
+            self._software_install_ids[software_id] = install_id
+        self._commands: Mapping[str, CommandDefinition] = MappingProxyType(commands)
 
     def list(self) -> tuple[CommandDefinition, ...]:
         return tuple(self._commands.values())
@@ -121,6 +176,22 @@ class CommandRegistry:
             return self._commands[command_id]
         except KeyError as exc:
             raise CommandRegistryError(f"Command ID không được phép: {command_id}") from exc
+
+    def software_checks(self, software_id: str) -> tuple[CommandDefinition, ...]:
+        try:
+            return tuple(self.get(item) for item in self._software_check_ids[software_id])
+        except KeyError as exc:
+            raise CommandRegistryError(
+                f"Software ID không được đăng ký: {software_id}"
+            ) from exc
+
+    def software_install(self, software_id: str) -> CommandDefinition:
+        try:
+            return self.get(self._software_install_ids[software_id])
+        except KeyError as exc:
+            raise CommandRegistryError(
+                f"Software ID không được đăng ký: {software_id}"
+            ) from exc
 
     def ping_gateway(self, target: str) -> CommandDefinition:
         try:

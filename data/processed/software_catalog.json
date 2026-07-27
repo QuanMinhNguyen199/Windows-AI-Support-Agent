@@ -1,0 +1,115 @@
+{
+  "software": {
+    "vscode": {
+      "display_name": "Visual Studio Code",
+      "publisher": "Microsoft",
+      "category": "developer_tools",
+      "winget_id": "Microsoft.VisualStudioCode",
+      "check_commands": [
+        ["where", "code"],
+        ["winget", "list", "--id", "Microsoft.VisualStudioCode", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VisualStudioCode",
+      "license_note": "Microsoft Software License Terms"
+    },
+    "git": {
+      "display_name": "Git",
+      "publisher": "Git Project",
+      "category": "developer_tools",
+      "winget_id": "Git.Git",
+      "check_commands": [
+        ["where", "git"],
+        ["git", "--version"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Git/Git",
+      "license_note": "GPL-2.0"
+    },
+    "python": {
+      "display_name": "Python 3.12",
+      "publisher": "Python Software Foundation",
+      "category": "developer_tools",
+      "winget_id": "Python.Python.3.12",
+      "check_commands": [
+        ["where", "python"],
+        ["python", "--version"],
+        ["py", "--version"],
+        ["winget", "list", "--id", "Python.Python.3.12", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/Python/Python/3/12",
+      "license_note": "Python Software Foundation License"
+    },
+    "nodejs": {
+      "display_name": "Node.js LTS",
+      "publisher": "OpenJS Foundation",
+      "category": "developer_tools",
+      "winget_id": "OpenJS.NodeJS.LTS",
+      "check_commands": [
+        ["where", "node"],
+        ["node", "--version"],
+        ["npm", "--version"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenJS/NodeJS/LTS",
+      "license_note": "MIT"
+    },
+    "ollama": {
+      "display_name": "Ollama",
+      "publisher": "Ollama",
+      "category": "developer_tools",
+      "winget_id": "Ollama.Ollama",
+      "check_commands": [
+        ["where", "ollama"],
+        ["ollama", "--version"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Ollama/Ollama",
+      "license_note": "MIT"
+    },
+    "firefox": {
+      "display_name": "Mozilla Firefox",
+      "publisher": "Mozilla",
+      "category": "browsers",
+      "winget_id": "Mozilla.Firefox",
+      "check_commands": [
+        ["where", "firefox"],
+        ["winget", "list", "--id", "Mozilla.Firefox", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Mozilla/Firefox",
+      "license_note": "Mozilla Public License 2.0"
+    },
+    "7zip": {
+      "display_name": "7-Zip",
+      "publisher": "Igor Pavlov",
+      "category": "utilities",
+      "winget_id": "7zip.7zip",
+      "check_commands": [
+        ["where", "7z"],
+        ["winget", "list", "--id", "7zip.7zip", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/7/7zip/7zip",
+      "license_note": "LGPL và BSD 3-clause cho một số thành phần"
+    },
+    "vlc": {
+      "display_name": "VLC media player",
+      "publisher": "VideoLAN",
+      "category": "media",
+      "winget_id": "VideoLAN.VLC",
+      "check_commands": [
+        ["where", "vlc"],
+        ["winget", "list", "--id", "VideoLAN.VLC", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/VideoLAN/VLC",
+      "license_note": "GPL-2.0"
+    },
+    "libreoffice": {
+      "display_name": "LibreOffice",
+      "publisher": "The Document Foundation",
+      "category": "office_pdf",
+      "winget_id": "TheDocumentFoundation.LibreOffice",
+      "check_commands": [
+        ["where", "soffice"],
+        ["winget", "list", "--id", "TheDocumentFoundation.LibreOffice", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TheDocumentFoundation/LibreOffice",
+      "license_note": "MPL-2.0"
+    }
+  }
+}

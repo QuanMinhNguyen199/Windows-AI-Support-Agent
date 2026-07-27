@@ -5,9 +5,13 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.actions import router as actions_router
+from app.api.chat import router as chat_router
 from app.api.diagnostics import router as diagnostics_router
 from app.api.health import router as health_router
+from app.api.software import router as software_router
 from app.config import BASE_DIR, get_settings
+from app.database.db import Database
 
 
 STATIC_DIR = BASE_DIR / "static"
@@ -16,7 +20,7 @@ STATIC_DIR = BASE_DIR / "static"
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
-    settings.database_path.parent.mkdir(parents=True, exist_ok=True)
+    Database(settings.database_path).initialize()
     yield
 
 
@@ -28,7 +32,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(health_router)
+app.include_router(chat_router)
 app.include_router(diagnostics_router)
+app.include_router(software_router)
+app.include_router(actions_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
