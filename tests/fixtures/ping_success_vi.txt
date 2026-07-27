@@ -1,0 +1,8 @@
+Đang Ping 1.1.1.1 với 32 byte dữ liệu:
+Phản hồi từ 1.1.1.1: byte=32 thời gian=20ms TTL=57
+Phản hồi từ 1.1.1.1: byte=32 thời gian=18ms TTL=57
+
+Thống kê Ping cho 1.1.1.1:
+    Gói tin: Đã gửi = 2, Đã nhận = 2, Bị mất = 0 (Mất 0%),
+Thời gian khứ hồi gần đúng tính bằng mili giây:
+    Nhỏ nhất = 18ms, Lớn nhất = 20ms, Trung bình = 19ms

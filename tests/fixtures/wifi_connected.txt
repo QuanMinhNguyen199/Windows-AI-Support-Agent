@@ -1,0 +1,11 @@
+There is 1 interface on the system:
+
+    Name                   : Wi-Fi
+    State                  : connected
+    SSID                   : HomeNetwork
+    Radio type             : 802.11ax
+    Authentication         : WPA2-Personal
+    Channel                : 6
+    Receive rate (Mbps)    : 866.7
+    Transmit rate (Mbps)   : 721.2
+    Signal                 : 72%

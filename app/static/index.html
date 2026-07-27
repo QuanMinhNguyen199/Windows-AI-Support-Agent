@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Trợ lý Windows AI chạy hoàn toàn trên máy của bạn.">
+    <title>WinAssist Local</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">TRỢ LÝ WINDOWS CỤC BỘ</p>
+          <h1>WinAssist Local</h1>
+          <p class="subtitle">Kiểm tra trước, giải thích rõ, chỉ thay đổi khi bạn xác nhận.</p>
+        </div>
+        <div class="service-status" aria-live="polite">
+          <span id="backend-dot" class="status-dot pending"></span>
+          <span id="backend-status">Đang kiểm tra backend…</span>
+          <span class="divider"></span>
+          <span id="ollama-status">Ollama: chưa kiểm tra</span>
+        </div>
+      </header>
+
+      <section class="quick-actions" aria-label="Thao tác nhanh">
+        <button data-message="Kiểm tra kết nối mạng của tôi">Kiểm tra mạng</button>
+        <button data-message="Kiểm tra trạng thái Wi-Fi">Kiểm tra Wi-Fi</button>
+        <button data-message="Kiểm tra ping và packet loss">Kiểm tra ping</button>
+        <button data-message="Kiểm tra Python đã cài chưa">Kiểm tra Python</button>
+        <button data-message="Kiểm tra Git đã cài chưa">Kiểm tra Git</button>
+        <button data-message="Kiểm tra VS Code đã cài chưa">Kiểm tra VS Code</button>
+      </section>
+
+      <section id="chat-log" class="chat-log" aria-live="polite" aria-label="Lịch sử trò chuyện">
+        <article class="message assistant">
+          <div class="avatar">WA</div>
+          <div class="bubble">
+            <p>Xin chào! Tôi có thể giúp kiểm tra phần mềm và chẩn đoán kết nối mạng trên Windows.</p>
+            <p class="hint">Giai đoạn 1 mới cung cấp giao diện và health check. Chat chẩn đoán sẽ được nối ở các giai đoạn tiếp theo.</p>
+          </div>
+        </article>
+      </section>
+
+      <section id="command-preview" class="command-preview" hidden>
+        <div>
+          <p class="eyebrow">COMMAND ĐỀ XUẤT</p>
+          <code id="command-text"></code>
+          <p id="command-warning"></p>
+        </div>
+        <div class="action-buttons">
+          <button id="cancel-command" class="secondary">Hủy</button>
+          <button id="confirm-command" class="danger">Xác nhận</button>
+        </div>
+      </section>
+
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="message-input">Nhập yêu cầu</label>
+        <textarea id="message-input" rows="1" maxlength="2000" placeholder="Ví dụ: Máy tôi có Wi-Fi nhưng không vào được Internet" required></textarea>
+        <button type="submit" class="send-button">Gửi</button>
+      </form>
+    </main>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
