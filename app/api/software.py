@@ -8,6 +8,7 @@ from app.database.repositories import PendingActionRepository
 from app.models.software import (
     SoftwareCheckResponse,
     SoftwareInstallResponse,
+    SoftwareInventoryResponse,
     SoftwareRequest,
     SoftwareSummary,
 )
@@ -37,6 +38,13 @@ def list_software(
     return service.list_software()
 
 
+@router.post("/scan", response_model=SoftwareInventoryResponse)
+async def scan_software(
+    service: SoftwareService = Depends(get_software_service),
+) -> SoftwareInventoryResponse:
+    return await service.scan_inventory()
+
+
 @router.post("/check", response_model=SoftwareCheckResponse)
 async def check_software(
     request: SoftwareRequest,
@@ -55,5 +63,16 @@ async def install_software(
 ) -> SoftwareInstallResponse:
     try:
         return await service.request_install(request.software_id)
+    except SoftwareCatalogError as exc:
+        raise _catalog_error(exc) from exc
+
+
+@router.post("/uninstall", response_model=SoftwareInstallResponse)
+async def uninstall_software(
+    request: SoftwareRequest,
+    service: SoftwareService = Depends(get_software_service),
+) -> SoftwareInstallResponse:
+    try:
+        return await service.request_uninstall(request.software_id)
     except SoftwareCatalogError as exc:
         raise _catalog_error(exc) from exc

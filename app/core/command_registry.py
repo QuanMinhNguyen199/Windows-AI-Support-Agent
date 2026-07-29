@@ -29,6 +29,43 @@ def _definition(
 
 
 _COMMANDS = {
+    "software.inventory.winget_list": _definition(
+        "software.inventory.winget_list",
+        "winget",
+        ("list", "--disable-interactivity"),
+        "Đọc một lần danh sách package do winget nhận diện.",
+        timeout_seconds=60,
+    ),
+    "system.get_specs": _definition(
+        "system.get_specs",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$os=Get-CimInstance Win32_OperatingSystem;"
+                "$cs=Get-CimInstance Win32_ComputerSystem;"
+                "$cpu=Get-CimInstance Win32_Processor|Select-Object -First 1;"
+                "$gpu=@(Get-CimInstance Win32_VideoController|Select-Object -ExpandProperty Name);"
+                "$disk=Get-CimInstance Win32_LogicalDisk -Filter \"DeviceID='$($env:SystemDrive)'\";"
+                "[pscustomobject]@{"
+                "device_name=$env:COMPUTERNAME;"
+                "manufacturer=$cs.Manufacturer;model=$cs.Model;"
+                "os_name=$os.Caption;os_version=$os.Version;os_build=$os.BuildNumber;"
+                "architecture=$os.OSArchitecture;"
+                "cpu_name=$cpu.Name;physical_cores=$cpu.NumberOfCores;"
+                "logical_processors=$cpu.NumberOfLogicalProcessors;"
+                "memory_bytes=[int64]$cs.TotalPhysicalMemory;"
+                "gpu_names=$gpu;system_drive=$disk.DeviceID;"
+                "disk_size_bytes=[int64]$disk.Size;"
+                "disk_free_bytes=[int64]$disk.FreeSpace"
+                "}|ConvertTo-Json -Depth 3 -Compress"
+            ),
+        ),
+        "Đọc thông số phần cứng và Windows cơ bản.",
+        timeout_seconds=30,
+    ),
     "network.ipconfig_basic": _definition(
         "network.ipconfig_basic", "ipconfig", (), "Đọc cấu hình IP cơ bản."
     ),
@@ -103,6 +140,49 @@ _COMMANDS = {
         ("wlan", "show", "drivers"),
         "Đọc thông tin driver Wi-Fi.",
     ),
+    "network.speedtest": _definition(
+        "network.speedtest",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$packages=Join-Path $env:LOCALAPPDATA 'Microsoft\\WinGet\\Packages';"
+                "$package=Get-ChildItem -LiteralPath $packages -Directory "
+                "-Filter 'Ookla.Speedtest.CLI_*'|Select-Object -First 1;"
+                "$speedtest=if($package){Join-Path $package.FullName 'speedtest.exe'};"
+                "if(!(Test-Path -LiteralPath $speedtest)){"
+                "throw 'Ookla Speedtest CLI is not installed via winget.'};"
+                "& $speedtest --accept-license --accept-gdpr "
+                "--format=json --progress=no"
+            ),
+        ),
+        "Đo tốc độ mạng bằng Ookla Speedtest CLI.",
+        timeout_seconds=120,
+    ),
+    "repair.flush_dns": _definition(
+        "repair.flush_dns",
+        "ipconfig",
+        ("/flushdns",),
+        "Xóa DNS resolver cache của Windows.",
+        risk_level=RiskLevel.LOW_RISK,
+    ),
+    "repair.release_ip": _definition(
+        "repair.release_ip",
+        "ipconfig",
+        ("/release",),
+        "Giải phóng địa chỉ IP DHCP hiện tại.",
+        risk_level=RiskLevel.LOW_RISK,
+    ),
+    "repair.renew_ip": _definition(
+        "repair.renew_ip",
+        "ipconfig",
+        ("/renew",),
+        "Yêu cầu cấp lại địa chỉ IP từ DHCP.",
+        timeout_seconds=60,
+        risk_level=RiskLevel.LOW_RISK,
+    ),
 }
 
 
@@ -122,6 +202,7 @@ class CommandRegistry:
             "node",
             "npm",
             "ollama",
+            "speedtest",
         }
     )
 
@@ -133,6 +214,7 @@ class CommandRegistry:
         commands = dict(_COMMANDS)
         self._software_check_ids: dict[str, tuple[str, ...]] = {}
         self._software_install_ids: dict[str, str] = {}
+        self._software_uninstall_ids: dict[str, str] = {}
         packages = software_packages or {}
         checks = software_commands or {}
         if set(packages) != set(checks):
@@ -166,6 +248,16 @@ class CommandRegistry:
             )
             self._software_check_ids[software_id] = tuple(check_ids)
             self._software_install_ids[software_id] = install_id
+            uninstall_id = f"software.uninstall.{software_id}"
+            commands[uninstall_id] = _definition(
+                uninstall_id,
+                "winget",
+                ("uninstall", "--id", package_id, "--exact", "--disable-interactivity"),
+                f"Gỡ package {package_id} bằng winget.",
+                timeout_seconds=120,
+                risk_level=RiskLevel.LOW_RISK,
+            )
+            self._software_uninstall_ids[software_id] = uninstall_id
         self._commands: Mapping[str, CommandDefinition] = MappingProxyType(commands)
 
     def list(self) -> tuple[CommandDefinition, ...]:
@@ -188,6 +280,14 @@ class CommandRegistry:
     def software_install(self, software_id: str) -> CommandDefinition:
         try:
             return self.get(self._software_install_ids[software_id])
+        except KeyError as exc:
+            raise CommandRegistryError(
+                f"Software ID không được đăng ký: {software_id}"
+            ) from exc
+
+    def software_uninstall(self, software_id: str) -> CommandDefinition:
+        try:
+            return self.get(self._software_uninstall_ids[software_id])
         except KeyError as exc:
             raise CommandRegistryError(
                 f"Software ID không được đăng ký: {software_id}"

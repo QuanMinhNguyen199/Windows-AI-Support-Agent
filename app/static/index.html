@@ -3,63 +3,122 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Trợ lý Windows AI chạy hoàn toàn trên máy của bạn.">
+    <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/overview.css">
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">TRỢ LÝ WINDOWS CỤC BỘ</p>
-          <h1>WinAssist Local</h1>
-          <p class="subtitle">Kiểm tra trước, giải thích rõ, chỉ thay đổi khi bạn xác nhận.</p>
-        </div>
+    <div class="app-layout">
+      <aside class="sidebar">
+        <a class="brand" href="#overview" aria-label="WinAssist Local">
+          <span class="brand-mark">WA</span><span>WinAssist</span>
+        </a>
+        <nav aria-label="Điều hướng chính">
+          <button class="nav-item active" data-view="overview"><span>▤</span> Tổng quan máy</button>
+          <button class="nav-item" data-view="chat"><span>💬</span> Trợ lý</button>
+          <button class="nav-item" data-view="suggestions"><span>▦</span> Tiện ích</button>
+          <button class="nav-item" data-view="diagnostics"><span>⌁</span> Chẩn đoán</button>
+          <button class="nav-item" data-view="activity"><span>◷</span> Hoạt động</button>
+        </nav>
         <div class="service-status" aria-live="polite">
           <span id="backend-dot" class="status-dot pending"></span>
-          <span id="backend-status">Đang kiểm tra backend…</span>
-          <span class="divider"></span>
-          <span id="ollama-status">Ollama: chưa kiểm tra</span>
+          <div><strong id="backend-status">Đang kết nối…</strong><small id="ollama-status">AI local: đang kiểm tra</small></div>
         </div>
-      </header>
+      </aside>
 
-      <section class="quick-actions" aria-label="Thao tác nhanh">
-        <button data-message="Kiểm tra kết nối mạng của tôi">Kiểm tra mạng</button>
-        <button data-message="Kiểm tra trạng thái Wi-Fi">Kiểm tra Wi-Fi</button>
-        <button data-message="Kiểm tra ping và packet loss">Kiểm tra ping</button>
-        <button data-message="Kiểm tra Python đã cài chưa">Kiểm tra Python</button>
-        <button data-message="Kiểm tra Git đã cài chưa">Kiểm tra Git</button>
-        <button data-message="Kiểm tra VS Code đã cài chưa">Kiểm tra VS Code</button>
-      </section>
-
-      <section id="chat-log" class="chat-log" aria-live="polite" aria-label="Lịch sử trò chuyện">
-        <article class="message assistant">
-          <div class="avatar">WA</div>
-          <div class="bubble">
-            <p>Xin chào! Tôi có thể giúp kiểm tra phần mềm và chẩn đoán kết nối mạng trên Windows.</p>
-            <p class="hint">Chat sử dụng Ollama khi khả dụng và tự chuyển sang rule-based router khi AI local gặp lỗi.</p>
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">WINDOWS SUPPORT AGENT · LOCAL</p>
+            <h1 id="view-title">Tổng quan máy</h1>
           </div>
-        </article>
-      </section>
+          <p class="privacy">Dữ liệu được xử lý trên máy của bạn</p>
+        </header>
 
-      <section id="command-preview" class="command-preview" hidden>
-        <div>
-          <p class="eyebrow">COMMAND ĐỀ XUẤT</p>
-          <code id="command-text"></code>
-          <p id="command-warning"></p>
-        </div>
-        <div class="action-buttons">
-          <button id="cancel-command" class="secondary" type="button">Hủy</button>
-          <button id="confirm-command" class="danger" type="button">Xác nhận</button>
-        </div>
-      </section>
+        <section id="view-overview" class="view active">
+          <div class="overview-hero">
+            <div>
+              <p class="eyebrow">THÔNG SỐ THIẾT BỊ</p>
+              <h2>Máy tính của bạn</h2>
+              <p>WinAssist đọc thông tin hệ thống cơ bản ở chế độ chỉ đọc mỗi khi ứng dụng khởi động.</p>
+            </div>
+            <button id="refresh-specs" class="secondary">Đọc lại thông số</button>
+          </div>
+          <div id="specs-content" class="specs-content" aria-live="polite">
+            <div class="spec-loading"><div class="loader"></div><p>Đang đọc thông số máy…</p></div>
+          </div>
+          <div class="overview-actions">
+            <button class="primary" data-view-target="chat">Mở trợ lý</button>
+            <button class="secondary" data-view-target="diagnostics">Chẩn đoán máy</button>
+          </div>
+        </section>
 
-      <form id="chat-form" class="composer">
-        <label class="sr-only" for="message-input">Nhập yêu cầu</label>
-        <textarea id="message-input" rows="1" maxlength="2000" placeholder="Ví dụ: Máy tôi có Wi-Fi nhưng không vào được Internet" required></textarea>
-        <button type="submit" class="send-button">Gửi</button>
+        <section id="view-chat" class="view">
+          <div class="quick-actions" aria-label="Thao tác nhanh">
+            <button data-message="Kiểm tra kết nối mạng của tôi">Kiểm tra mạng</button>
+            <button data-message="Kiểm tra trạng thái Wi-Fi">Kiểm tra Wi-Fi</button>
+            <button data-message="Đo tốc độ mạng">Đo tốc độ</button>
+            <button data-view-target="suggestions">Cài ứng dụng</button>
+          </div>
+          <div id="chat-log" class="chat-log" aria-live="polite" aria-label="Lịch sử trò chuyện">
+            <article class="message assistant"><div class="avatar">WA</div><div class="bubble">
+              <p>Xin chào! Tôi có thể chẩn đoán mạng, kiểm tra và cài ứng dụng Windows an toàn.</p>
+              <p class="hint">Mọi thay đổi đều hiển thị command và chờ bạn xác nhận.</p>
+            </div></article>
+          </div>
+          <form id="chat-form" class="composer">
+            <label class="sr-only" for="message-input">Nhập yêu cầu</label>
+            <textarea id="message-input" rows="1" maxlength="2000" placeholder="Bạn cần hỗ trợ gì trên Windows?" required></textarea>
+            <button type="submit" class="primary send-button">Gửi</button>
+          </form>
+        </section>
+
+        <section id="view-suggestions" class="view">
+          <div class="section-heading"><div><h2>Kho tiện ích</h2><p>Chọn nhóm phù hợp, xem lệnh và xác nhận trước khi cài hoặc gỡ.</p></div>
+            <button id="refresh-software" class="secondary">Làm mới</button>
+          </div>
+          <div class="audience-selector" role="tablist" aria-label="Nhóm tiện ích">
+            <button class="audience-tab active" data-audience="general" role="tab" aria-selected="true">
+              <strong>Phổ thông</strong><span>Trình duyệt, PDF, họp và giải trí</span>
+            </button>
+            <button class="audience-tab" data-audience="advanced" role="tab" aria-selected="false">
+              <strong>Chuyên sâu</strong><span>Lập trình, văn phòng và công cụ hệ thống</span>
+            </button>
+          </div>
+          <div id="software-groups" class="content-stack" aria-live="polite"></div>
+        </section>
+
+        <section id="view-diagnostics" class="view">
+          <div class="section-heading"><div><h2>Chẩn đoán & sửa chữa</h2><p>Các kiểm tra chỉ đọc chạy ngay; sửa chữa luôn cần xác nhận.</p></div></div>
+          <div class="diagnostic-grid">
+            <article class="card"><span class="card-icon">⌁</span><h3>Kiểm tra mạng đầy đủ</h3><p>Adapter, IP, gateway, DNS, Wi-Fi và kết nối Internet.</p><button class="primary diagnostic-run" data-diagnostic="network">Chạy kiểm tra</button></article>
+            <article class="card"><span class="card-icon">↔</span><h3>Đo tốc độ mạng</h3><p>Download, upload, ping và jitter qua Ookla CLI.</p><button class="primary diagnostic-run" data-diagnostic="speedtest">Đo tốc độ</button></article>
+          </div>
+          <div id="diagnostic-result" class="result-panel" hidden aria-live="polite"></div>
+          <h2 class="subheading">Sửa chữa nhanh</h2>
+          <div id="repair-list" class="diagnostic-grid"></div>
+        </section>
+
+        <section id="view-activity" class="view">
+          <div class="section-heading"><div><h2>Hoạt động gần đây</h2><p>Theo dõi yêu cầu đang chờ, đang chạy và đã hoàn tất.</p></div><button id="refresh-activity" class="secondary">Làm mới</button></div>
+          <div id="activity-list" class="content-stack" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="action-dialog">
+      <form method="dialog" class="dialog-card">
+        <p class="eyebrow">XÁC NHẬN THAY ĐỔI</p>
+        <h2 id="action-title">Kiểm tra command</h2>
+        <code id="command-text"></code>
+        <p id="command-warning"></p>
+        <div class="dialog-actions"><button id="cancel-command" class="secondary" value="cancel">Hủy</button><button id="confirm-command" class="danger" value="default">Xác nhận</button></div>
       </form>
-    </main>
+    </dialog>
+
+    <script src="/static/api-client.js" defer></script>
+    <script src="/static/state.js" defer></script>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

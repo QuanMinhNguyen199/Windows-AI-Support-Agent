@@ -47,6 +47,7 @@ class SoftwareCatalog:
             display_name=entry.display_name,
             publisher=entry.publisher,
             category=entry.category,
+            audience=entry.audience,
             winget_id=entry.winget_id,
             license_note=entry.license_note,
         )

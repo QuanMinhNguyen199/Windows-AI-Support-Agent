@@ -147,6 +147,7 @@ class OllamaService:
                 "messages": messages,
                 "stream": False,
                 "format": schema,
+                "think": False,
                 "options": {"temperature": 0},
             },
         )

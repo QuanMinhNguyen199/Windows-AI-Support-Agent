@@ -3,7 +3,7 @@ from functools import lru_cache
 from fastapi import APIRouter, Depends
 
 from agents.assistant_agent import AssistantAgent
-from app.api.diagnostics import get_network_service
+from app.api.diagnostics import get_network_service, get_speedtest_provider
 from app.api.software import get_software_service
 from app.config import get_settings
 from app.core.intent_router import RuleBasedIntentRouter
@@ -28,6 +28,7 @@ def get_assistant_agent() -> AssistantAgent:
         software=software,
         network=get_network_service(),
         chat_repository=ChatRepository(database),
+        speedtest=get_speedtest_provider(),
     )
 
 

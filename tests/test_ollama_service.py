@@ -40,6 +40,7 @@ def test_ollama_classification_uses_structured_schema() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
         assert body["stream"] is False
+        assert body["think"] is False
         assert body["format"]["type"] == "object"
         assert body["options"]["temperature"] == 0
         content = {

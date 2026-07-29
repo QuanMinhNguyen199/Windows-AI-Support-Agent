@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS pending_actions (
     expires_at TEXT NOT NULL,
     finished_at TEXT,
     result_json TEXT
+    , action_kind TEXT NOT NULL DEFAULT 'software_install'
+    , resource_id TEXT
+    , stage TEXT NOT NULL DEFAULT 'awaiting_confirmation'
+    , status_message TEXT NOT NULL DEFAULT 'Đang chờ xác nhận.'
 );
 
 CREATE INDEX IF NOT EXISTS idx_pending_actions_state_expiry
@@ -66,3 +70,34 @@ class Database:
         with self.connect() as connection:
             connection.execute("PRAGMA journal_mode = WAL")
             connection.executescript(SCHEMA)
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(pending_actions)")
+            }
+            migrations = {
+                "action_kind": (
+                    "ALTER TABLE pending_actions ADD COLUMN action_kind TEXT "
+                    "NOT NULL DEFAULT 'software_install'"
+                ),
+                "resource_id": (
+                    "ALTER TABLE pending_actions ADD COLUMN resource_id TEXT"
+                ),
+                "stage": (
+                    "ALTER TABLE pending_actions ADD COLUMN stage TEXT "
+                    "NOT NULL DEFAULT 'awaiting_confirmation'"
+                ),
+                "status_message": (
+                    "ALTER TABLE pending_actions ADD COLUMN status_message TEXT "
+                    "NOT NULL DEFAULT 'Đang chờ xác nhận.'"
+                ),
+            }
+            for column, statement in migrations.items():
+                if column not in columns:
+                    connection.execute(statement)
+            connection.execute(
+                """
+                UPDATE pending_actions
+                SET resource_id = software_id
+                WHERE resource_id IS NULL OR resource_id = ''
+                """
+            )

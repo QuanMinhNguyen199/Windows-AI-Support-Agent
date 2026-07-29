@@ -7,8 +7,10 @@ from app.models.diagnostics import (
     NetworkDiagnosticResponse,
     PingDiagnosticResponse,
     PingTarget,
+    SpeedTestResponse,
 )
 from app.services.network_service import NetworkService
+from app.services.speedtest_service import OoklaSpeedTestProvider
 
 
 router = APIRouter(prefix="/api/diagnostics", tags=["diagnostics"])
@@ -21,6 +23,11 @@ class PingRequest(BaseModel):
 @lru_cache
 def get_network_service() -> NetworkService:
     return NetworkService()
+
+
+@lru_cache
+def get_speedtest_provider() -> OoklaSpeedTestProvider:
+    return OoklaSpeedTestProvider()
 
 
 @router.post("/network", response_model=NetworkDiagnosticResponse)
@@ -36,3 +43,10 @@ async def diagnose_ping(
     service: NetworkService = Depends(get_network_service),
 ) -> PingDiagnosticResponse:
     return await service.run_ping(request.target)
+
+
+@router.post("/speedtest", response_model=SpeedTestResponse)
+async def diagnose_speed(
+    provider: OoklaSpeedTestProvider = Depends(get_speedtest_provider),
+) -> SpeedTestResponse:
+    return await provider.run_test()

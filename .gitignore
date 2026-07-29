@@ -6,6 +6,8 @@ __pycache__/
 .coverage
 htmlcov/
 data/*.db
+data/*.db-shm
+data/*.db-wal
 *.log
 .idea/
 .vscode/

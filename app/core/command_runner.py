@@ -15,7 +15,7 @@ class CommandRunner:
         *,
         policy: RiskPolicy | None = None,
         registry: CommandRegistry | None = None,
-        max_output_chars: int = 16_000,
+        max_output_chars: int = 64_000,
     ) -> None:
         self._policy = policy or RiskPolicy()
         self._registry = registry or CommandRegistry()

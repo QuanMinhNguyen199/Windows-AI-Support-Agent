@@ -11,6 +11,7 @@ from app.services.network_service import NetworkService
 from app.services.ollama_service import OllamaService, OllamaUnavailableError
 from app.services.software_catalog import SoftwareCatalogError
 from app.services.software_service import SoftwareService
+from app.services.speedtest_service import SpeedTestProvider
 
 
 _NETWORK_INTENTS = {
@@ -33,12 +34,14 @@ class AssistantAgent:
         software: SoftwareService,
         network: NetworkService,
         chat_repository: ChatRepository,
+        speedtest: SpeedTestProvider | None = None,
     ) -> None:
         self.router = router
         self.ollama = ollama
         self.software = software
         self.network = network
         self.chat_repository = chat_repository
+        self.speedtest = speedtest
 
     async def handle(
         self, message: str, *, session_id: str | None = None
@@ -68,6 +71,12 @@ class AssistantAgent:
                 self.router.route(message),
                 "Yêu cầu chứa chỉ dẫn có thể làm suy yếu quy tắc an toàn nên không được gửi tới AI.",
             )
+        deterministic = self.router.route(message)
+        if (
+            deterministic.intent is not Intent.FALLBACK
+            and deterministic.confidence >= 0.75
+        ):
+            return deterministic, None
         software_ids = [item.id for item in self.software.list_software()]
         try:
             classified = await self.ollama.classify_intent(
@@ -89,7 +98,7 @@ class AssistantAgent:
             )
         except OllamaUnavailableError:
             return (
-                self.router.route(message),
+                deterministic,
                 "AI local chưa khả dụng; yêu cầu được xử lý bằng rule-based router.",
             )
 
@@ -194,11 +203,30 @@ class AssistantAgent:
                 ],
             )
         if decision.intent is Intent.NETWORK_SPEED_TEST:
+            if self.speedtest is not None:
+                speed = await self.speedtest.run_test()
+                return ChatResponse(
+                    **base,
+                    message=speed.message,
+                    diagnostic_steps=(
+                        [speed.result.command_id] if speed.result is not None else []
+                    ),
+                    results=(
+                        [speed.measurement.model_dump(mode="json")]
+                        if speed.measurement is not None
+                        else []
+                    ),
+                    recommendations=(
+                        ["Cài Ookla Speedtest CLI trong Suggestions rồi thử lại."]
+                        if not speed.available
+                        else ["Kết quả có thể thay đổi theo thời điểm và máy chủ đo."]
+                    ),
+                )
             return ChatResponse(
                 **base,
-                message="Speed test thực tế chưa khả dụng trong phiên bản hiện tại.",
+                message="Speed test chưa được cấu hình.",
                 recommendations=[
-                    "Chức năng này sẽ dùng provider/CLI nằm trong whitelist ở Giai đoạn 6."
+                    "Cài Ookla Speedtest CLI trong Suggestions rồi thử lại."
                 ],
             )
         if decision.intent is Intent.SYSTEM_INFORMATION:

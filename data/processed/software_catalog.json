@@ -4,6 +4,7 @@
       "display_name": "Visual Studio Code",
       "publisher": "Microsoft",
       "category": "developer_tools",
+      "audience": "advanced",
       "winget_id": "Microsoft.VisualStudioCode",
       "check_commands": [
         ["where", "code"],
@@ -16,6 +17,7 @@
       "display_name": "Git",
       "publisher": "Git Project",
       "category": "developer_tools",
+      "audience": "advanced",
       "winget_id": "Git.Git",
       "check_commands": [
         ["where", "git"],
@@ -28,6 +30,7 @@
       "display_name": "Python 3.12",
       "publisher": "Python Software Foundation",
       "category": "developer_tools",
+      "audience": "advanced",
       "winget_id": "Python.Python.3.12",
       "check_commands": [
         ["where", "python"],
@@ -42,6 +45,7 @@
       "display_name": "Node.js LTS",
       "publisher": "OpenJS Foundation",
       "category": "developer_tools",
+      "audience": "advanced",
       "winget_id": "OpenJS.NodeJS.LTS",
       "check_commands": [
         ["where", "node"],
@@ -55,6 +59,7 @@
       "display_name": "Ollama",
       "publisher": "Ollama",
       "category": "developer_tools",
+      "audience": "advanced",
       "winget_id": "Ollama.Ollama",
       "check_commands": [
         ["where", "ollama"],
@@ -67,6 +72,7 @@
       "display_name": "Mozilla Firefox",
       "publisher": "Mozilla",
       "category": "browsers",
+      "audience": "general",
       "winget_id": "Mozilla.Firefox",
       "check_commands": [
         ["where", "firefox"],
@@ -79,6 +85,7 @@
       "display_name": "7-Zip",
       "publisher": "Igor Pavlov",
       "category": "utilities",
+      "audience": "general",
       "winget_id": "7zip.7zip",
       "check_commands": [
         ["where", "7z"],
@@ -91,6 +98,7 @@
       "display_name": "VLC media player",
       "publisher": "VideoLAN",
       "category": "media",
+      "audience": "general",
       "winget_id": "VideoLAN.VLC",
       "check_commands": [
         ["where", "vlc"],
@@ -103,6 +111,7 @@
       "display_name": "LibreOffice",
       "publisher": "The Document Foundation",
       "category": "office_pdf",
+      "audience": "general",
       "winget_id": "TheDocumentFoundation.LibreOffice",
       "check_commands": [
         ["where", "soffice"],
@@ -110,6 +119,175 @@
       ],
       "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/TheDocumentFoundation/LibreOffice",
       "license_note": "MPL-2.0"
+    },
+    "speedtest": {
+      "display_name": "Ookla Speedtest CLI",
+      "publisher": "Ookla",
+      "category": "utilities",
+      "audience": "general",
+      "winget_id": "Ookla.Speedtest.CLI",
+      "check_commands": [
+        ["where", "speedtest"],
+        ["winget", "list", "--id", "Ookla.Speedtest.CLI", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Ookla/Speedtest/CLI",
+      "license_note": "Ookla Speedtest CLI End User License Agreement"
+    },
+    "chrome": {
+      "display_name": "Google Chrome",
+      "publisher": "Google",
+      "category": "browsers",
+      "audience": "general",
+      "winget_id": "Google.Chrome",
+      "check_commands": [
+        ["winget", "list", "--id", "Google.Chrome", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/Chrome",
+      "license_note": "Google Chrome Terms of Service"
+    },
+    "adobe-reader": {
+      "display_name": "Adobe Acrobat Reader",
+      "publisher": "Adobe",
+      "category": "office_pdf",
+      "audience": "general",
+      "winget_id": "Adobe.Acrobat.Reader.64-bit",
+      "check_commands": [
+        ["winget", "list", "--id", "Adobe.Acrobat.Reader.64-bit", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Adobe/Acrobat/Reader/64-bit",
+      "license_note": "Adobe Software License Agreement"
+    },
+    "sumatrapdf": {
+      "display_name": "SumatraPDF",
+      "publisher": "Krzysztof Kowalczyk",
+      "category": "office_pdf",
+      "audience": "general",
+      "winget_id": "SumatraPDF.SumatraPDF",
+      "check_commands": [
+        ["winget", "list", "--id", "SumatraPDF.SumatraPDF", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/SumatraPDF/SumatraPDF",
+      "license_note": "GPL-3.0"
+    },
+    "zoom": {
+      "display_name": "Zoom Workplace",
+      "publisher": "Zoom",
+      "category": "office_pdf",
+      "audience": "general",
+      "winget_id": "Zoom.Zoom",
+      "check_commands": [
+        ["winget", "list", "--id", "Zoom.Zoom", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/Zoom/Zoom",
+      "license_note": "Zoom Terms of Service"
+    },
+    "teams": {
+      "display_name": "Microsoft Teams",
+      "publisher": "Microsoft",
+      "category": "office_pdf",
+      "audience": "general",
+      "winget_id": "Microsoft.Teams",
+      "check_commands": [
+        ["winget", "list", "--id", "Microsoft.Teams", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/Teams",
+      "license_note": "Microsoft Software License Terms"
+    },
+    "spotify": {
+      "display_name": "Spotify",
+      "publisher": "Spotify",
+      "category": "media",
+      "audience": "general",
+      "winget_id": "Spotify.Spotify",
+      "check_commands": [
+        ["winget", "list", "--id", "Spotify.Spotify", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/Spotify/Spotify",
+      "license_note": "Spotify Terms and Conditions of Use"
+    },
+    "powertoys": {
+      "display_name": "Microsoft PowerToys",
+      "publisher": "Microsoft",
+      "category": "utilities",
+      "audience": "advanced",
+      "winget_id": "Microsoft.PowerToys",
+      "check_commands": [
+        ["winget", "list", "--id", "Microsoft.PowerToys", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/PowerToys",
+      "license_note": "MIT"
+    },
+    "everything": {
+      "display_name": "Everything Search",
+      "publisher": "voidtools",
+      "category": "utilities",
+      "audience": "advanced",
+      "winget_id": "voidtools.Everything",
+      "check_commands": [
+        ["winget", "list", "--id", "voidtools.Everything", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/voidtools/Everything",
+      "license_note": "voidtools license"
+    },
+    "notepad-plus-plus": {
+      "display_name": "Notepad++",
+      "publisher": "Notepad++ Team",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Notepad++.Notepad++",
+      "check_commands": [
+        ["winget", "list", "--id", "Notepad++.Notepad++", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/Notepad++/Notepad++",
+      "license_note": "GPL-3.0"
+    },
+    "github-desktop": {
+      "display_name": "GitHub Desktop",
+      "publisher": "GitHub",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "GitHub.GitHubDesktop",
+      "check_commands": [
+        ["winget", "list", "--id", "GitHub.GitHubDesktop", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GitHub/GitHubDesktop",
+      "license_note": "MIT"
+    },
+    "postman": {
+      "display_name": "Postman",
+      "publisher": "Postman",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Postman.Postman",
+      "check_commands": [
+        ["winget", "list", "--id", "Postman.Postman", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/Postman/Postman",
+      "license_note": "Postman EULA"
+    },
+    "windows-terminal": {
+      "display_name": "Windows Terminal",
+      "publisher": "Microsoft",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Microsoft.WindowsTerminal",
+      "check_commands": [
+        ["winget", "list", "--id", "Microsoft.WindowsTerminal", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/WindowsTerminal",
+      "license_note": "MIT"
+    },
+    "onlyoffice": {
+      "display_name": "ONLYOFFICE Desktop Editors",
+      "publisher": "Ascensio System SIA",
+      "category": "office_pdf",
+      "audience": "advanced",
+      "winget_id": "ONLYOFFICE.DesktopEditors",
+      "check_commands": [
+        ["winget", "list", "--id", "ONLYOFFICE.DesktopEditors", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/ONLYOFFICE/DesktopEditors",
+      "license_note": "AGPL-3.0"
     }
   }
 }

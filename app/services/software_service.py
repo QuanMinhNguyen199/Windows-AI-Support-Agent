@@ -4,12 +4,15 @@ from app.core.command_registry import CommandRegistry
 from app.core.command_runner import CommandRunner
 from app.database.repositories import PendingActionRepository
 from app.models.actions import (
+    ActionKind,
     ActionExecutionResponse,
     CancelActionResponse,
 )
 from app.models.command import CommandResult
 from app.models.software import (
     SoftwareCheckResponse,
+    SoftwareInventoryItem,
+    SoftwareInventoryResponse,
     SoftwareInstallResponse,
     SoftwareSummary,
 )
@@ -46,6 +49,67 @@ class SoftwareService:
 
     def list_software(self) -> list[SoftwareSummary]:
         return self.catalog.list()
+
+    async def scan_inventory(self) -> SoftwareInventoryResponse:
+        summaries = self.list_software()
+        winget_inventory = await self.runner.run(
+            self.registry.get("software.inventory.winget_list")
+        )
+        semaphore = asyncio.Semaphore(6)
+
+        async def direct_results(software_id: str) -> list[CommandResult]:
+            definitions = [
+                definition
+                for definition in self.registry.software_checks(software_id)
+                if definition.executable.casefold() != "winget"
+            ]
+
+            async def limited_run(definition):
+                async with semaphore:
+                    return await self.runner.run(definition)
+
+            return await asyncio.gather(*(limited_run(item) for item in definitions))
+
+        direct_by_software = await asyncio.gather(
+            *(direct_results(item.id) for item in summaries)
+        )
+        checks: list[SoftwareCheckResponse] = []
+        for summary, direct in zip(summaries, direct_by_software, strict=True):
+            entry = self.catalog.get(summary.id)
+            installed, version = self._interpret_check(
+                entry.winget_id, [winget_inventory, *direct]
+            )
+            checks.append(
+                SoftwareCheckResponse(
+                    software=summary,
+                    installed=installed,
+                    version=version,
+                    conclusion=(
+                        f"{summary.display_name} đã được phát hiện."
+                        if installed
+                        else f"Chưa phát hiện {summary.display_name}."
+                    ),
+                    results=[winget_inventory, *direct],
+                )
+            )
+        items = [
+            SoftwareInventoryItem(
+                software=check.software,
+                installed=check.installed,
+                version=check.version,
+                status=(
+                    f"Đã cài{f' · {check.version}' if check.version else ''}"
+                    if check.installed
+                    else "Chưa cài"
+                ),
+            )
+            for check in checks
+        ]
+        return SoftwareInventoryResponse(
+            items=items,
+            scanned_count=len(items),
+            message=f"Đã quét trạng thái {len(items)} ứng dụng trong catalog.",
+        )
 
     async def check(self, software_id: str) -> SoftwareCheckResponse:
         normalized = software_id.strip().casefold()
@@ -90,7 +154,7 @@ class SoftwareService:
             "Hãy kiểm tra package ID và đóng ứng dụng liên quan trước khi xác nhận."
         )
         record = self.repository.create(
-            software_id=normalized,
+            resource_id=normalized,
             definition=definition,
             warning=warning,
         )
@@ -102,9 +166,38 @@ class SoftwareService:
             pending_action=self.repository.public(record),
         )
 
+    async def request_uninstall(self, software_id: str) -> SoftwareInstallResponse:
+        normalized = software_id.strip().casefold()
+        summary = self.catalog.summary(normalized)
+        check = await self.check(normalized)
+        if not check.installed:
+            return SoftwareInstallResponse(
+                software=summary,
+                already_installed=False,
+                message=f"Không phát hiện {summary.display_name}; không cần gỡ.",
+                check=check,
+            )
+        definition = self.registry.software_uninstall(normalized)
+        record = self.repository.create(
+            resource_id=normalized,
+            kind=ActionKind.SOFTWARE_UNINSTALL,
+            definition=definition,
+            warning=(
+                f"Bạn sắp gỡ {summary.display_name} ({summary.winget_id}). "
+                "Dữ liệu hoặc thiết lập riêng của ứng dụng có thể vẫn còn."
+            ),
+        )
+        return SoftwareInstallResponse(
+            software=summary,
+            already_installed=True,
+            message="Đã tạo yêu cầu gỡ; chưa có command nào được chạy.",
+            check=check,
+            pending_action=self.repository.public(record),
+        )
+
     async def confirm(self, action_id: str) -> ActionExecutionResponse:
         preview = self.repository.get(action_id)
-        expected = self.registry.software_install(preview.software_id)
+        expected = self.registry.software_install(preview.resource_id)
         if preview.definition != expected or preview.command_id != expected.id:
             raise ValueError("Command snapshot không khớp software catalog hiện tại.")
         claimed = self.repository.claim_for_confirmation(action_id)

@@ -12,7 +12,7 @@ hiển thị trước và chỉ chạy sau khi người dùng xác nhận.
 
 ## Trạng thái hiện tại
 
-Project đã hoàn thành **Giai đoạn 1–5**:
+Project đã hoàn thành **Giai đoạn 1–6**:
 
 - FastAPI server.
 - Giao diện chatbot HTML/CSS/JavaScript.
@@ -20,7 +20,7 @@ Project đã hoàn thành **Giai đoạn 1–5**:
 - Safety core gồm command registry, risk policy và command runner.
 - Chẩn đoán IP, gateway, ping, packet loss, DNS và Wi-Fi.
 - `POST /api/diagnostics/network` và `POST /api/diagnostics/ping`.
-- Software catalog gồm 9 ứng dụng phổ thông/kỹ thuật đã kiểm duyệt.
+- Software catalog gồm 23 ứng dụng phổ thông/kỹ thuật đã kiểm duyệt.
 - Kiểm tra phần mềm, tạo pending install action và confirm/cancel bằng SQLite.
 - `POST /api/chat`, một `AssistantAgent`, Ollama structured output và rule-based
   fallback tiếng Việt có dấu/không dấu.
@@ -28,9 +28,11 @@ Project đã hoàn thành **Giai đoạn 1–5**:
   password/token phổ biến.
 - Cấu hình qua biến môi trường `WINASSIST_*`.
 - Unit/integration test dùng fixture và mock, không chạy mạng thật.
-
-Giao diện chat đã nối với diagnostics/software API và pending action. Suggestions
-gallery, background install progress và các icon thao tác thuộc Giai đoạn 6.
+- Giao diện app gồm Chat, Tiện ích, Diagnostics và Activity.
+- Màn hình Tổng quan máy luôn mở trước, hiển thị Windows, CPU, RAM, GPU và ổ hệ thống.
+- Cài/gỡ ứng dụng chạy nền, có command preview, xác nhận, hủy pending action,
+  trạng thái và progress không xác định.
+- Speedtest qua Ookla CLI và sửa chữa LOW_RISK: flush DNS, release/renew IP.
 
 Kế hoạch phát triển nằm tại [docs/ROADMAP.md](docs/ROADMAP.md).
 
@@ -40,9 +42,11 @@ Kế hoạch phát triển nằm tại [docs/ROADMAP.md](docs/ROADMAP.md).
 app/                              Code ứng dụng FastAPI
 ├── api/                          Khai báo các HTTP endpoint
 │   ├── chat.py                   Nhận tin nhắn và gọi AssistantAgent
-│   ├── diagnostics.py            API kiểm tra mạng và ping
-│   ├── software.py               API danh sách/kiểm tra/yêu cầu cài app
-│   ├── actions.py                API xác nhận hoặc hủy pending action
+│   ├── diagnostics.py            API kiểm tra mạng, ping và speedtest
+│   ├── software.py               API kiểm tra/cài/gỡ app
+│   ├── actions.py                API chạy nền, status, confirm/cancel
+│   ├── repairs.py                API chuẩn bị sửa chữa mạng LOW_RISK
+│   ├── system.py                 API đọc thông số máy ở chế độ read-only
 │   └── health.py                 Kiểm tra backend và Ollama
 ├── core/                         Logic an toàn, không phụ thuộc giao diện
 │   ├── command_registry.py       Danh sách command duy nhất được phép chạy
@@ -54,13 +58,17 @@ app/                              Code ứng dụng FastAPI
 ├── services/                     Nghiệp vụ phần mềm, mạng và Ollama
 │   ├── network_service.py        Điều phối các bước chẩn đoán mạng
 │   ├── software_service.py       Kiểm tra app và tạo pending install
+│   ├── action_service.py         Quản lý background action và trạng thái
+│   ├── repair_service.py         Chuẩn bị lệnh sửa chữa đã đăng ký
+│   ├── speedtest_service.py      Provider và parser Ookla Speedtest
+│   ├── system_service.py         Chuẩn hóa CPU, RAM, GPU, OS và ổ hệ thống
 │   ├── software_catalog.py       Đọc/validate catalog phần mềm
 │   ├── ollama_service.py         Gọi Ollama và kiểm tra JSON schema
 │   └── prompt_service.py         Đọc prompt có version
 ├── parsers/                      Chuyển output Windows thành dữ liệu chuẩn
 ├── models/                       Pydantic schema cho API và nội bộ
 ├── database/                     SQLite schema và repositories
-├── static/                       HTML, CSS và JavaScript giao diện chat
+├── static/                       Frontend app, API client và local state
 ├── config.py                     Cấu hình từ biến môi trường
 └── main.py                       Khởi tạo FastAPI và đăng ký router
 
@@ -205,7 +213,14 @@ Invoke-RestMethod -Method Post `
   -Uri "http://127.0.0.1:8000/api/actions/$actionId/confirm"
 ```
 
-Hoặc hủy:
+Confirm trả về ngay với trạng thái `executing`. Theo dõi tiến trình:
+
+```powershell
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:8000/api/actions/$actionId/status"
+```
+
+Chỉ có thể hủy khi action còn `pending`:
 
 ```powershell
 Invoke-RestMethod -Method Post `
@@ -213,7 +228,22 @@ Invoke-RestMethod -Method Post `
 ```
 
 Catalog hiện có: `firefox`, `7zip`, `vlc`, `libreoffice`, `vscode`, `git`,
-`python`, `nodejs` và `ollama`.
+`python`, `nodejs`, `ollama` và `speedtest`.
+
+## Chức năng Giai đoạn 6
+
+- Mở **Tiện ích** để cài/gỡ app; luôn kiểm tra command preview trước khi xác nhận.
+- Tiện ích có hai nhóm **Phổ thông** và **Chuyên sâu**, sau đó chia tiếp theo
+  trình duyệt, văn phòng, media, tiện ích hệ thống và công cụ phát triển.
+- Tiện ích quét toàn bộ ứng dụng trong catalog trước khi hiển thị, đánh dấu
+  **Đã cài/Chưa cài** và tự quét lại sau khi install/uninstall hoàn tất.
+- Mở **Chẩn đoán** để kiểm tra mạng, đo tốc độ hoặc chuẩn bị flush DNS,
+  release/renew IP.
+- Mở **Hoạt động** để theo dõi action. Refresh trang không làm mất action đang chạy.
+- Speedtest chưa cài sẽ hiện nút **Cài Speedtest để đo**. App vẫn hiển thị
+  command preview và yêu cầu xác nhận trước khi cài `Ookla.Speedtest.CLI`.
+- Intent rõ ràng được rule-based router xử lý ngay; Ollama chỉ được gọi cho câu
+  mơ hồ. Timeout Ollama mặc định là 3 giây để tránh giữ giao diện quá lâu.
 
 ## Chat API
 
@@ -231,14 +261,33 @@ Khi Ollama hoặc model không khả dụng, response có warning và
 
 ## Ollama
 
-Ollama là tùy chọn. Để bật phân loại/tóm tắt bằng AI local:
+`run.ps1` quản lý Ollama theo biến `WINASSIST_OLLAMA_BOOTSTRAP`:
 
-```powershell
-ollama pull qwen2.5:3b
-ollama serve
+- `prompt` (mặc định): hỏi trước khi cài Ollama hoặc tải model.
+- `auto`: tự cài package chính xác bằng winget và tự tải model. Việc đặt giá trị
+  này trong `.env` được xem là xác nhận trước của người dùng.
+- `skip`: không kiểm tra/cài/khởi động Ollama; app dùng rule-based router.
+
+Nếu Ollama đã được cài nhưng chưa chạy, script tự khởi động `ollama serve` ở cửa
+sổ ẩn. Nếu bootstrap thất bại, FastAPI vẫn chạy và tự fallback.
+
+Để bật chế độ tự động, thêm vào `.env`:
+
+```env
+WINASSIST_OLLAMA_BOOTSTRAP=auto
+WINASSIST_OLLAMA_MODEL=auto
 ```
 
-Có thể đổi model bằng `WINASSIST_OLLAMA_MODEL` trong `.env`.
+Khi model là `auto`, WinAssist chọn theo tổng RAM để ưu tiên phản hồi nhanh:
+
+| RAM | Model |
+|---|---|
+| Dưới 8 GB | `qwen3:0.6b` |
+| 8–15 GB | `qwen3:1.7b` |
+| Từ 16 GB | `qwen3:4b` |
+
+Thinking mode được tắt cho tác vụ intent/tóm tắt nhằm giảm độ trễ. Người dùng
+nâng cao vẫn có thể đặt tên model cụ thể bằng `WINASSIST_OLLAMA_MODEL`.
 
 ## Lỗi thường gặp
 

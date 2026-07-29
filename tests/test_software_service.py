@@ -19,10 +19,20 @@ class FakeSoftwareRunner:
     ) -> CommandResult:
         self.calls.append((definition.id, confirmed))
         is_install = definition.id.startswith("software.install.")
+        is_uninstall = definition.id.startswith("software.uninstall.")
         if is_install:
             stdout = "Successfully installed"
             success = True
-        elif self.installed and definition.executable == "winget":
+            self.installed = True
+        elif is_uninstall:
+            stdout = "Successfully uninstalled"
+            success = True
+            self.installed = False
+        elif (
+            self.installed
+            and definition.executable == "winget"
+            and definition.id != "software.inventory.winget_list"
+        ):
             package_id = definition.arguments[2]
             stdout = f"Example {package_id} 128.0 winget"
             success = True
@@ -97,6 +107,22 @@ def test_installed_software_does_not_create_action(tmp_path) -> None:
     assert response.already_installed is True
     assert response.pending_action is None
     assert not any(command_id.startswith("software.install.") for command_id, _ in runner.calls)
+
+
+def test_inventory_scan_returns_status_for_every_catalog_item(tmp_path) -> None:
+    service, _, _, _ = make_service(tmp_path, installed=True)
+
+    response = asyncio.run(service.scan_inventory())
+
+    assert response.scanned_count == len(service.list_software())
+    assert len(response.items) == response.scanned_count
+    assert all(
+        item.status.startswith("Đã cài") or item.status == "Chưa cài"
+        for item in response.items
+    )
+    assert {item.software.id for item in response.items} == {
+        item.id for item in service.list_software()
+    }
 
 
 def test_database_command_tampering_is_rejected(tmp_path) -> None:

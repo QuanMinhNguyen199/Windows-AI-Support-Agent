@@ -14,12 +14,18 @@ class SoftwareCategory(StrEnum):
     DEVELOPER_TOOLS = "developer_tools"
 
 
+class SoftwareAudience(StrEnum):
+    GENERAL = "general"
+    ADVANCED = "advanced"
+
+
 class SoftwareEntry(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     display_name: str = Field(min_length=1)
     publisher: str = Field(min_length=1)
     category: SoftwareCategory
+    audience: SoftwareAudience
     winget_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._+-]+$")
     check_commands: tuple[tuple[str, ...], ...] = Field(min_length=1)
     provenance: str = Field(pattern=r"^https://github\.com/microsoft/winget-pkgs/")
@@ -57,6 +63,7 @@ class SoftwareSummary(BaseModel):
     display_name: str
     publisher: str
     category: SoftwareCategory
+    audience: SoftwareAudience
     winget_id: str
     license_note: str
 
@@ -79,3 +86,16 @@ class SoftwareInstallResponse(BaseModel):
     message: str
     check: SoftwareCheckResponse
     pending_action: PendingAction | None = None
+
+
+class SoftwareInventoryItem(BaseModel):
+    software: SoftwareSummary
+    installed: bool
+    version: str | None = None
+    status: str
+
+
+class SoftwareInventoryResponse(BaseModel):
+    items: list[SoftwareInventoryItem]
+    scanned_count: int
+    message: str

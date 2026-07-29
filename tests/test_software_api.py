@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import time
 
 from app.api.software import get_software_service
 from app.database.db import Database
@@ -36,18 +37,26 @@ def test_list_check_install_confirm_flow(tmp_path) -> None:
             )
             action_id = install.json()["pending_action"]["id"]
             confirmed = client.post(f"/api/actions/{action_id}/confirm")
+            status = None
+            for _ in range(20):
+                status = client.get(f"/api/actions/{action_id}/status")
+                if status.json()["action"]["state"] in {"completed", "failed"}:
+                    break
+                time.sleep(0.01)
             replayed = client.post(f"/api/actions/{action_id}/confirm")
     finally:
         app.dependency_overrides.clear()
 
     assert listed.status_code == 200
-    assert len(listed.json()) == 9
+    assert len(listed.json()) == 23
     assert checked.status_code == 200
     assert checked.json()["installed"] is False
     assert install.status_code == 200
     assert install.json()["pending_action"]["state"] == "pending"
-    assert confirmed.status_code == 200
-    assert confirmed.json()["action"]["state"] == "completed"
+    assert confirmed.status_code == 202
+    assert confirmed.json()["action"]["state"] == "executing"
+    assert status is not None
+    assert status.json()["action"]["state"] == "completed"
     assert replayed.status_code == 409
 
 
@@ -67,8 +76,8 @@ def test_confirm_endpoint_does_not_accept_replacement_command(tmp_path) -> None:
     finally:
         app.dependency_overrides.clear()
 
-    assert response.status_code == 200
-    assert response.json()["result"]["command_id"] == "software.install.firefox"
+    assert response.status_code == 202
+    assert response.json()["action"]["command_id"] == "software.install.firefox"
 
 
 def test_unknown_software_returns_not_found(tmp_path) -> None:

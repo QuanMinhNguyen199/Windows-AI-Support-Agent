@@ -99,3 +99,22 @@ class NetworkDiagnosticResponse(BaseModel):
     findings: list[DiagnosticFinding]
     recommendations: list[str]
     results: list[CommandResult]
+
+
+class SpeedTestResult(BaseModel):
+    download_mbps: float | None = Field(default=None, ge=0)
+    upload_mbps: float | None = Field(default=None, ge=0)
+    ping_ms: float | None = Field(default=None, ge=0)
+    jitter_ms: float | None = Field(default=None, ge=0)
+    packet_loss_percent: float | None = Field(default=None, ge=0, le=100)
+    server_name: str | None = None
+    server_location: str | None = None
+
+
+class SpeedTestResponse(BaseModel):
+    available: bool
+    status: DiagnosticStatus
+    message: str
+    measurement: SpeedTestResult | None = None
+    install_software_id: str | None = None
+    result: CommandResult | None = None
