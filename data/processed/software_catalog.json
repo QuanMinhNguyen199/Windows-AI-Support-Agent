@@ -78,6 +78,22 @@
         ["where", "firefox"],
         ["winget", "list", "--id", "Mozilla.Firefox", "--exact", "--disable-interactivity"]
       ],
+      "verification_commands": [
+        [
+          "powershell",
+          "-NoProfile",
+          "-NonInteractive",
+          "-Command",
+          "$roots=@((Join-Path $env:ProgramFiles 'Mozilla Firefox'),(Join-Path $env:LOCALAPPDATA 'Mozilla Firefox'));if(${env:ProgramFiles(x86)}){$roots+=(Join-Path ${env:ProgramFiles(x86)} 'Mozilla Firefox')};$found=$roots|ForEach-Object {Join-Path $_ 'firefox.exe'}|Where-Object {Test-Path -LiteralPath $_}|Select-Object -First 1;if($found){$found}else{exit 1}"
+        ]
+      ],
+      "uninstall_command": [
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        "$roots=@((Join-Path $env:ProgramFiles 'Mozilla Firefox'),(Join-Path $env:LOCALAPPDATA 'Mozilla Firefox'));if(${env:ProgramFiles(x86)}){$roots+=(Join-Path ${env:ProgramFiles(x86)} 'Mozilla Firefox')};$helper=$roots|ForEach-Object {Join-Path $_ 'uninstall\\helper.exe'}|Where-Object {Test-Path -LiteralPath $_}|Select-Object -First 1;if(!$helper){Write-Error 'Không tìm thấy Mozilla uninstaller thực tế.';exit 2};& $helper /S;if($LASTEXITCODE){exit $LASTEXITCODE};exit 0"
+      ],
       "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Mozilla/Firefox",
       "license_note": "Mozilla Public License 2.0"
     },

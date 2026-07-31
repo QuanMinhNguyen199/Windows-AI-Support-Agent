@@ -2,7 +2,6 @@ import asyncio
 
 from agents.assistant_agent import AssistantAgent
 from app.core.intent_router import RuleBasedIntentRouter
-from app.database.db import Database
 from app.database.repositories import ChatRepository
 from app.models.chat import Intent, RouterSource
 from app.services.ollama_service import OllamaUnavailableError
@@ -91,3 +90,22 @@ def test_chat_repository_redacts_sensitive_text(tmp_path) -> None:
     assert "token=[REDACTED]" in messages[0]["content"]
     assert "abc123" not in messages[0]["content"]
     assert "alice" not in messages[0]["content"]
+
+
+def test_agent_guides_ambiguous_performance_problem(tmp_path) -> None:
+    agent, runner, _, ollama = make_agent(tmp_path)
+
+    response = asyncio.run(
+        agent.handle("Máy của tôi đang chạy chậm, tôi nên làm gì?")
+    )
+
+    assert response.intent is Intent.PERFORMANCE_ISSUE
+    assert response.router_source is RouterSource.RULE_BASED
+    assert response.warning is None
+    assert {item.label for item in response.suggestions} >= {
+        "Khởi động máy chậm",
+        "Ổ đĩa gần đầy",
+        "Internet chậm",
+    }
+    assert runner.calls == []
+    assert ollama.classify_calls == 0

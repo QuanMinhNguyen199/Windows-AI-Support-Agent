@@ -20,6 +20,7 @@ class FakeSoftwareRunner:
         self.calls.append((definition.id, confirmed))
         is_install = definition.id.startswith("software.install.")
         is_uninstall = definition.id.startswith("software.uninstall.")
+        is_verification = definition.id.startswith("software.verify.")
         if is_install:
             stdout = "Successfully installed"
             success = True
@@ -28,6 +29,9 @@ class FakeSoftwareRunner:
             stdout = "Successfully uninstalled"
             success = True
             self.installed = False
+        elif is_verification and self.installed:
+            stdout = r"C:\Program Files\Mozilla Firefox\firefox.exe"
+            success = True
         elif (
             self.installed
             and definition.executable == "winget"
@@ -140,3 +144,39 @@ def test_database_command_tampering_is_rejected(tmp_path) -> None:
 
     assert repository.get(pending.id).state == "pending"
     assert not any(command_id.startswith("software.install.") for command_id, _ in runner.calls)
+
+
+def test_firefox_ghost_winget_entry_is_not_treated_as_installed(tmp_path) -> None:
+    service, _, runner, _ = make_service(tmp_path, installed=True)
+    original_run = runner.run
+
+    async def run_without_executable(definition, *, confirmed=False):
+        if definition.id.startswith("software.verify.firefox"):
+            runner.calls.append((definition.id, confirmed))
+            return CommandResult(
+                command_id=definition.id,
+                executable=definition.executable,
+                arguments=list(definition.arguments),
+                exit_code=1,
+                stdout="",
+                stderr="Executable not found",
+                duration_ms=1,
+                timed_out=False,
+                success=False,
+            )
+        return await original_run(definition, confirmed=confirmed)
+
+    runner.run = run_without_executable
+
+    response = asyncio.run(service.check("firefox"))
+
+    assert response.installed is False
+    assert any(
+        result.executable == "winget" and result.success
+        for result in response.results
+    )
+    assert any(
+        result.command_id.startswith("software.verify.firefox")
+        and not result.success
+        for result in response.results
+    )

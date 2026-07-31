@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from agents.assistant_agent import AssistantAgent
 from app.api.diagnostics import get_network_service, get_speedtest_provider
 from app.api.software import get_software_service
+from app.api.windows import get_windows_support_service
 from app.config import get_settings
 from app.core.intent_router import RuleBasedIntentRouter
 from app.database.db import Database
@@ -29,6 +30,7 @@ def get_assistant_agent() -> AssistantAgent:
         network=get_network_service(),
         chat_repository=ChatRepository(database),
         speedtest=get_speedtest_provider(),
+        windows=get_windows_support_service(),
     )
 
 

@@ -28,10 +28,12 @@ class SoftwareEntry(BaseModel):
     audience: SoftwareAudience
     winget_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._+-]+$")
     check_commands: tuple[tuple[str, ...], ...] = Field(min_length=1)
+    verification_commands: tuple[tuple[str, ...], ...] = ()
+    uninstall_command: tuple[str, ...] | None = None
     provenance: str = Field(pattern=r"^https://github\.com/microsoft/winget-pkgs/")
     license_note: str = Field(min_length=1)
 
-    @field_validator("check_commands")
+    @field_validator("check_commands", "verification_commands")
     @classmethod
     def validate_commands(
         cls, commands: tuple[tuple[str, ...], ...]
@@ -39,6 +41,17 @@ class SoftwareEntry(BaseModel):
         if any(not command or any(not value or "\x00" in value for value in command) for command in commands):
             raise ValueError("check_commands chứa command hoặc argument không hợp lệ")
         return commands
+
+    @field_validator("uninstall_command")
+    @classmethod
+    def validate_uninstall_command(
+        cls, command: tuple[str, ...] | None
+    ) -> tuple[str, ...] | None:
+        if command is not None and (
+            not command or any(not value or "\x00" in value for value in command)
+        ):
+            raise ValueError("uninstall_command không hợp lệ")
+        return command
 
 
 class SoftwareCatalogFile(BaseModel):

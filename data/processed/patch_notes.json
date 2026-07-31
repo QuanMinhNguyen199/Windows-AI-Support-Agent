@@ -1,0 +1,26 @@
+{
+  "releases": [
+    {
+      "version": "0.8.3",
+      "released_at": "2026-07-31",
+      "title": "Theo dõi tiện ích theo thời gian thực",
+      "summary": "WinAssist phản hồi nhanh hơn, tự nhận biết thay đổi ứng dụng từ Windows và có giao diện Fluent nhất quán.",
+      "highlights": [
+        "Tự phát hiện ứng dụng được cài hoặc gỡ từ bên ngoài WinAssist.",
+        "Cập nhật tab Tiện ích qua sự kiện SSE mà không quét liên tục.",
+        "Thêm tab Patch Update để xem nội dung phiên bản mới nhất.",
+        "Đồng bộ color palette và SVG icon theo phong cách Windows Fluent."
+      ],
+      "fixes": [
+        "Không quét lại thông số máy mỗi khi quay lại tab Tổng quan.",
+        "Không quét lại toàn bộ kho tiện ích mỗi khi chuyển tab.",
+        "Kết quả chẩn đoán hiển thị ngay trong đúng thẻ tương ứng.",
+        "Nút cài, gỡ và hủy lớn hơn, rõ trạng thái và cập nhật trực tiếp."
+      ],
+      "security": [
+        "Registry watcher chỉ đọc các khóa Uninstall và không sửa Registry.",
+        "Cài đặt và gỡ ứng dụng vẫn phải đi qua command registry, risk policy và bước xác nhận."
+      ]
+    }
+  ]
+}

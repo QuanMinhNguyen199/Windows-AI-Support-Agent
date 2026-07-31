@@ -30,6 +30,13 @@ class ActionTaskManager:
         self._tasks[action_id] = task
         task.add_done_callback(lambda _: self._tasks.pop(action_id, None))
 
+    def cancel(self, action_id: str) -> bool:
+        task = self._tasks.get(action_id)
+        if task is None or task.done():
+            return False
+        task.cancel()
+        return True
+
     async def shutdown(self) -> None:
         tasks = list(self._tasks.values())
         if not tasks:
@@ -71,10 +78,33 @@ class ActionService:
         return self._response(claimed)
 
     def cancel(self, action_id: str) -> CancelActionResponse:
-        cancelled = self.repository.cancel(action_id)
+        current = self.repository.get(action_id)
+        if current.state is ActionState.PENDING:
+            cancelled = self.repository.cancel(action_id)
+            message = "Đã hủy yêu cầu; không có command nào được chạy."
+        elif current.state in {ActionState.EXECUTING, ActionState.CANCELLING}:
+            cancelling = self.repository.request_execution_cancel(action_id)
+            if not self.task_manager.cancel(action_id):
+                latest = self.repository.get(action_id)
+                if latest.state is ActionState.CANCELLING:
+                    cancelled = self.repository.finish_execution_cancel(action_id)
+                else:
+                    cancelled = latest
+            else:
+                cancelled = cancelling
+            message = (
+                "Đã nhận yêu cầu dừng installer. "
+                "WinAssist sẽ quét lại trạng thái phần mềm sau khi tiến trình dừng."
+            )
+        else:
+            from app.database.repositories import ActionStateError
+
+            raise ActionStateError(
+                f"Action không thể hủy ở trạng thái {current.state.value}."
+            )
         return CancelActionResponse(
             action=self.repository.public(cancelled),
-            message="Đã hủy yêu cầu; không có command nào được chạy.",
+            message=message,
         )
 
     async def _execute(self, record: PendingActionRecord) -> None:
@@ -92,6 +122,9 @@ class ActionService:
                 ),
             )
             result = await self.runner.run(record.definition, confirmed=True)
+            if self.repository.get(record.id).state is ActionState.CANCELLING:
+                self.repository.finish_execution_cancel(record.id)
+                return
             if result.success and self.verifier is not None:
                 self.repository.set_verifying(record.id, "Đang xác minh kết quả.")
                 verified = await self.verifier(record)
@@ -107,7 +140,9 @@ class ActionService:
                     )
             self.repository.finish(record.id, result)
         except asyncio.CancelledError:
-            raise
+            if self.repository.get(record.id).state is ActionState.CANCELLING:
+                self.repository.finish_execution_cancel(record.id)
+            return
         except Exception as exc:
             # A normalized failed result keeps internal exception details out of the API.
             from app.models.command import CommandResult
@@ -133,5 +168,8 @@ class ActionService:
             action=self.repository.public(record),
             result=record.result,
             message=record.status_message,
-            indeterminate=record.state is ActionState.EXECUTING,
+            indeterminate=record.state in {
+                ActionState.EXECUTING,
+                ActionState.CANCELLING,
+            },
         )

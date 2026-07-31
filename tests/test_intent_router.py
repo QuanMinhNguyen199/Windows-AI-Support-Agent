@@ -17,6 +17,7 @@ from app.models.chat import Intent, RouterSource
         ("DNS của tôi có bị lỗi không", Intent.DNS_DIAGNOSIS),
         ("Kiểm tra ping và packet loss", Intent.PACKET_LOSS_DIAGNOSIS),
         ("Kiểm tra tốc độ mạng", Intent.NETWORK_SPEED_TEST),
+        ("Máy của tôi đang chạy chậm, tôi nên làm gì", Intent.PERFORMANCE_ISSUE),
         ("Bạn làm được gì?", Intent.HELP),
     ],
 )

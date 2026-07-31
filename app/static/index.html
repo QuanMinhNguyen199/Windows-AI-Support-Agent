@@ -5,43 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/overview.css">
+    <link rel="stylesheet" href="/static/styles.css?v=0.8.3">
+    <link rel="stylesheet" href="/static/overview.css?v=0.8.3">
   </head>
   <body>
     <div class="app-layout">
       <aside class="sidebar">
         <a class="brand" href="#overview" aria-label="WinAssist Local">
-          <span class="brand-mark">WA</span><span>WinAssist</span>
+          <span class="brand-mark">W</span><span>WinAssist</span>
         </a>
         <nav aria-label="Điều hướng chính">
-          <button class="nav-item active" data-view="overview"><span>▤</span> Tổng quan máy</button>
-          <button class="nav-item" data-view="chat"><span>💬</span> Trợ lý</button>
-          <button class="nav-item" data-view="suggestions"><span>▦</span> Tiện ích</button>
-          <button class="nav-item" data-view="diagnostics"><span>⌁</span> Chẩn đoán</button>
-          <button class="nav-item" data-view="activity"><span>◷</span> Hoạt động</button>
+          <button class="nav-item active" data-view="overview"><span data-icon="home"></span> Tổng quan máy</button>
+          <button class="nav-item" data-view="chat"><span data-icon="chat"></span> Trợ lý</button>
+          <button class="nav-item" data-view="suggestions"><span data-icon="apps"></span> Tiện ích</button>
+          <button class="nav-item" data-view="diagnostics"><span data-icon="pulse"></span> Chẩn đoán</button>
+          <button class="nav-item" data-view="activity"><span data-icon="history"></span> Hoạt động</button>
+          <button class="nav-item" data-view="patches"><span data-icon="patch"></span> Patch Update</button>
         </nav>
         <div class="service-status" aria-live="polite">
           <span id="backend-dot" class="status-dot pending"></span>
-          <div><strong id="backend-status">Đang kết nối…</strong><small id="ollama-status">AI local: đang kiểm tra</small></div>
+          <div><strong id="backend-status">Đang kết nối…</strong><small id="ollama-status">Trợ lý: đang chuẩn bị</small></div>
         </div>
       </aside>
 
       <main>
         <header class="topbar">
           <div>
-            <p class="eyebrow">WINDOWS SUPPORT AGENT · LOCAL</p>
+            <p class="eyebrow">Hỗ trợ máy tính Windows</p>
             <h1 id="view-title">Tổng quan máy</h1>
           </div>
-          <p class="privacy">Dữ liệu được xử lý trên máy của bạn</p>
+          <p class="privacy">Dữ liệu được giữ trên máy của bạn</p>
         </header>
 
         <section id="view-overview" class="view active">
           <div class="overview-hero">
             <div>
-              <p class="eyebrow">THÔNG SỐ THIẾT BỊ</p>
+              <p class="eyebrow">Thông tin thiết bị</p>
               <h2>Máy tính của bạn</h2>
-              <p>WinAssist đọc thông tin hệ thống cơ bản ở chế độ chỉ đọc mỗi khi ứng dụng khởi động.</p>
+              <p>Xem nhanh cấu hình và tình trạng cơ bản của máy. WinAssist không thay đổi thiết lập khi đọc thông tin này.</p>
             </div>
             <button id="refresh-specs" class="secondary">Đọc lại thông số</button>
           </div>
@@ -62,9 +63,9 @@
             <button data-view-target="suggestions">Cài ứng dụng</button>
           </div>
           <div id="chat-log" class="chat-log" aria-live="polite" aria-label="Lịch sử trò chuyện">
-            <article class="message assistant"><div class="avatar">WA</div><div class="bubble">
-              <p>Xin chào! Tôi có thể chẩn đoán mạng, kiểm tra và cài ứng dụng Windows an toàn.</p>
-              <p class="hint">Mọi thay đổi đều hiển thị command và chờ bạn xác nhận.</p>
+            <article class="message assistant"><div class="avatar">W</div><div class="bubble">
+              <p>Xin chào, bạn đang cần kiểm tra máy hay cài thêm ứng dụng?</p>
+              <p class="hint">Trước khi thay đổi máy, WinAssist luôn cho bạn xem lại và xác nhận.</p>
             </div></article>
           </div>
           <form id="chat-form" class="composer">
@@ -75,8 +76,11 @@
         </section>
 
         <section id="view-suggestions" class="view">
-          <div class="section-heading"><div><h2>Kho tiện ích</h2><p>Chọn nhóm phù hợp, xem lệnh và xác nhận trước khi cài hoặc gỡ.</p></div>
-            <button id="refresh-software" class="secondary">Làm mới</button>
+          <div class="section-heading"><div><h2>Ứng dụng thường dùng</h2><p>Chọn ứng dụng phù hợp. Bạn luôn được hỏi lại trước khi cài hoặc gỡ.</p></div>
+            <div class="software-toolbar">
+              <span class="live-status"><span class="live-dot"></span><span id="software-live-text">Đang chuẩn bị</span></span>
+              <button id="refresh-software" class="secondary">Quét lại</button>
+            </div>
           </div>
           <div class="audience-selector" role="tablist" aria-label="Nhóm tiện ích">
             <button class="audience-tab active" data-audience="general" role="tab" aria-selected="true">
@@ -90,12 +94,17 @@
         </section>
 
         <section id="view-diagnostics" class="view">
-          <div class="section-heading"><div><h2>Chẩn đoán & sửa chữa</h2><p>Các kiểm tra chỉ đọc chạy ngay; sửa chữa luôn cần xác nhận.</p></div></div>
+          <div class="section-heading"><div><h2>Kiểm tra và khắc phục</h2><p>Việc kiểm tra không làm thay đổi máy. Mọi thao tác sửa chữa đều cần bạn xác nhận.</p></div></div>
           <div class="diagnostic-grid">
-            <article class="card"><span class="card-icon">⌁</span><h3>Kiểm tra mạng đầy đủ</h3><p>Adapter, IP, gateway, DNS, Wi-Fi và kết nối Internet.</p><button class="primary diagnostic-run" data-diagnostic="network">Chạy kiểm tra</button></article>
-            <article class="card"><span class="card-icon">↔</span><h3>Đo tốc độ mạng</h3><p>Download, upload, ping và jitter qua Ookla CLI.</p><button class="primary diagnostic-run" data-diagnostic="speedtest">Đo tốc độ</button></article>
+            <article class="card"><h3>Kiểm tra mạng đầy đủ</h3><p>Adapter, IP, gateway, DNS, Wi-Fi và kết nối Internet.</p><button class="primary diagnostic-run" data-diagnostic="network">Chạy kiểm tra</button></article>
+            <article class="card"><h3>Đo tốc độ mạng</h3><p>Download, upload, ping và jitter qua Ookla CLI.</p><button class="primary diagnostic-run" data-diagnostic="speedtest">Đo tốc độ</button></article>
           </div>
           <div id="diagnostic-result" class="result-panel" hidden aria-live="polite"></div>
+          <div class="section-heading windows-heading">
+            <div><h2>Kiểm tra Windows phổ thông</h2><p>Pin, ổ đĩa, thiết bị, máy in, cập nhật, ngày giờ và startup.</p></div>
+            <button id="run-windows-overview" class="primary">Quét tất cả</button>
+          </div>
+          <div id="windows-capabilities" class="diagnostic-grid" aria-live="polite"></div>
           <h2 class="subheading">Sửa chữa nhanh</h2>
           <div id="repair-list" class="diagnostic-grid"></div>
         </section>
@@ -104,21 +113,34 @@
           <div class="section-heading"><div><h2>Hoạt động gần đây</h2><p>Theo dõi yêu cầu đang chờ, đang chạy và đã hoàn tất.</p></div><button id="refresh-activity" class="secondary">Làm mới</button></div>
           <div id="activity-list" class="content-stack" aria-live="polite"></div>
         </section>
+
+        <section id="view-patches" class="view">
+          <div class="section-heading">
+            <div>
+              <h2>Có gì mới trong WinAssist?</h2>
+              <p>Nội dung thay đổi của phiên bản mới nhất đang chạy trên máy.</p>
+            </div>
+          </div>
+          <div id="patch-content" class="patch-content" aria-live="polite">
+            <div class="inventory-loading"><div class="loader"></div><p>Đang tải thông tin phiên bản…</p></div>
+          </div>
+        </section>
       </main>
     </div>
+    <div id="toast-region" class="toast-region" aria-live="assertive"></div>
 
     <dialog id="action-dialog">
       <form method="dialog" class="dialog-card">
-        <p class="eyebrow">XÁC NHẬN THAY ĐỔI</p>
-        <h2 id="action-title">Kiểm tra command</h2>
+        <p class="eyebrow">Xác nhận thay đổi</p>
+        <h2 id="action-title">Xem lại thao tác</h2>
         <code id="command-text"></code>
         <p id="command-warning"></p>
         <div class="dialog-actions"><button id="cancel-command" class="secondary" value="cancel">Hủy</button><button id="confirm-command" class="danger" value="default">Xác nhận</button></div>
       </form>
     </dialog>
 
-    <script src="/static/api-client.js" defer></script>
-    <script src="/static/state.js" defer></script>
-    <script src="/static/app.js" defer></script>
+    <script src="/static/api-client.js?v=0.8.3" defer></script>
+    <script src="/static/state.js?v=0.8.3" defer></script>
+    <script src="/static/app.js?v=0.8.3" defer></script>
   </body>
 </html>

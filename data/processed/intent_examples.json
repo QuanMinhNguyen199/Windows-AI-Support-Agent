@@ -13,6 +13,14 @@
   "dns_diagnosis": ["dns", "lỗi dns", "kiểm tra dns", "không mở được website", "nslookup"],
   "packet_loss_diagnosis": ["packet loss", "mất gói", "kiểm tra ping", "ping cao"],
   "system_information": ["thông tin máy", "cấu hình máy", "windows version", "system information"],
+  "battery_status": ["kiểm tra pin", "tình trạng pin", "mức pin", "battery status"],
+  "storage_status": ["kiểm tra dung lượng", "ổ đĩa đầy", "còn bao nhiêu dung lượng", "disk space"],
+  "device_status": ["kiểm tra âm thanh", "kiểm tra camera", "kiểm tra microphone", "kiểm tra bluetooth", "loa không hoạt động", "camera không hoạt động"],
+  "printer_status": ["kiểm tra máy in", "máy in không hoạt động", "print queue", "hàng đợi in"],
+  "windows_update_status": ["kiểm tra windows update", "trạng thái cập nhật windows", "bản vá windows", "pending reboot"],
+  "datetime_status": ["kiểm tra ngày giờ", "sai múi giờ", "timezone", "giờ windows"],
+  "startup_apps_status": ["ứng dụng khởi động", "startup apps", "app chạy cùng windows", "máy khởi động chậm"],
+  "performance_issue": ["máy chậm", "máy chạy chậm", "máy của tôi đang chạy chậm", "máy tôi chạy chậm", "chạy rất chậm", "máy bị đơ", "máy hay treo", "mở ứng dụng lâu", "máy nóng", "quạt kêu to", "computer slow"],
   "help": ["bạn làm được gì", "trợ giúp", "hướng dẫn sử dụng", "help"],
   "fallback": []
 }

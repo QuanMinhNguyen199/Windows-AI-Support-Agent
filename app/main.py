@@ -1,20 +1,26 @@
-from contextlib import asynccontextmanager
+import time
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from uuid import uuid4
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.actions import action_task_manager, router as actions_router
+from app.api.actions import action_task_manager
+from app.api.actions import router as actions_router
 from app.api.chat import router as chat_router
 from app.api.diagnostics import router as diagnostics_router
 from app.api.health import router as health_router
+from app.api.patches import router as patches_router
 from app.api.repairs import router as repairs_router
 from app.api.software import router as software_router
 from app.api.system import router as system_router
+from app.api.windows import router as windows_router
 from app.config import BASE_DIR, get_settings
+from app.core.logging_config import configure_local_logging
 from app.database.db import Database
-
+from app.services.software_change_watcher import software_registry_watcher
 
 STATIC_DIR = BASE_DIR / "static"
 
@@ -27,17 +33,63 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     from app.database.repositories import PendingActionRepository
 
     PendingActionRepository(database).recover_interrupted()
-    yield
-    await action_task_manager.shutdown()
+    import asyncio
+
+    software_registry_watcher.start(asyncio.get_running_loop())
+    try:
+        yield
+    finally:
+        software_registry_watcher.stop()
+        await action_task_manager.shutdown()
 
 
 settings = get_settings()
+request_logger = configure_local_logging(settings.log_path)
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Trợ lý cài đặt và chẩn đoán Windows chạy local.",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def security_and_logging_middleware(request: Request, call_next):
+    request_id = str(uuid4())
+    started = time.perf_counter()
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        duration_ms = round((time.perf_counter() - started) * 1000)
+        if "response" in locals():
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["Referrer-Policy"] = "no-referrer"
+            response.headers["Permissions-Policy"] = (
+                "camera=(), microphone=(), geolocation=()"
+            )
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; script-src 'self'; style-src 'self'; "
+                "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+            )
+            response.headers["X-Request-ID"] = request_id
+            if request.url.path.startswith("/api/"):
+                response.headers["Cache-Control"] = "no-store"
+            elif request.url.path == "/":
+                response.headers["Cache-Control"] = "no-cache"
+        request_logger.info(
+            "http_request",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": status_code,
+                "duration_ms": duration_ms,
+            },
+        )
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(diagnostics_router)
@@ -45,6 +97,8 @@ app.include_router(software_router)
 app.include_router(actions_router)
 app.include_router(repairs_router)
 app.include_router(system_router)
+app.include_router(windows_router)
+app.include_router(patches_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

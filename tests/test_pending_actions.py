@@ -52,3 +52,22 @@ def test_cancelled_action_cannot_be_confirmed(tmp_path) -> None:
     assert cancelled.state == "cancelled"
     with pytest.raises(ActionStateError):
         repo.claim_for_confirmation(action.id)
+
+
+def test_executing_action_transitions_through_cancelling(tmp_path) -> None:
+    repo = repository(tmp_path)
+    definition = registry_from_catalog(SoftwareCatalog()).software_install("firefox")
+    action = repo.create(
+        software_id="firefox",
+        definition=definition,
+        warning="Confirm install.",
+    )
+    repo.claim_for_confirmation(action.id)
+
+    cancelling = repo.request_execution_cancel(action.id)
+    cancelled = repo.finish_execution_cancel(action.id)
+
+    assert cancelling.state == "cancelling"
+    assert cancelling.stage == "cancelling"
+    assert cancelled.state == "cancelled"
+    assert "quét lại" in cancelled.status_message

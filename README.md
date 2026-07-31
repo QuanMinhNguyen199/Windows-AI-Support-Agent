@@ -12,7 +12,7 @@ hiển thị trước và chỉ chạy sau khi người dùng xác nhận.
 
 ## Trạng thái hiện tại
 
-Project đã hoàn thành **Giai đoạn 1–6**:
+Project đã hoàn thành **Giai đoạn 1–8**:
 
 - FastAPI server.
 - Giao diện chatbot HTML/CSS/JavaScript.
@@ -33,8 +33,25 @@ Project đã hoàn thành **Giai đoạn 1–6**:
 - Cài/gỡ ứng dụng chạy nền, có command preview, xác nhận, hủy pending action,
   trạng thái và progress không xác định.
 - Speedtest qua Ookla CLI và sửa chữa LOW_RISK: flush DNS, release/renew IP.
+- Chẩn đoán Windows read-only: pin, ổ đĩa, audio/camera/microphone/Bluetooth,
+  máy in, Windows Update, ngày giờ, timezone và startup apps.
+- Offline eval cho intent/diagnostics/safety; security headers, JSON rotating log
+  và Windows CI cho test, coverage, lint, type check, dependency audit.
+- Theo dõi cài/gỡ ứng dụng từ Windows Registry và cập nhật tab Tiện ích qua SSE.
+- Tab **Patch Update** hiển thị nội dung phiên bản mới nhất từ dữ liệu cục bộ.
+- Tab **Trợ lý** là lối vào phụ cho người dùng chưa biết cần mở công cụ nào;
+  các chức năng chính vẫn có thể dùng trực tiếp qua từng tab.
+- Trợ lý hiểu các mô tả phổ thông như máy chậm, máy đơ, máy nóng hoặc mở ứng
+  dụng lâu và trả về suggestion có thể bấm để làm rõ triệu chứng.
 
 Kế hoạch phát triển nằm tại [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## Quy ước cập nhật tài liệu
+
+- Mỗi thay đổi code phải cập nhật ngắn gọn README và ROADMAP trong cùng lượt.
+- `data/processed/patch_notes.json` chỉ cập nhật cho tính năng lớn, thay đổi hành
+  vi đáng kể, breaking change hoặc phiên bản phát hành mới.
+- Chỉnh sửa nhỏ về khoảng cách, màu sắc, câu chữ hoặc icon không tạo Patch Note.
 
 ## Cấu trúc
 
@@ -47,6 +64,8 @@ app/                              Code ứng dụng FastAPI
 │   ├── actions.py                API chạy nền, status, confirm/cancel
 │   ├── repairs.py                API chuẩn bị sửa chữa mạng LOW_RISK
 │   ├── system.py                 API đọc thông số máy ở chế độ read-only
+│   ├── windows.py                API chẩn đoán Windows phổ thông
+│   ├── patches.py                API release notes cho tab Patch Update
 │   └── health.py                 Kiểm tra backend và Ollama
 ├── core/                         Logic an toàn, không phụ thuộc giao diện
 │   ├── command_registry.py       Danh sách command duy nhất được phép chạy
@@ -62,6 +81,8 @@ app/                              Code ứng dụng FastAPI
 │   ├── repair_service.py         Chuẩn bị lệnh sửa chữa đã đăng ký
 │   ├── speedtest_service.py      Provider và parser Ookla Speedtest
 │   ├── system_service.py         Chuẩn hóa CPU, RAM, GPU, OS và ổ hệ thống
+│   ├── windows_support_service.py Điều phối capability Windows read-only
+│   ├── software_change_watcher.py Theo dõi cài/gỡ ngoài app qua Registry
 │   ├── software_catalog.py       Đọc/validate catalog phần mềm
 │   ├── ollama_service.py         Gọi Ollama và kiểm tra JSON schema
 │   └── prompt_service.py         Đọc prompt có version
@@ -82,12 +103,13 @@ prompts/
 
 data/
 ├── raw/                          Dữ liệu nguồn chưa xử lý
-├── processed/                    Catalog, intent examples và rules đã duyệt
+├── processed/                    Catalog, intent examples, patch notes đã duyệt
 └── winassist.db                  SQLite sinh lúc chạy, không commit lên Git
 
 tests/                            Unit/integration test bằng mock và fixture
 evals/                            Đánh giá chất lượng intent/AI/safety
 docs/                             Roadmap và tài liệu kiến trúc
+.github/workflows/ci.yml          Quality gate chạy trên Windows
 run.ps1                           Script khởi động ứng dụng trên Windows
 requirements.txt                  Dependency Python
 .env.example                      Mẫu biến môi trường, không chứa secret thật
@@ -178,6 +200,34 @@ Target hợp lệ: `127.0.0.1`, `default_gateway`, `1.1.1.1`, `8.8.8.8` và
 `google.com`. Default gateway được đọc từ `ipconfig` rồi xác thực bằng
 `ipaddress`; API không nhận hostname hoặc argument tùy ý khác.
 
+Quét các capability Windows phổ thông:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8000/api/windows/overview |
+  ConvertTo-Json -Depth 10
+```
+
+Hoặc kiểm tra riêng: `battery`, `storage`, `devices`, `printers`, `update`,
+`datetime`, `startup` qua `POST /api/windows/{capability}`.
+
+Theo dõi thay đổi phần mềm từ Windows:
+
+```text
+GET /api/software/events
+```
+
+Endpoint dùng Server-Sent Events. Khi danh sách Add/Remove Programs thay đổi,
+frontend nhận `software_inventory_changed`, debounce rồi quét lại catalog một
+lần. Watcher chỉ đọc Registry. Ứng dụng portable hoặc installer không đăng ký
+với Windows vẫn cần nút **Quét lại** để xác minh.
+
+Nội dung bản cập nhật mới nhất:
+
+```text
+GET /api/patches/latest
+```
+
 ## Software API
 
 Xem catalog:
@@ -237,13 +287,31 @@ Catalog hiện có: `firefox`, `7zip`, `vlc`, `libreoffice`, `vscode`, `git`,
   trình duyệt, văn phòng, media, tiện ích hệ thống và công cụ phát triển.
 - Tiện ích quét toàn bộ ứng dụng trong catalog trước khi hiển thị, đánh dấu
   **Đã cài/Chưa cài** và tự quét lại sau khi install/uninstall hoàn tất.
+- Inventory được giữ khi đổi tab. Nếu ứng dụng được cài/gỡ từ Control Panel hoặc
+  installer bên ngoài, Registry watcher gửi sự kiện SSE để cập nhật gần realtime.
+- Với installer có popup ngoài như Firefox, exit code winget không đủ để kết
+  luận. WinAssist kiểm tra executable thực tế; nếu người dùng hủy popup thì
+  action chuyển `failed` và status vẫn là **Chưa cài**.
+- Firefox sử dụng Mozilla uninstaller đã xác minh trong thư mục cài đặt. Nếu
+  uninstaller bị hủy hoặc executable vẫn còn, app giữ status **Đã cài** và báo lỗi.
+- Nút hủy vẫn hoạt động khi installer đang chạy. Action chuyển sang
+  `cancelling`, command runner dừng cây tiến trình đã khởi tạo rồi frontend quét
+  lại trạng thái thực tế. Việc hủy giữa chừng có thể để lại thành phần cài dở;
+  WinAssist không tự xóa file hoặc Registry để “dọn” cưỡng bức.
 - Mở **Chẩn đoán** để kiểm tra mạng, đo tốc độ hoặc chuẩn bị flush DNS,
   release/renew IP.
+- Kết quả quét Windows được giải thích bằng thẻ tiếng Việt dễ hiểu; dữ liệu kỹ
+  thuật chi tiết vẫn có thể mở xem khi cần.
+- Thẻ nội dung ưu tiên tiêu đề và trạng thái; chỉ giữ icon cho điều hướng hoặc
+  hành động để giao diện gọn và ít gây rối mắt.
 - Mở **Hoạt động** để theo dõi action. Refresh trang không làm mất action đang chạy.
 - Speedtest chưa cài sẽ hiện nút **Cài Speedtest để đo**. App vẫn hiển thị
   command preview và yêu cầu xác nhận trước khi cài `Ookla.Speedtest.CLI`.
 - Intent rõ ràng được rule-based router xử lý ngay; Ollama chỉ được gọi cho câu
   mơ hồ. Timeout Ollama mặc định là 3 giây để tránh giữ giao diện quá lâu.
+- Yêu cầu chung chung không tự chạy command hoặc quét tùy tiện. Trợ lý hiển thị
+  các lựa chọn điều hướng như kiểm tra startup, dung lượng, mạng hoặc mở tab
+  Chẩn đoán; người dùng chọn bước tiếp theo.
 
 ## Chat API
 
@@ -295,3 +363,20 @@ nâng cao vẫn có thể đặt tên model cụ thể bằng `WINASSIST_OLLAMA_
 - Thiếu `.venv`: chạy lại phần Cài đặt.
 - Port 8000 đang bận: chạy uvicorn với `--port 8001`.
 - Không mở được giao diện: kiểm tra uvicorn còn chạy và dùng đúng địa chỉ.
+- Patch Update báo backend cũ/Not Found: dừng tiến trình uvicorn hiện tại, chạy
+  lại `run.ps1`, sau đó nhấn `Ctrl + F5`.
+- `run.ps1` tự thay thế uvicorn cũ nếu process đó thuộc đúng thư mục WinAssist
+  hiện tại. Script không dừng process khác đang dùng port 8000.
+- Nếu tab mới chưa xuất hiện, tải lại trang. HTML dùng `no-cache`, asset frontend
+  có version query và sidebar tự cuộn khi cửa sổ thấp.
+
+## Quality và security
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe evals\run_evals.py
+```
+
+Log request được lưu dạng JSON có rotation tại `data/logs/winassist.jsonl`.
+Log không chứa request body, query string, nội dung chat hoặc command output.
+Threat model nằm tại [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).

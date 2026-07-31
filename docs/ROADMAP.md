@@ -15,11 +15,19 @@ Sản phẩm sẽ hỗ trợ:
 
 Roadmap này là định hướng, không phải lịch phát hành cố định.
 
+## Quy ước duy trì tài liệu
+
+- README và ROADMAP được cập nhật cùng mọi thay đổi code.
+- Patch Note chỉ ghi nhận tính năng lớn, thay đổi hành vi đáng kể, breaking
+  change hoặc bản phát hành mới.
+- Các tinh chỉnh UI nhỏ được ghi ngắn trong README/ROADMAP, không tăng phiên bản
+  và không thêm release note riêng.
+
 ## Hiện trạng
 
-Đã hoàn thành Giai đoạn 1–6: safety core, network diagnostics, software catalog,
-consent flow, một `AssistantAgent`, Ollama fallback và frontend app hoàn chỉnh
-cho MVP. Giai đoạn tiếp theo là hỗ trợ thêm các vấn đề Windows phổ thông.
+Đã hoàn thành Giai đoạn 1–8 và phần mở rộng 8.1: MVP, hỗ trợ Windows phổ thông,
+offline eval, security hardening, structured local logging, Windows CI, live
+software inventory và Patch Update. Giai đoạn tiếp theo là đóng gói Windows Beta.
 
 ## Nguyên tắc bắt buộc
 
@@ -131,7 +139,7 @@ Luồng cài đặt phải tạo pending action, hết hạn sau năm phút và 
 - Frontend có test cho API client, state transition và DOM rendering; E2E bao phủ
   happy path, Ollama offline, backend lỗi, action hết hạn và thao tác bàn phím.
 
-### 7. Hỗ trợ Windows phổ thông
+### 7. Hỗ trợ Windows phổ thông — Đã hoàn thành
 
 Chẩn đoán read-only:
 
@@ -145,7 +153,7 @@ Không tự đổi thiết bị mặc định, xóa file/queue, sửa driver ho�
 **Hoàn thành khi:** mỗi nhóm có capability detection, privacy test và trạng thái
 “không đủ dữ liệu” thay vì đoán.
 
-### 8. Quality và Security
+### 8. Quality và Security — Đã hoàn thành
 
 - Eval intent, diagnostic accuracy và safety.
 - CI, lint, type check, coverage và dependency scan.
@@ -163,6 +171,33 @@ Ngưỡng đề xuất:
 - 100% command ngoài registry bị từ chối.
 - Critical diagnostic rule accuracy ≥ 0,95.
 - Không còn security issue mức high/critical chưa xử lý.
+
+### 8.1. Live Inventory và Patch Update — Đã hoàn thành
+
+- Theo dõi read-only các khóa Add/Remove Programs cho HKLM/HKCU và ứng dụng
+  32-bit/64-bit bằng Windows Registry notification.
+- Debounce thay đổi Registry; không chạy `winget list` theo chu kỳ liên tục.
+- Gửi sự kiện `software_inventory_changed` đến frontend bằng SSE.
+- Tab Tiện ích giữ inventory khi đổi tab, cập nhật action trực tiếp và chỉ quét
+  lại sau khi có tín hiệu thay đổi hoặc người dùng yêu cầu.
+- Tab **Patch Update** đọc release notes đã version hóa từ
+  `data/processed/patch_notes.json`.
+- Giữ **Trợ lý** như lối vào phụ giúp người dùng diễn đạt nhu cầu tự nhiên; các
+  tab chức năng vẫn là luồng chính, nhanh và có trạng thái rõ ràng.
+- Rule-based behavior nhận diện vấn đề hiệu năng mô tả tự nhiên như máy chậm,
+  đơ, nóng hoặc mở ứng dụng lâu; phản hồi bằng câu hỏi làm rõ và suggestion có
+  thể bấm thay vì tự chạy kiểm tra không liên quan.
+- UI thẻ dùng tiêu đề và trạng thái làm trọng tâm; icon chỉ dùng cho điều hướng
+  hoặc hành động có ý nghĩa.
+- Bootstrap phát hiện và thay thế backend uvicorn cũ của đúng project để frontend
+  không gọi nhầm API còn nằm trong bộ nhớ; không tự dừng process ngoài WinAssist.
+- Frontend cache-bust asset theo phiên bản, không cache HTML và cho sidebar cuộn
+  để các tab mới như Patch Update không biến mất ở màn hình thấp.
+- Ứng dụng portable hoặc installer không ghi Uninstall Registry tiếp tục dùng
+  executable verification và nút quét thủ công.
+
+**Hoàn thành khi:** cài/gỡ từ Control Panel hoặc installer bên ngoài làm tab
+Tiện ích cập nhật mà không cần tải lại trang và không quét nền liên tục.
 
 ### 9. Windows Beta
 

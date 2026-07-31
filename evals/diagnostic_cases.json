@@ -1,0 +1,8 @@
+[
+  {"kind": "ping", "fixture": "ping_success.txt", "expected": "success"},
+  {"kind": "ping", "fixture": "ping_success_vi.txt", "expected": "success"},
+  {"kind": "ping", "fixture": "ping_loss.txt", "expected": "error"},
+  {"kind": "ipconfig", "fixture": "ipconfig_apipa.txt", "expected": "apipa"},
+  {"kind": "ipconfig", "fixture": "ipconfig_normal.txt", "expected": "configured"},
+  {"kind": "wifi", "fixture": "wifi_connected.txt", "expected": "connected"}
+]

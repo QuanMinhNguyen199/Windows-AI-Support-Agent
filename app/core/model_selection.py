@@ -25,7 +25,10 @@ def get_total_memory_bytes() -> int | None:
         return None
 
     try:
-        return int(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES"))
+        sysconf = getattr(os, "sysconf", None)
+        if not callable(sysconf):
+            return None
+        return int(sysconf("SC_PAGE_SIZE") * sysconf("SC_PHYS_PAGES"))
     except (AttributeError, OSError, ValueError):
         return None
 

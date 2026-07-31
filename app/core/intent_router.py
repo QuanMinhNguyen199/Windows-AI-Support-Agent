@@ -6,13 +6,20 @@ from app.core.text_normalization import normalize_vietnamese
 from app.models.chat import Intent, IntentDecision, RouterSource
 from app.services.software_catalog import SoftwareCatalog
 
-
 DEFAULT_EXAMPLES_PATH = BASE_DIR.parent / "data" / "processed" / "intent_examples.json"
 
 _INTENT_PRIORITY = (
     Intent.INSTALLATION_TROUBLESHOOTING,
     Intent.INTERNET_CONNECTION_ISSUE,
     Intent.NETWORK_SPEED_TEST,
+    Intent.WINDOWS_UPDATE_STATUS,
+    Intent.STARTUP_APPS_STATUS,
+    Intent.PRINTER_STATUS,
+    Intent.DEVICE_STATUS,
+    Intent.BATTERY_STATUS,
+    Intent.STORAGE_STATUS,
+    Intent.PERFORMANCE_ISSUE,
+    Intent.DATETIME_STATUS,
     Intent.SLOW_NETWORK_DIAGNOSIS,
     Intent.WIFI_DIAGNOSIS,
     Intent.DNS_DIAGNOSIS,

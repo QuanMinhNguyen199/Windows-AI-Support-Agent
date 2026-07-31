@@ -79,7 +79,7 @@ async def confirm_action(
 
 
 @router.post("/{action_id}/cancel", response_model=CancelActionResponse)
-def cancel_action(
+async def cancel_action(
     action_id: str,
     service: ActionService = Depends(get_action_service),
 ) -> CancelActionResponse:

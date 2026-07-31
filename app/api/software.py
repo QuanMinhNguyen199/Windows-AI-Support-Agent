@@ -1,6 +1,8 @@
+import asyncio
 from functools import lru_cache
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 from app.config import get_settings
 from app.database.db import Database
@@ -13,8 +15,11 @@ from app.models.software import (
     SoftwareSummary,
 )
 from app.services.software_catalog import SoftwareCatalogError
+from app.services.software_change_watcher import (
+    software_change_broker,
+    software_registry_watcher,
+)
 from app.services.software_service import SoftwareService
-
 
 router = APIRouter(prefix="/api/software", tags=["software"])
 
@@ -43,6 +48,35 @@ async def scan_software(
     service: SoftwareService = Depends(get_software_service),
 ) -> SoftwareInventoryResponse:
     return await service.scan_inventory()
+
+
+@router.get("/events")
+async def software_events(request: Request) -> StreamingResponse:
+    async def stream():
+        queue = software_change_broker.subscribe()
+        try:
+            ready = {
+                "watching": software_registry_watcher.available,
+                "transport": "sse",
+            }
+            yield software_change_broker.encode_sse("ready", ready)
+            while not await request.is_disconnected():
+                try:
+                    payload = await asyncio.wait_for(queue.get(), timeout=15)
+                    yield software_change_broker.encode_sse(
+                        "software_inventory_changed",
+                        payload,
+                    )
+                except TimeoutError:
+                    yield ": keep-alive\n\n"
+        finally:
+            software_change_broker.unsubscribe(queue)
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/check", response_model=SoftwareCheckResponse)

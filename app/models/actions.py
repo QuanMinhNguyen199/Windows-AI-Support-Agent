@@ -9,6 +9,7 @@ from app.models.command import CommandDefinition, CommandResult, RiskLevel
 class ActionState(StrEnum):
     PENDING = "pending"
     EXECUTING = "executing"
+    CANCELLING = "cancelling"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -26,6 +27,7 @@ class ActionStage(StrEnum):
     PREPARING = "preparing"
     RUNNING = "running"
     VERIFYING = "verifying"
+    CANCELLING = "cancelling"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"

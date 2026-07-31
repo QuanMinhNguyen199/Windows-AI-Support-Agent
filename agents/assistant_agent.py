@@ -2,6 +2,7 @@ from app.core.intent_router import RuleBasedIntentRouter
 from app.database.repositories import ChatRepository
 from app.models.chat import (
     ChatResponse,
+    ChatSuggestion,
     Intent,
     IntentDecision,
     RouterSource,
@@ -12,7 +13,7 @@ from app.services.ollama_service import OllamaService, OllamaUnavailableError
 from app.services.software_catalog import SoftwareCatalogError
 from app.services.software_service import SoftwareService
 from app.services.speedtest_service import SpeedTestProvider
-
+from app.services.windows_support_service import WindowsSupportService
 
 _NETWORK_INTENTS = {
     Intent.NETWORK_STATUS,
@@ -35,6 +36,7 @@ class AssistantAgent:
         network: NetworkService,
         chat_repository: ChatRepository,
         speedtest: SpeedTestProvider | None = None,
+        windows: WindowsSupportService | None = None,
     ) -> None:
         self.router = router
         self.ollama = ollama
@@ -42,6 +44,7 @@ class AssistantAgent:
         self.network = network
         self.chat_repository = chat_repository
         self.speedtest = speedtest
+        self.windows = windows
 
     async def handle(
         self, message: str, *, session_id: str | None = None
@@ -84,7 +87,7 @@ class AssistantAgent:
             )
             if classified.confidence < 0.55:
                 fallback = self.router.route(message)
-                return fallback, "AI local chưa đủ tự tin; đã dùng rule-based router."
+                return fallback, "Tôi đang dùng hướng dẫn an toàn có sẵn trên máy."
             software_id = classified.software_id or self.router.extract_software_id(
                 message
             )
@@ -99,7 +102,7 @@ class AssistantAgent:
         except OllamaUnavailableError:
             return (
                 deterministic,
-                "AI local chưa khả dụng; yêu cầu được xử lý bằng rule-based router.",
+                "Trợ lý thông minh chưa phản hồi; tôi đang dùng hướng dẫn có sẵn trên máy.",
             )
 
     async def _dispatch(
@@ -110,7 +113,7 @@ class AssistantAgent:
         decision: IntentDecision,
         warning: str | None,
     ) -> ChatResponse:
-        base = {
+        base: dict[str, Any] = {
             "session_id": session_id,
             "intent": decision.intent,
             "router_source": decision.source,
@@ -127,11 +130,35 @@ class AssistantAgent:
         if decision.intent is Intent.HELP:
             return ChatResponse(
                 **base,
-                message="Bạn có thể yêu cầu kiểm tra mạng, ping, DNS hoặc phần mềm trong catalog.",
-                recommendations=[
-                    "Ví dụ: Kiểm tra mạng của tôi.",
-                    "Ví dụ: Kiểm tra Python đã cài chưa.",
-                    "Ví dụ: Tôi muốn cài Firefox.",
+                message="Bạn muốn kiểm tra máy, kết nối mạng hay cài ứng dụng?",
+                suggestions=[
+                    ChatSuggestion(label="Máy chạy chậm", message="Máy của tôi đang chạy chậm"),
+                    ChatSuggestion(label="Mạng có vấn đề", message="Kiểm tra kết nối mạng của tôi"),
+                    ChatSuggestion(label="Cài ứng dụng", view="suggestions"),
+                    ChatSuggestion(label="Kiểm tra Windows", view="diagnostics"),
+                ],
+            )
+        if decision.intent is Intent.PERFORMANCE_ISSUE:
+            return ChatResponse(
+                **base,
+                message=(
+                    "Máy chậm có thể do ứng dụng khởi động, ổ đĩa gần đầy, "
+                    "cấu hình hoặc kết nối mạng. Vấn đề của bạn gần với trường hợp nào?"
+                ),
+                suggestions=[
+                    ChatSuggestion(
+                        label="Khởi động máy chậm",
+                        message="Kiểm tra ứng dụng khởi động cùng Windows",
+                    ),
+                    ChatSuggestion(
+                        label="Ổ đĩa gần đầy",
+                        message="Kiểm tra dung lượng ổ đĩa",
+                    ),
+                    ChatSuggestion(
+                        label="Internet chậm",
+                        message="Mạng của tôi đang chậm",
+                    ),
+                    ChatSuggestion(label="Quét tình trạng máy", view="diagnostics"),
                 ],
             )
         if decision.intent is Intent.SOFTWARE_RECOMMENDATION:
@@ -229,17 +256,48 @@ class AssistantAgent:
                     "Cài Ookla Speedtest CLI trong Suggestions rồi thử lại."
                 ],
             )
-        if decision.intent is Intent.SYSTEM_INFORMATION:
+        capability_by_intent = {
+            Intent.BATTERY_STATUS: "battery",
+            Intent.STORAGE_STATUS: "storage",
+            Intent.DEVICE_STATUS: "devices",
+            Intent.PRINTER_STATUS: "printers",
+            Intent.WINDOWS_UPDATE_STATUS: "update",
+            Intent.DATETIME_STATUS: "datetime",
+            Intent.STARTUP_APPS_STATUS: "startup",
+        }
+        if decision.intent in capability_by_intent and self.windows is not None:
+            capability = await self.windows.inspect(capability_by_intent[decision.intent])
             return ChatResponse(
                 **base,
-                message="Chẩn đoán thông tin hệ thống thuộc Giai đoạn 7 và chưa được bật.",
+                message=capability.summary,
+                diagnostic_steps=[f"windows.{capability.id}"],
+                results=[capability.model_dump(mode="json")],
+                recommendations=capability.recommendations,
+            )
+        if decision.intent is Intent.SYSTEM_INFORMATION and self.windows is not None:
+            overview = await self.windows.overview()
+            return ChatResponse(
+                **base,
+                message=overview.message,
+                results=[
+                    item.model_dump(mode="json") for item in overview.capabilities
+                ],
+                recommendations=[
+                    "Mở mục Chẩn đoán Windows để xem chi tiết từng nhóm."
+                ],
             )
         return ChatResponse(
             **base,
             message=(
-                "Tôi chưa hiểu đủ rõ để chọn kiểm tra an toàn. "
-                "Bạn hãy mô tả phần mềm hoặc vấn đề mạng cụ thể hơn."
+                "Tôi chưa xác định được phần nào đang gặp vấn đề. "
+                "Bạn có thể chọn một hướng kiểm tra bên dưới."
             ),
+            suggestions=[
+                ChatSuggestion(label="Máy chạy chậm", message="Máy của tôi đang chạy chậm"),
+                ChatSuggestion(label="Không vào được mạng", message="Máy của tôi không vào được mạng"),
+                ChatSuggestion(label="Kiểm tra ứng dụng", view="suggestions"),
+                ChatSuggestion(label="Kiểm tra Windows", view="diagnostics"),
+            ],
         )
 
     async def _handle_software(
@@ -306,3 +364,4 @@ class AssistantAgent:
                 **base,
                 message="Phần mềm được nhắc đến không nằm trong catalog đã kiểm duyệt.",
             )
+from typing import Any

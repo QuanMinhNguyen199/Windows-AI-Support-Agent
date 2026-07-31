@@ -29,6 +29,138 @@ def _definition(
 
 
 _COMMANDS = {
+    "windows.battery": _definition(
+        "windows.battery",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$items=@(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue|"
+                "Select-Object Name,BatteryStatus,EstimatedChargeRemaining,"
+                "EstimatedRunTime);[pscustomobject]@{supported=($items.Count -gt 0);"
+                "batteries=$items}|ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc trạng thái pin, không thay đổi power plan.",
+    ),
+    "windows.storage": _definition(
+        "windows.storage",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$items=@(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3'|"
+                "Select-Object DeviceID,VolumeName,Size,FreeSpace);"
+                "[pscustomobject]@{supported=$true;drives=$items}|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc dung lượng các ổ đĩa cục bộ.",
+    ),
+    "windows.devices": _definition(
+        "windows.devices",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$cmd=Get-Command Get-PnpDevice -ErrorAction SilentlyContinue;"
+                "$result=if($cmd){$items=@(Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue|"
+                "Where-Object {$_.Class -in @('AudioEndpoint','Media','Camera','Image',"
+                "'Bluetooth')}|Select-Object Class,FriendlyName,Status,Problem);"
+                "[pscustomobject]@{supported=$true;devices=$items}}else{"
+                "[pscustomobject]@{supported=$false;devices=@()}};$result|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc trạng thái audio, camera, microphone và Bluetooth.",
+        timeout_seconds=40,
+    ),
+    "windows.printers": _definition(
+        "windows.printers",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$cmd=Get-Command Get-Printer -ErrorAction SilentlyContinue;"
+                "$result=if($cmd){$items=@(Get-Printer -ErrorAction SilentlyContinue|"
+                "ForEach-Object {$p=$_;$count=@(Get-PrintJob -PrinterName $p.Name "
+                "-ErrorAction SilentlyContinue).Count;[pscustomobject]@{Name=$p.Name;"
+                "DriverName=$p.DriverName;PortName=$p.PortName;PrinterStatus="
+                "$p.PrinterStatus;JobCount=$count}});[pscustomobject]@{supported=$true;"
+                "printers=$items}}else{[pscustomobject]@{supported=$false;printers=@()}};"
+                "$result|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc máy in và số lượng print job, không đọc tên tài liệu.",
+        timeout_seconds=40,
+    ),
+    "windows.update_status": _definition(
+        "windows.update_status",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$svc=Get-Service wuauserv -ErrorAction SilentlyContinue;"
+                "$hotfix=Get-HotFix -ErrorAction SilentlyContinue|"
+                "Sort-Object InstalledOn -Descending|Select-Object -First 1 "
+                "HotFixID,InstalledOn,Description;"
+                "$pending=(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\"
+                "CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired');"
+                "$status=if($svc){$svc.Status.ToString()}else{$null};"
+                "$start=if($svc){$svc.StartType.ToString()}else{$null};"
+                "[pscustomobject]@{supported=($null-ne $svc);service_status=$status;"
+                "start_type=$start;"
+                "reboot_pending=$pending;latest_hotfix=$hotfix}|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc trạng thái dịch vụ Windows Update và bản vá gần nhất.",
+        timeout_seconds=40,
+    ),
+    "windows.datetime": _definition(
+        "windows.datetime",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$tz=Get-TimeZone;[pscustomobject]@{supported=$true;"
+                "local_time=(Get-Date).ToString('o');timezone_id=$tz.Id;"
+                "timezone_name=$tz.DisplayName;utc_offset=(Get-Date).ToString('zzz')}|"
+                "ConvertTo-Json -Compress"
+            ),
+        ),
+        "Đọc ngày giờ và múi giờ hiện tại.",
+    ),
+    "windows.startup_apps": _definition(
+        "windows.startup_apps",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$items=@(Get-CimInstance Win32_StartupCommand -ErrorAction "
+                "SilentlyContinue|Select-Object Name,Location);"
+                "[pscustomobject]@{supported=$true;apps=$items}|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc tên ứng dụng startup, không đọc command hoặc user.",
+        timeout_seconds=30,
+    ),
     "software.inventory.winget_list": _definition(
         "software.inventory.winget_list",
         "winget",
@@ -203,6 +335,7 @@ class CommandRegistry:
             "npm",
             "ollama",
             "speedtest",
+            "taskkill",
         }
     )
 
@@ -210,15 +343,26 @@ class CommandRegistry:
         self,
         software_commands: Mapping[str, tuple[tuple[str, ...], ...]] | None = None,
         software_packages: Mapping[str, str] | None = None,
+        software_verification_commands: Mapping[
+            str, tuple[tuple[str, ...], ...]
+        ] | None = None,
+        software_uninstall_commands: Mapping[str, tuple[str, ...]] | None = None,
     ) -> None:
         commands = dict(_COMMANDS)
         self._software_check_ids: dict[str, tuple[str, ...]] = {}
         self._software_install_ids: dict[str, str] = {}
         self._software_uninstall_ids: dict[str, str] = {}
+        self._software_verification_ids: dict[str, tuple[str, ...]] = {}
         packages = software_packages or {}
         checks = software_commands or {}
+        verification_commands = software_verification_commands or {}
+        uninstall_commands = software_uninstall_commands or {}
         if set(packages) != set(checks):
             raise CommandRegistryError("Software package và check command không đồng bộ.")
+        if not set(verification_commands).issubset(packages):
+            raise CommandRegistryError("Software verification không thuộc catalog.")
+        if not set(uninstall_commands).issubset(packages):
+            raise CommandRegistryError("Software uninstall override không thuộc catalog.")
         for software_id, package_id in packages.items():
             check_ids: list[str] = []
             for index, command in enumerate(checks[software_id]):
@@ -247,12 +391,46 @@ class CommandRegistry:
                 risk_level=RiskLevel.LOW_RISK,
             )
             self._software_check_ids[software_id] = tuple(check_ids)
+            verification_ids: list[str] = []
+            for index, command in enumerate(
+                verification_commands.get(software_id, ())
+            ):
+                executable, *arguments = command
+                if executable.casefold() not in self.ALLOWED_EXECUTABLES:
+                    raise CommandRegistryError(
+                        f"Executable verification không được phép: {executable}"
+                    )
+                verification_id = f"software.verify.{software_id}.{index}"
+                commands[verification_id] = _definition(
+                    verification_id,
+                    executable,
+                    tuple(arguments),
+                    f"Xác minh executable thực tế của {software_id}.",
+                )
+                verification_ids.append(verification_id)
+            self._software_verification_ids[software_id] = tuple(verification_ids)
             self._software_install_ids[software_id] = install_id
             uninstall_id = f"software.uninstall.{software_id}"
+            uninstall_command = uninstall_commands.get(software_id)
+            uninstall_executable = "winget"
+            uninstall_arguments = (
+                "uninstall",
+                "--id",
+                package_id,
+                "--exact",
+                "--disable-interactivity",
+            )
+            if uninstall_command is not None:
+                uninstall_executable, *custom_arguments = uninstall_command
+                if uninstall_executable.casefold() not in self.ALLOWED_EXECUTABLES:
+                    raise CommandRegistryError(
+                        f"Executable uninstall không được phép: {uninstall_executable}"
+                    )
+                uninstall_arguments = tuple(custom_arguments)
             commands[uninstall_id] = _definition(
                 uninstall_id,
-                "winget",
-                ("uninstall", "--id", package_id, "--exact", "--disable-interactivity"),
+                uninstall_executable,
+                uninstall_arguments,
                 f"Gỡ package {package_id} bằng winget.",
                 timeout_seconds=120,
                 risk_level=RiskLevel.LOW_RISK,
@@ -285,6 +463,18 @@ class CommandRegistry:
                 f"Software ID không được đăng ký: {software_id}"
             ) from exc
 
+    def software_verifications(
+        self, software_id: str
+    ) -> tuple[CommandDefinition, ...]:
+        try:
+            return tuple(
+                self.get(item) for item in self._software_verification_ids[software_id]
+            )
+        except KeyError as exc:
+            raise CommandRegistryError(
+                f"Software ID không được đăng ký: {software_id}"
+            ) from exc
+
     def software_uninstall(self, software_id: str) -> CommandDefinition:
         try:
             return self.get(self._software_uninstall_ids[software_id])
@@ -308,6 +498,17 @@ class CommandRegistry:
             25,
         )
 
+    def cancel_process_tree(self, process_id: int) -> CommandDefinition:
+        if not isinstance(process_id, int) or process_id <= 0:
+            raise CommandRegistryError("Process ID không hợp lệ.")
+        return _definition(
+            "process.cancel_tree",
+            "taskkill",
+            ("/PID", str(process_id), "/T", "/F"),
+            "Dừng cây tiến trình installer theo yêu cầu người dùng.",
+            risk_level=RiskLevel.LOW_RISK,
+        )
+
     def assert_registered(self, definition: CommandDefinition) -> None:
         static_definition = self._commands.get(definition.id)
         if static_definition is not None:
@@ -322,6 +523,16 @@ class CommandRegistry:
             expected = self.ping_gateway(definition.arguments[0])
             if definition != expected:
                 raise CommandRegistryError("Ping gateway đã bị thay đổi arguments.")
+            return
+        if definition.id == "process.cancel_tree":
+            if len(definition.arguments) != 4:
+                raise CommandRegistryError("Lệnh dừng process thiếu tham số.")
+            try:
+                process_id = int(definition.arguments[1])
+            except ValueError as exc:
+                raise CommandRegistryError("Process ID không hợp lệ.") from exc
+            if definition != self.cancel_process_tree(process_id):
+                raise CommandRegistryError("Lệnh dừng process đã bị thay đổi.")
             return
         raise CommandRegistryError(
             f"Command definition không thuộc registry: {definition.id}"

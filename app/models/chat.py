@@ -21,6 +21,14 @@ class Intent(StrEnum):
     DNS_DIAGNOSIS = "dns_diagnosis"
     PACKET_LOSS_DIAGNOSIS = "packet_loss_diagnosis"
     SYSTEM_INFORMATION = "system_information"
+    BATTERY_STATUS = "battery_status"
+    STORAGE_STATUS = "storage_status"
+    DEVICE_STATUS = "device_status"
+    PRINTER_STATUS = "printer_status"
+    WINDOWS_UPDATE_STATUS = "windows_update_status"
+    DATETIME_STATUS = "datetime_status"
+    STARTUP_APPS_STATUS = "startup_apps_status"
+    PERFORMANCE_ISSUE = "performance_issue"
     HELP = "help"
     FALLBACK = "fallback"
 
@@ -55,6 +63,12 @@ class ChatRequest(BaseModel):
     session_id: str | None = Field(default=None, max_length=64)
 
 
+class ChatSuggestion(BaseModel):
+    label: str = Field(min_length=1, max_length=80)
+    message: str | None = Field(default=None, min_length=1, max_length=300)
+    view: str | None = Field(default=None, pattern=r"^(overview|chat|suggestions|diagnostics|activity|patches)$")
+
+
 class ChatResponse(BaseModel):
     session_id: str
     intent: Intent
@@ -62,6 +76,7 @@ class ChatResponse(BaseModel):
     diagnostic_steps: list[str] = Field(default_factory=list)
     results: list[dict[str, Any]] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
+    suggestions: list[ChatSuggestion] = Field(default_factory=list, max_length=6)
     pending_action: PendingAction | None = None
     warning: str | None = None
     router_source: RouterSource

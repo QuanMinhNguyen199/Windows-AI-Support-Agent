@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import threading
 from unittest.mock import patch
 
 import pytest
@@ -95,3 +96,54 @@ def test_runner_limits_and_redacts_output() -> None:
     assert "[USER]" in result.stdout
     assert "[MAC_REDACTED]" in result.stdout
     assert "output đã được rút gọn" in result.stdout
+
+
+def test_cancelling_confirmed_low_risk_command_kills_process_tree() -> None:
+    started = threading.Event()
+    stopped = threading.Event()
+
+    class FakeProcess:
+        pid = 4321
+        returncode = None
+
+        def communicate(self, timeout=None):
+            started.set()
+            while not stopped.wait(0.01):
+                pass
+            self.returncode = 1
+            return b"", b"cancelled"
+
+        def poll(self):
+            return self.returncode
+
+        def terminate(self):
+            stopped.set()
+
+    fake_process = FakeProcess()
+
+    def fake_run(argv, **kwargs):
+        assert argv == ["taskkill", "/PID", "4321", "/T", "/F"]
+        assert kwargs["shell"] is False
+        stopped.set()
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    async def scenario():
+        runner = CommandRunner()
+        with (
+            patch("app.core.command_runner.subprocess.Popen", return_value=fake_process),
+            patch("app.core.command_runner.subprocess.run", side_effect=fake_run),
+        ):
+            task = asyncio.create_task(
+                runner.run(
+                    CommandRegistry().get("repair.flush_dns"),
+                    confirmed=True,
+                )
+            )
+            while not started.is_set():
+                await asyncio.sleep(0.01)
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+
+    asyncio.run(scenario())
+    assert stopped.is_set()

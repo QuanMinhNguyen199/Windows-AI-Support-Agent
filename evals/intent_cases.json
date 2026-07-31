@@ -1,0 +1,21 @@
+[
+  {"text": "xin chào", "expected": "greeting"},
+  {"text": "tôi muốn cài Firefox", "expected": "software_installation"},
+  {"text": "Python đã cài chưa", "expected": "software_check"},
+  {"text": "gợi ý app phổ biến", "expected": "software_recommendation"},
+  {"text": "máy tôi mất internet", "expected": "internet_connection_issue"},
+  {"text": "đo tốc độ mạng", "expected": "network_speed_test"},
+  {"text": "wifi chậm và hay ngắt", "expected": "slow_network_diagnosis"},
+  {"text": "kiểm tra DNS", "expected": "dns_diagnosis"},
+  {"text": "kiểm tra packet loss", "expected": "packet_loss_diagnosis"},
+  {"text": "kiểm tra pin", "expected": "battery_status"},
+  {"text": "ổ đĩa đầy", "expected": "storage_status"},
+  {"text": "kiểm tra camera", "expected": "device_status"},
+  {"text": "máy in không hoạt động", "expected": "printer_status"},
+  {"text": "kiểm tra Windows Update", "expected": "windows_update_status"},
+  {"text": "sai múi giờ", "expected": "datetime_status"},
+  {"text": "ứng dụng khởi động cùng Windows", "expected": "startup_apps_status"},
+  {"text": "cho tôi xem cấu hình máy", "expected": "system_information"},
+  {"text": "máy của tôi đang chạy chậm, tôi nên làm gì", "expected": "performance_issue"},
+  {"text": "bạn làm được gì", "expected": "help"}
+]

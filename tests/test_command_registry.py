@@ -41,3 +41,17 @@ def test_software_install_definition_is_low_risk_and_exact() -> None:
         "--disable-interactivity",
     )
     registry.assert_registered(definition)
+
+
+def test_firefox_uses_executable_verification_and_native_uninstaller() -> None:
+    registry = registry_from_catalog(SoftwareCatalog())
+
+    verifications = registry.software_verifications("firefox")
+    uninstall = registry.software_uninstall("firefox")
+
+    assert len(verifications) == 1
+    assert verifications[0].executable == "powershell"
+    assert "firefox.exe" in verifications[0].display_command
+    assert uninstall.executable == "powershell"
+    assert "uninstall\\helper.exe" in uninstall.display_command
+    assert uninstall.risk_level is RiskLevel.LOW_RISK

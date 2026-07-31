@@ -30,6 +30,16 @@ def registry_from_catalog(catalog: SoftwareCatalog) -> CommandRegistry:
         software_packages={
             software_id: entry.winget_id for software_id, entry in entries.items()
         },
+        software_verification_commands={
+            software_id: entry.verification_commands
+            for software_id, entry in entries.items()
+            if entry.verification_commands
+        },
+        software_uninstall_commands={
+            software_id: entry.uninstall_command
+            for software_id, entry in entries.items()
+            if entry.uninstall_command is not None
+        },
     )
 
 
@@ -60,7 +70,10 @@ class SoftwareService:
         async def direct_results(software_id: str) -> list[CommandResult]:
             definitions = [
                 definition
-                for definition in self.registry.software_checks(software_id)
+                for definition in (
+                    *self.registry.software_checks(software_id),
+                    *self.registry.software_verifications(software_id),
+                )
                 if definition.executable.casefold() != "winget"
             ]
 
@@ -77,7 +90,9 @@ class SoftwareService:
         for summary, direct in zip(summaries, direct_by_software, strict=True):
             entry = self.catalog.get(summary.id)
             installed, version = self._interpret_check(
-                entry.winget_id, [winget_inventory, *direct]
+                entry.winget_id,
+                [winget_inventory, *direct],
+                require_verification=bool(entry.verification_commands),
             )
             checks.append(
                 SoftwareCheckResponse(
@@ -115,11 +130,16 @@ class SoftwareService:
         normalized = software_id.strip().casefold()
         entry = self.catalog.get(normalized)
         summary = self.catalog.summary(normalized)
-        definitions = self.registry.software_checks(normalized)
+        verifications = self.registry.software_verifications(normalized)
+        definitions = (*self.registry.software_checks(normalized), *verifications)
         results = await asyncio.gather(
             *(self.runner.run(definition) for definition in definitions)
         )
-        installed, version = self._interpret_check(entry.winget_id, results)
+        installed, version = self._interpret_check(
+            entry.winget_id,
+            results,
+            require_verification=bool(verifications),
+        )
         conclusion = (
             f"{entry.display_name} đã được phát hiện"
             + (f", phiên bản {version}." if version else ".")
@@ -225,9 +245,13 @@ class SoftwareService:
 
     @staticmethod
     def _interpret_check(
-        package_id: str, results: list[CommandResult]
+        package_id: str,
+        results: list[CommandResult],
+        *,
+        require_verification: bool = False,
     ) -> tuple[bool, str | None]:
         installed = False
+        verified = False
         version: str | None = None
         for result in results:
             if not result.success:
@@ -238,5 +262,7 @@ class SoftwareService:
                     version = version or extract_version(result.stdout, package_id)
             elif result.stdout.strip():
                 installed = True
+                if result.command_id.startswith("software.verify."):
+                    verified = True
                 version = version or extract_version(result.stdout)
-        return installed, version
+        return (verified if require_verification else installed), version

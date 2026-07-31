@@ -111,7 +111,7 @@ class PendingActionRepository:
                 """
                 SELECT * FROM pending_actions
                 WHERE action_kind = ? AND resource_id = ?
-                  AND state IN (?, ?)
+                  AND state IN (?, ?, ?)
                 ORDER BY created_at DESC LIMIT 1
                 """,
                 (
@@ -119,6 +119,7 @@ class PendingActionRepository:
                     resource_id,
                     ActionState.PENDING.value,
                     ActionState.EXECUTING.value,
+                    ActionState.CANCELLING.value,
                 ),
             ).fetchone()
         return self._record(row) if row is not None else None
@@ -229,6 +230,73 @@ class PendingActionRepository:
             connection.commit()
         return self.get(action_id)
 
+    def request_execution_cancel(
+        self, action_id: str, *, now: datetime | None = None
+    ) -> PendingActionRecord:
+        requested_at = now or utc_now()
+        with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT state FROM pending_actions WHERE id = ?", (action_id,)
+            ).fetchone()
+            if row is None:
+                raise ActionNotFoundError("Không tìm thấy pending action.")
+            state = ActionState(row["state"])
+            if state is ActionState.CANCELLING:
+                connection.commit()
+                return self.get(action_id)
+            if state is not ActionState.EXECUTING:
+                raise ActionStateError(
+                    f"Action không thể dừng ở trạng thái {state.value}."
+                )
+            connection.execute(
+                """
+                UPDATE pending_actions
+                SET state = ?, stage = ?, status_message = ?
+                WHERE id = ? AND state = ?
+                """,
+                (
+                    ActionState.CANCELLING.value,
+                    ActionStage.CANCELLING.value,
+                    "Đang dừng installer theo yêu cầu của bạn.",
+                    action_id,
+                    ActionState.EXECUTING.value,
+                ),
+            )
+            connection.execute(
+                """
+                INSERT INTO user_confirmations(action_id, decision, created_at)
+                VALUES (?, ?, ?)
+                """,
+                (action_id, "cancel_requested", requested_at.isoformat()),
+            )
+            connection.commit()
+        return self.get(action_id)
+
+    def finish_execution_cancel(
+        self, action_id: str, *, now: datetime | None = None
+    ) -> PendingActionRecord:
+        finished_at = now or utc_now()
+        with self.database.connect() as connection:
+            updated = connection.execute(
+                """
+                UPDATE pending_actions
+                SET state = ?, stage = ?, status_message = ?, finished_at = ?
+                WHERE id = ? AND state = ?
+                """,
+                (
+                    ActionState.CANCELLED.value,
+                    ActionStage.CANCELLED.value,
+                    "Installer đã được dừng; trạng thái phần mềm sẽ được quét lại.",
+                    finished_at.isoformat(),
+                    action_id,
+                    ActionState.CANCELLING.value,
+                ),
+            )
+            if updated.rowcount != 1:
+                raise ActionStateError("Action không ở trạng thái cancelling.")
+        return self.get(action_id)
+
     def set_running(self, action_id: str, message: str) -> PendingActionRecord:
         return self._set_execution_stage(action_id, ActionStage.RUNNING, message)
 
@@ -281,7 +349,7 @@ class PendingActionRepository:
                 """
                 UPDATE pending_actions
                 SET state = ?, stage = ?, status_message = ?, finished_at = ?
-                WHERE state = ?
+                WHERE state IN (?, ?)
                 """,
                 (
                     ActionState.FAILED.value,
@@ -289,6 +357,7 @@ class PendingActionRepository:
                     "Ứng dụng đã khởi động lại khi thao tác đang chạy.",
                     recovered_at.isoformat(),
                     ActionState.EXECUTING.value,
+                    ActionState.CANCELLING.value,
                 ),
             )
         return updated.rowcount

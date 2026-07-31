@@ -113,6 +113,54 @@ if (-not (Test-Path -LiteralPath $VirtualPython)) {
 
 Set-Location -LiteralPath $ProjectRoot
 
+function Stop-PreviousWinAssistBackend {
+    $Listener = Get-NetTCPConnection `
+        -LocalPort 8000 `
+        -State Listen `
+        -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $Listener) {
+        return
+    }
+
+    $ExistingProcess = Get-CimInstance `
+        -ClassName Win32_Process `
+        -Filter "ProcessId = $($Listener.OwningProcess)" `
+        -ErrorAction SilentlyContinue
+    $ExpectedPython = [IO.Path]::GetFullPath($VirtualPython)
+    $CommandLine = [string]$ExistingProcess.CommandLine
+    $IsThisProject = (
+        $ExistingProcess -and
+        $CommandLine.Contains($ExpectedPython, [StringComparison]::OrdinalIgnoreCase) -and
+        $CommandLine.Contains(
+            "-m uvicorn app.main:app",
+            [StringComparison]::OrdinalIgnoreCase
+        )
+    )
+    if (-not $IsThisProject) {
+        Write-Error (
+            "Port 8000 đang được process khác sử dụng (PID " +
+            "$($Listener.OwningProcess)). WinAssist không tự dừng process này."
+        )
+    }
+
+    Write-Host "Đang dừng backend WinAssist cũ (PID $($Listener.OwningProcess))..."
+    Stop-Process -Id $Listener.OwningProcess -ErrorAction Stop
+    foreach ($Attempt in 1..20) {
+        Start-Sleep -Milliseconds 100
+        $StillListening = Get-NetTCPConnection `
+            -LocalPort 8000 `
+            -State Listen `
+            -ErrorAction SilentlyContinue
+        if (-not $StillListening) {
+            return
+        }
+    }
+    Write-Error "Backend cũ chưa nhả port 8000. Hãy đóng terminal cũ rồi thử lại."
+}
+
+Stop-PreviousWinAssistBackend
+
 $BootstrapMode = (Get-DotEnvValue `
     -Name "WINASSIST_OLLAMA_BOOTSTRAP" `
     -DefaultValue "prompt").ToLowerInvariant()
