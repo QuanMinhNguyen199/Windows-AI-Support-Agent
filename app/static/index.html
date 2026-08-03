@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
-    <link rel="stylesheet" href="/static/styles.css?v=0.8.3">
-    <link rel="stylesheet" href="/static/overview.css?v=0.8.3">
+    <link rel="stylesheet" href="/static/styles.css?v=0.9.7">
+    <link rel="stylesheet" href="/static/overview.css?v=0.9.7-close-dialog">
   </head>
   <body>
     <div class="app-layout">
@@ -19,8 +19,10 @@
           <button class="nav-item" data-view="chat"><span data-icon="chat"></span> Trợ lý</button>
           <button class="nav-item" data-view="suggestions"><span data-icon="apps"></span> Tiện ích</button>
           <button class="nav-item" data-view="diagnostics"><span data-icon="pulse"></span> Chẩn đoán</button>
+          <button class="nav-item" data-view="graphics"><span data-icon="device"></span> Card màn hình</button>
+          <button class="nav-item" data-view="windows-update"><span data-icon="update"></span> Cập nhật Windows</button>
           <button class="nav-item" data-view="activity"><span data-icon="history"></span> Hoạt động</button>
-          <button class="nav-item" data-view="patches"><span data-icon="patch"></span> Patch Update</button>
+          <button class="nav-item" data-view="patches"><span data-icon="patch"></span> Cập nhật WinAssist</button>
         </nav>
         <div class="service-status" aria-live="polite">
           <span id="backend-dot" class="status-dot pending"></span>
@@ -84,10 +86,10 @@
           </div>
           <div class="audience-selector" role="tablist" aria-label="Nhóm tiện ích">
             <button class="audience-tab active" data-audience="general" role="tab" aria-selected="true">
-              <strong>Phổ thông</strong><span>Trình duyệt, PDF, họp và giải trí</span>
+              <strong>Phổ thông</strong><span>Trình duyệt, văn phòng, nghe nhạc và game</span>
             </button>
             <button class="audience-tab" data-audience="advanced" role="tab" aria-selected="false">
-              <strong>Chuyên sâu</strong><span>Lập trình, văn phòng và công cụ hệ thống</span>
+              <strong>Chuyên sâu</strong><span>Lập trình, marketing, văn phòng và quản trị hệ thống</span>
             </button>
           </div>
           <div id="software-groups" class="content-stack" aria-live="polite"></div>
@@ -101,12 +103,36 @@
           </div>
           <div id="diagnostic-result" class="result-panel" hidden aria-live="polite"></div>
           <div class="section-heading windows-heading">
-            <div><h2>Kiểm tra Windows phổ thông</h2><p>Pin, ổ đĩa, thiết bị, máy in, cập nhật, ngày giờ và startup.</p></div>
+            <div><h2>Kiểm tra Windows phổ thông</h2><p>Pin, ổ đĩa, thiết bị, máy in, ngày giờ và startup.</p></div>
             <button id="run-windows-overview" class="primary">Quét tất cả</button>
           </div>
           <div id="windows-capabilities" class="diagnostic-grid" aria-live="polite"></div>
           <h2 class="subheading">Sửa chữa nhanh</h2>
           <div id="repair-list" class="diagnostic-grid"></div>
+        </section>
+
+        <section id="view-graphics" class="view">
+          <div class="section-heading">
+            <div><h2>Card màn hình</h2><p>Kiểm tra và cập nhật phần mềm giúp hình ảnh, video và trò chơi hoạt động ổn định.</p></div>
+            <button id="scan-graphics-driver" class="primary">Kiểm tra cập nhật</button>
+          </div>
+          <div id="graphics-driver-result" class="graphics-driver-result" aria-live="polite">
+            <div class="driver-notice"><strong>Chưa kiểm tra</strong><p class="muted">Nhấn kiểm tra để xem card màn hình có công cụ cập nhật phù hợp hay không.</p></div>
+          </div>
+        </section>
+
+        <section id="view-windows-update" class="view">
+          <div class="section-heading">
+            <div><h2>Cập nhật Windows</h2><p>Tìm bản cập nhật mới, xem lần cập nhật gần nhất và yêu cầu khởi động lại.</p></div>
+            <button id="scan-windows-update" class="primary">Kiểm tra máy</button>
+          </div>
+          <div id="windows-update-result" class="windows-update-panel" aria-live="polite">
+            <div class="driver-notice"><strong>Chưa kiểm tra</strong><p class="muted">Nhấn kiểm tra để WinAssist giải thích tình trạng cập nhật bằng nội dung dễ hiểu.</p></div>
+          </div>
+          <div class="update-actions-panel">
+            <div><strong>Tìm và cài bản cập nhật</strong><p class="muted">Hiện tại WinAssist mở trang cập nhật an toàn của Windows để bạn xem và cài. App chưa tự cài trực tiếp.</p></div>
+            <button id="open-windows-update" class="primary">Kiểm tra và cập nhật</button>
+          </div>
         </section>
 
         <section id="view-activity" class="view">
@@ -117,10 +143,15 @@
         <section id="view-patches" class="view">
           <div class="section-heading">
             <div>
-              <h2>Có gì mới trong WinAssist?</h2>
-              <p>Nội dung thay đổi của phiên bản mới nhất đang chạy trên máy.</p>
+              <h2>Cập nhật WinAssist</h2>
+              <p>Tự kiểm tra phiên bản mới và xem những thay đổi trước khi cập nhật.</p>
             </div>
           </div>
+          <section id="update-status" class="update-status" aria-live="polite">
+            <div><strong>Kiểm tra cập nhật</strong><p class="muted">WinAssist sẽ tự kiểm tra khi ứng dụng khởi động.</p></div>
+            <button id="check-update" class="secondary">Kiểm tra ngay</button>
+          </section>
+          <h2 class="subheading">Có gì mới?</h2>
           <div id="patch-content" class="patch-content" aria-live="polite">
             <div class="inventory-loading"><div class="loader"></div><p>Đang tải thông tin phiên bản…</p></div>
           </div>
@@ -131,16 +162,33 @@
 
     <dialog id="action-dialog">
       <form method="dialog" class="dialog-card">
-        <p class="eyebrow">Xác nhận thay đổi</p>
+        <p class="eyebrow">Xác nhận</p>
         <h2 id="action-title">Xem lại thao tác</h2>
-        <code id="command-text"></code>
-        <p id="command-warning"></p>
-        <div class="dialog-actions"><button id="cancel-command" class="secondary" value="cancel">Hủy</button><button id="confirm-command" class="danger" value="default">Xác nhận</button></div>
+        <p id="action-summary" class="action-summary"></p>
+        <details class="technical-details">
+          <summary>Thông tin kỹ thuật</summary>
+          <code id="command-text"></code>
+          <p id="command-warning"></p>
+        </details>
+        <div class="dialog-actions"><button id="cancel-command" class="secondary" value="cancel">Quay lại</button><button id="confirm-command" class="primary" value="default">Tiếp tục</button></div>
       </form>
     </dialog>
 
-    <script src="/static/api-client.js?v=0.8.3" defer></script>
-    <script src="/static/state.js?v=0.8.3" defer></script>
-    <script src="/static/app.js?v=0.8.3" defer></script>
+    <dialog id="close-dialog">
+      <form method="dialog" class="dialog-card close-dialog-card">
+        <p class="eyebrow">Đóng WinAssist</p>
+        <h2>Bạn muốn đóng ứng dụng thế nào?</h2>
+        <p class="action-summary">WinAssist có thể tiếp tục chạy dưới khay hệ thống để mở lại nhanh, hoặc thoát hoàn toàn.</p>
+        <div class="close-dialog-actions">
+          <button id="cancel-close" class="secondary" value="cancel">Quay lại</button>
+          <button id="close-to-tray" class="secondary" value="default">Đóng xuống khay</button>
+          <button id="exit-winassist" class="danger" value="default">Thoát hoàn toàn</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/static/api-client.js?v=0.9.7" defer></script>
+    <script src="/static/state.js?v=0.9.7" defer></script>
+    <script src="/static/app.js?v=0.9.7-close-dialog" defer></script>
   </body>
 </html>

@@ -8,6 +8,7 @@ from app.models.command import CommandDefinition, CommandResult
 from app.models.windows_support import (
     CapabilityState,
     WindowsCapability,
+    WindowsActionResponse,
     WindowsOverviewResponse,
 )
 
@@ -90,6 +91,20 @@ class WindowsSupportService:
             message=f"Đã kiểm tra {len(results)} nhóm hỗ trợ Windows.",
         )
 
+    async def open_update_settings(self) -> WindowsActionResponse:
+        result = await self.runner.run(
+            self.registry.get("windows.open_update_settings"), confirmed=True
+        )
+        return WindowsActionResponse(
+            success=result.success,
+            message=(
+                "Đã mở Windows Update. Bạn có thể kiểm tra và cài bản cập nhật tại đây."
+                if result.success
+                else "Không mở được Windows Update Settings."
+            ),
+            result=result,
+        )
+
     def _analyze(
         self, capability_id: str, title: str, payload: dict[str, Any]
     ) -> WindowsCapability:
@@ -108,12 +123,13 @@ class WindowsSupportService:
 
         if capability_id == "battery":
             batteries = data.get("batteries", [])
-            levels = [
-                item.get("EstimatedChargeRemaining")
-                for item in batteries
-                if isinstance(item, dict)
-                and isinstance(item.get("EstimatedChargeRemaining"), int)
-            ]
+            levels: list[int] = []
+            for item in batteries:
+                if not isinstance(item, dict):
+                    continue
+                level = item.get("EstimatedChargeRemaining")
+                if isinstance(level, int):
+                    levels.append(level)
             summary = (
                 f"Pin hiện ở mức {min(levels)}%."
                 if levels
@@ -153,11 +169,25 @@ class WindowsSupportService:
             )
             summary = f"Đã phát hiện {len(printers)} máy in và {jobs} print job."
         elif capability_id == "update":
-            summary = "Đã đọc trạng thái Windows Update và bản vá gần nhất."
-            if data.get("reboot_pending"):
+            if str(data.get("start_type", "")).casefold() == "disabled":
                 state = CapabilityState.WARNING
-                summary = "Windows đang chờ khởi động lại để hoàn tất cập nhật."
-                recommendations.append("Lưu công việc trước khi tự khởi động lại máy.")
+                summary = "Windows Update đang bị tắt trên máy."
+                recommendations.append("Mở Windows Update để bật lại cập nhật.")
+            elif data.get("reboot_pending"):
+                state = CapabilityState.WARNING
+                summary = "Máy cần khởi động lại để hoàn tất bản cập nhật trước."
+                recommendations.append("Lưu công việc rồi khởi động lại máy khi thuận tiện.")
+            elif not data.get("update_check_succeeded", False):
+                state = CapabilityState.WARNING
+                summary = "Chưa kiểm tra được máy có bản cập nhật mới hay không."
+                recommendations.append("Thử kiểm tra lại hoặc mở Windows Update.")
+            elif int(data.get("available_update_count") or 0) > 0:
+                state = CapabilityState.WARNING
+                count = int(data.get("available_update_count") or 0)
+                summary = f"Có {count} bản cập nhật mới đang chờ bạn xem và cài."
+                recommendations.append("Xem danh sách bên dưới rồi chọn thời điểm cập nhật phù hợp.")
+            else:
+                summary = "Máy đã cập nhật. Hiện không có bản cập nhật mới."
         elif capability_id == "datetime":
             summary = (
                 f"Múi giờ hiện tại: {data.get('timezone_name') or 'không xác định'}."
@@ -184,7 +214,8 @@ class WindowsSupportService:
             "printers": {"supported", "printers"},
             "update": {
                 "supported", "service_status", "start_type",
-                "reboot_pending", "latest_hotfix",
+                "reboot_pending", "latest_hotfix", "update_check_succeeded",
+                "available_update_count", "available_updates", "update_error",
             },
             "datetime": {
                 "supported", "local_time", "timezone_id",

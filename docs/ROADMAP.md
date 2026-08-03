@@ -94,8 +94,9 @@ Luồng cài đặt phải tạo pending action, hết hạn sau năm phút và 
 
 - Hoàn thiện frontend thành một ứng dụng có các màn hình/khu vực rõ ràng:
   Chat, Tiện ích, Diagnostics, Software và Activity/History.
-- Tạo component/style dùng chung cho app card, status badge, command preview,
-  modal xác nhận, notification, empty/loading/error state và progress bar.
+- Tạo component/style dùng chung cho app card, status badge, notification,
+  empty/loading/error state và progress bar. Modal xác nhận dùng câu chữ dễ hiểu;
+  command và package ID được thu gọn mặc định trong **Thông tin kỹ thuật**.
 - Tạo API client tập trung thay vì gọi `fetch` rải rác; chuẩn hóa timeout, lỗi
   backend, Ollama offline, validation error và request đang chạy.
 - Quản lý trạng thái session, pending action và diagnostic run; refresh trang
@@ -172,7 +173,7 @@ Ngưỡng đề xuất:
 - Critical diagnostic rule accuracy ≥ 0,95.
 - Không còn security issue mức high/critical chưa xử lý.
 
-### 8.1. Live Inventory và Patch Update — Đã hoàn thành
+### 8.1. Live Inventory và Cập nhật WinAssist — Đã hoàn thành
 
 - Theo dõi read-only các khóa Add/Remove Programs cho HKLM/HKCU và ứng dụng
   32-bit/64-bit bằng Windows Registry notification.
@@ -180,7 +181,7 @@ Ngưỡng đề xuất:
 - Gửi sự kiện `software_inventory_changed` đến frontend bằng SSE.
 - Tab Tiện ích giữ inventory khi đổi tab, cập nhật action trực tiếp và chỉ quét
   lại sau khi có tín hiệu thay đổi hoặc người dùng yêu cầu.
-- Tab **Patch Update** đọc release notes đã version hóa từ
+- Tab **Cập nhật WinAssist** đọc release notes đã version hóa từ
   `data/processed/patch_notes.json`.
 - Giữ **Trợ lý** như lối vào phụ giúp người dùng diễn đạt nhu cầu tự nhiên; các
   tab chức năng vẫn là luồng chính, nhanh và có trạng thái rõ ràng.
@@ -199,27 +200,100 @@ Ngưỡng đề xuất:
 **Hoàn thành khi:** cài/gỡ từ Control Panel hoặc installer bên ngoài làm tab
 Tiện ích cập nhật mà không cần tải lại trang và không quét nền liên tục.
 
-### 9. Windows Beta
+### 9. Windows Beta — Hoàn thành phần có thể kiểm thử nội bộ
 
-- Bọc frontend web hiện tại trong desktop shell phù hợp sau một technical spike
-  (ưu tiên WebView2/pywebview; không viết lại UI nếu không cần).
-- Tích hợp window lifecycle, single-instance, icon ứng dụng, system tray tùy chọn,
-  mở/đóng backend an toàn và màn hình báo lỗi khi local service chưa sẵn sàng.
-- Desktop shell và installer có ký số.
-- Cài, nâng cấp, rollback và uninstall.
-- Chỉ bind loopback và bảo vệ local API.
-- Kiểm thử Windows 10/11 trên máy sạch.
-- Export báo cáo đã mask theo lựa chọn người dùng.
+- [x] Bọc frontend hiện tại trong desktop shell pywebview/WebView2, không viết lại UI.
+- [x] Quản lý window/backend lifecycle và single-instance bằng Windows mutex.
+- [x] Căn giữa cửa sổ theo work area của monitor chứa con trỏ, không che taskbar
+  và tự co kích thước trên màn hình nhỏ hoặc cấu hình nhiều monitor.
+- [x] Thêm close confirmation với ba lựa chọn: xuống system tray, thoát hoàn toàn
+  hoặc quay lại; thoát từ tray không hiển thị dialog lần hai.
+- [x] Hiển thị lỗi native khi backend không sẵn sàng hoặc port bị chiếm.
+- [x] Readiness endpoint nhẹ, tách khỏi Ollama health để tránh startup timeout giả.
+- [x] Nhận diện GPU NVIDIA/AMD/Intel và điều hướng đến công cụ driver chính hãng.
+- [x] Tách Card màn hình và Windows Update thành các tab riêng; dùng câu chữ phổ
+  thông thay cho thuật ngữ driver/GPU trên giao diện chính.
+- [x] Cập nhật Windows giải thích trạng thái bằng câu chữ phổ thông, sửa định dạng
+  ngày bản vá, liệt kê bản cập nhật mới hoặc báo rõ không có bản mới, và mở trực
+  tiếp trang cập nhật hệ thống.
+- [x] Phân biệt NVIDIA App, AMD Software và Intel Driver Assistant đã cài hay còn
+  thiếu; ghi rõ công cụ chính hãng có thể mở cửa sổ/trình duyệt riêng và không
+  mô tả nhầm rằng WinAssist đang tự cài driver.
+- [x] Tab Cập nhật WinAssist tự kiểm tra GitHub Release và hiển thị release notes.
+- [x] Tự kiểm tra GitHub Release khi khởi động và thông báo phiên bản mới.
+- [x] Nút tải installer trực tiếp; Inno Setup đóng bản cũ và mở lại sau nâng cấp.
+- [x] Pipeline theo tag build/test, tạo installer, SHA-256 và đính kèm GitHub Release.
+- [x] GitHub Pages landing page, URL tải installer cố định và hướng dẫn custom domain.
+- [x] Bộ cài kèm WebView2 Evergreen Bootstrapper đã xác minh chữ ký Microsoft.
+- [ ] Tạo GitHub Release đầu tiên sau khi có certificate ký số.
+- [ ] Tải nền có progress, SHA-256/chữ ký số và chạy installer sau một lần xác nhận.
+- [ ] Tải/cài driver có kiểm tra chữ ký số, restore point, progress và rollback.
+- [x] Chỉ bind loopback và bảo vệ local API bằng token phiên/cookie HttpOnly.
+- [x] Lưu database/log vào `%LOCALAPPDATA%` để tương thích thư mục cài read-only.
+- [x] Thêm và chạy thành công PyInstaller onedir spec/script build Windows.
+- [x] Spec dùng project root tuyệt đối để bundle static, catalog và prompts.
+- [x] Bổ sung icon `.ico` nhất quán và system tray Mở/Ẩn/Thoát.
+- [x] Cài Inno Setup 6.7.3, build installer per-user và smoke test cài/gỡ trong
+  thư mục cách ly: executable tồn tại, uninstaller exit 0 và xóa sạch thư mục.
+- [ ] Ký số desktop shell và installer bằng certificate phát hành.
+- [ ] Kiểm thử Windows 10/11 trên máy sạch và pipeline release artifact.
+- [x] Tinh gọn Tổng quan máy; loại bỏ chức năng xuất báo cáo JSON không cần thiết.
+
+Các mục còn mở phụ thuộc phát hành hoặc có rủi ro hệ thống cao: certificate ký
+số, ma trận máy sạch Windows 10/11, updater tải/chạy nền có rollback và cài
+driver có restore point. Không đánh dấu hoàn thành cho đến khi kiểm thử thực tế.
 
 **Hoàn thành khi:** người dùng phổ thông có thể cài và mở WinAssist như một ứng
 dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
 
 ### 10. Release 1.0
 
+- Cài Windows Update trực tiếp trong WinAssist qua API hệ thống được hỗ trợ, có
+  yêu cầu quyền Administrator rõ ràng, progress thật, xác nhận trước khi cài,
+  xử lý yêu cầu khởi động lại và không báo thành công trước khi Windows xác nhận.
+- Onboarding AI local ở lần mở đầu tiên, không cài AI âm thầm trong setup.
+- Quét RAM, CPU, GPU và dung lượng trống trước khi đề xuất model Qwen.
+- Đề xuất `qwen3:0.6b`, `qwen3:1.7b` hoặc `qwen3:4b` theo cấu hình máy.
+- Cho phép chọn **Bật AI local** hoặc **Dùng chế độ cơ bản**; ghi nhớ lựa chọn
+  và không nhắc lại liên tục.
+- Khi bật AI: tự cài Ollama, tải model với dung lượng dự kiến, progress, hủy,
+  tiếp tục, thử lại và xác minh model trước khi báo hoàn tất.
+- Có phần quản lý AI local để bật sau, đổi model hoặc gỡ model/Ollama có xác nhận.
+- Rule-based router luôn hoạt động khi người dùng bỏ qua AI hoặc cài đặt thất bại.
 - Ổn định API và database migration.
 - Recovery khi database hỏng hoặc thiếu model.
 - Catalog/troubleshooting rules có version và quy trình review.
 - Security review, tài liệu người dùng và release process hoàn chỉnh.
+
+Trước khi bắt đầu Giai đoạn 10, tiếp tục mở rộng catalog **Tiện ích**, kiểm tra
+package ID/publisher và tinh chỉnh UI/UX của bản Beta. Các thay đổi này không yêu
+cầu đổi backend AI hiện tại.
+
+- [x] Thêm nhóm Game & giải trí với package Winget đã xác minh: Steam, Epic,
+  GOG, Discord, EA, Ubisoft, League of Legends VN2 và VALORANT AP; cài trực tiếp
+  qua Safety Core sau xác nhận, không mở trang tải và không chạy command từ agent.
+- [x] Gộp League of Legends và VALORANT vào một card Riot Games trên giao diện,
+  đồng thời giữ package/action riêng để người dùng chủ động chọn đúng game.
+- [x] Bỏ tên máy chủ Riot khỏi giao diện và xác minh trạng thái từ
+  `RiotClientInstalls.json` cùng executable thực tế, tránh báo chưa cài khi game
+  nằm ở ổ khác hoặc Riot đã tự chuyển vùng tài khoản.
+- [x] Mở rộng catalog lên 57 ứng dụng: thêm nhóm liên lạc, lưu trữ đám mây, sáng
+  tạo nội dung và các công cụ Docker/database/SSH/phân tích mạng phổ biến; chỉ
+  nhận package Winget đã xác minh được ID và publisher.
+- [x] Bổ sung Brave, Opera, Vivaldi và LibreWolf cho người dùng muốn trình duyệt
+  có sẵn khả năng giảm quảng cáo/theo dõi; không tự cài extension trình duyệt.
+- [x] Sắp xếp app thường dùng lên đầu từng nhóm bằng rank trong catalog; giữ
+  nguyên hai tab Phổ thông/Chuyên sâu và không tạo danh sách máy mới bị trùng.
+- [x] Bổ sung IDE/công cụ AI chính chủ: Cursor, Antigravity IDE, Windsurf, Zed,
+  Sublime Text, Visual Studio Community và OpenAI Codex CLI; phân biệt rõ IDE
+  với công cụ dòng lệnh trong tên và ghi chú license.
+- [x] Giữ hai tab Phổ thông/Chuyên sâu và chia tab Chuyên sâu theo bốn nhu cầu:
+  Lập trình, Marketing & sáng tạo, Văn phòng chuyên sâu, Quản trị hệ thống; hỗ
+  trợ một package xuất hiện ở nhiều ngữ cảnh nhưng không nhân đôi action/status.
+- [x] Thêm mô tả ngắn, dễ hiểu cho toàn bộ card Tiện ích; mô tả được quản lý
+  trong software catalog và trả về qua API, không hardcode theo tên ở frontend.
+- [x] Xác minh Discord bằng file cài đặt thực tế ngoài kết quả Winget tổng, xử lý
+  trường hợp Winget trả ARP ID khác package ID chuẩn.
 
 ## Thứ tự phụ thuộc
 
@@ -241,7 +315,7 @@ AI không được điều phối tool trước khi Safety Core hoàn thành. Pa
 
 - Tự sửa Registry.
 - Tắt Defender hoặc Firewall.
-- Tự gỡ/cài driver.
+- Tự gỡ/cài driver không có xác nhận, restore point hoặc khả năng rollback.
 - Tự xóa file hoặc dữ liệu người dùng.
 - Chạy script do LLM tạo.
 - Remote administration.

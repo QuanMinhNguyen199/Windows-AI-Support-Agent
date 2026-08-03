@@ -13,3 +13,13 @@ class PatchRelease(BaseModel):
 
 class PatchNotesFile(BaseModel):
     releases: list[PatchRelease] = Field(min_length=1)
+
+
+class UpdateStatus(BaseModel):
+    current_version: str
+    latest_version: str | None = None
+    update_available: bool = False
+    installer_available: bool = False
+    installer_url: str | None = None
+    release_url: str | None = None
+    message: str

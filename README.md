@@ -1,5 +1,9 @@
 # WinAssist Local
 
+> **Cài cho người dùng Windows:** sau khi có bản phát hành đã ký số, tải một file
+> tại [WinAssist-Setup.exe](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe).
+> Không cần Python, PowerShell hoặc terminal.
+
 WinAssist Local là trợ lý hỗ trợ Windows chạy trên máy người dùng. Ứng dụng hướng
 tới hai nhóm nhu cầu:
 
@@ -12,11 +16,12 @@ hiển thị trước và chỉ chạy sau khi người dùng xác nhận.
 
 ## Trạng thái hiện tại
 
-Project đã hoàn thành **Giai đoạn 1–8**:
+Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn 9 Windows Beta**:
 
 - FastAPI server.
 - Giao diện chatbot HTML/CSS/JavaScript.
 - `GET /api/health`.
+- `GET /api/ready` cho desktop startup, không chờ kiểm tra Ollama.
 - Safety core gồm command registry, risk policy và command runner.
 - Chẩn đoán IP, gateway, ping, packet loss, DNS và Wi-Fi.
 - `POST /api/diagnostics/network` và `POST /api/diagnostics/ping`.
@@ -30,21 +35,94 @@ Project đã hoàn thành **Giai đoạn 1–8**:
 - Unit/integration test dùng fixture và mock, không chạy mạng thật.
 - Giao diện app gồm Chat, Tiện ích, Diagnostics và Activity.
 - Màn hình Tổng quan máy luôn mở trước, hiển thị Windows, CPU, RAM, GPU và ổ hệ thống.
-- Cài/gỡ ứng dụng chạy nền, có command preview, xác nhận, hủy pending action,
+- Mục Chẩn đoán nhận diện GPU NVIDIA/AMD/Intel, hiển thị phiên bản driver và
+  mở đúng công cụ cập nhật chính hãng. WinAssist không tự chạy driver installer
+  vì màn hình có thể chớp hoặc máy có thể cần khởi động lại.
+- “Card màn hình” và “Windows Update” có tab độc lập; tab cập nhật
+  ứng dụng vẫn chỉ dùng để cập nhật chính WinAssist.
+- Tab **Cập nhật Windows** giải thích lần cập nhật gần nhất và yêu cầu khởi động
+  lại bằng câu chữ phổ thông, đồng thời dùng Windows Update API để liệt kê các
+  bản mới đang chờ hoặc báo rõ **không có bản cập nhật mới**. Sau đó app mở đúng
+  Windows Settings để người dùng cài.
+  Bản hiện tại chưa tự cài cập nhật hệ thống trực tiếp trong WinAssist.
+- Sau khi kiểm tra card màn hình, WinAssist ghi rõ NVIDIA App, AMD Software hoặc
+  Intel Driver Assistant đã có trên máy hay chưa. Nếu đã có, app mở đúng công cụ;
+  nếu chưa có, app mở trang tải chính hãng và báo trước rằng công cụ có thể tiếp
+  tục bằng cửa sổ hoặc trình duyệt riêng. WinAssist chưa tự cài driver trực tiếp.
+- Desktop có icon riêng và system tray với Mở, Ẩn, Thoát.
+- Pipeline Windows Release chạy test, build PyInstaller/Inno Setup, tạo SHA-256
+  và đính kèm artifact khi push tag. Installer 0.9.7 đã qua smoke test cài/gỡ;
+  bản hiện tại chưa ký số nên chỉ dùng nội bộ.
+- GitHub Pages có landing page tối giản và URL tải cố định; installer đóng gói
+  WebView2 Evergreen Bootstrapper đã xác minh chữ ký Microsoft để máy Windows
+  10/11 không phải tự cài runtime giao diện.
+- WinAssist tự kiểm tra GitHub Release khi khởi động. Tab Cập nhật WinAssist hiển thị
+  phiên bản mới và nút tải installer; installer có thể đóng bản cũ, nâng cấp và
+  mở lại ứng dụng mà không cần chạy lại terminal. Repository cần có GitHub
+  Release với asset tên `WinAssist-<version>-Setup.exe` để luồng này hoạt động.
+- Cài/gỡ ứng dụng chạy nền, có hộp xác nhận bằng ngôn ngữ đơn giản; command và
+  package ID được thu gọn trong **Thông tin kỹ thuật**, hỗ trợ hủy pending action,
   trạng thái và progress không xác định.
+- Nhóm **Game & giải trí** có Steam, Epic Games Launcher, GOG GALAXY, Discord,
+  EA app, Ubisoft Connect, League of Legends và VALORANT. WinAssist
+  tải installer qua Winget sau xác nhận, không chuyển người dùng sang trang tải;
+  launcher game vẫn có thể yêu cầu đăng nhập, tải thêm dữ liệu hoặc khởi động lại.
+  League of Legends và VALORANT được gộp trong một card **Riot Games**, nhưng giữ
+  hai nút cài riêng để không tải nhầm game; cả hai dùng chung Riot Client. Trạng
+  thái được xác minh từ cấu hình Riot và file game thực tế trên mọi ổ đĩa, không
+  phụ thuộc package ID khu vực mà Winget đã dùng lúc cài.
+- Catalog hiện có 57 ứng dụng. Nhóm Phổ thông bổ sung Telegram, Google Drive,
+  Dropbox, Notion, OBS Studio, WinRAR và Canva. Nhóm Chuyên sâu bổ sung Docker
+  Desktop, JetBrains Toolbox, DBeaver, WinSCP, PuTTY, Wireshark, VirtualBox và
+  GitHub CLI. WhatsApp chưa được thêm vì hiện không có package community chính
+  thức phù hợp với nguồn Winget mà WinAssist đang cho phép.
+- Mục Trình duyệt trong Phổ thông có thêm Brave, Opera, Vivaldi và LibreWolf.
+  Mô tả dùng từ “giảm/chặn quảng cáo và theo dõi” thay vì cam kết chặn mọi quảng
+  cáo, vì hiệu quả còn phụ thuộc website và thiết lập của từng trình duyệt.
+- Ứng dụng trong mỗi nhóm được sắp xếp bằng `display_rank`: lựa chọn thường dùng
+  nằm trước để giảm cuộn trang, nhưng không tạo nhóm “máy mới”, không nhân đôi
+  card và không tự cài bất kỳ ứng dụng nào.
+- Nhóm IDE và công cụ AI gồm Cursor, Antigravity IDE, Windsurf, Zed, Sublime
+  Text 4, Visual Studio Community 2022 và Codex CLI. Codex được ghi rõ là công
+  cụ dòng lệnh, không phải IDE độc lập; Visual Studio có thể mở installer để
+  người dùng chọn workload phù hợp.
+- Giao diện vẫn giữ hai tab **Phổ thông** và **Chuyên sâu**. Trong Chuyên sâu,
+  ứng dụng được chia theo nhu cầu: Lập trình, Marketing & sáng tạo, Văn phòng
+  chuyên sâu và Quản trị hệ thống. Một app có thể xuất hiện ở cả Phổ thông lẫn
+  nhóm nghề nghiệp phù hợp nhưng dùng chung một trạng thái cài đặt.
+- Mỗi card ứng dụng có một câu mô tả ngắn bằng ngôn ngữ phổ thông, giải thích
+  trực tiếp ứng dụng dùng để làm gì thay vì chỉ hiển thị tên và publisher.
+- Discord được xác minh thêm bằng executable thực tế trong `%LOCALAPPDATA%`, vì
+  danh sách Winget tổng có thể trả ID nội bộ `ARP\\User\\X64\\Discord` thay vì
+  package ID chuẩn và khiến trạng thái cài đặt bị nhận sai.
 - Speedtest qua Ookla CLI và sửa chữa LOW_RISK: flush DNS, release/renew IP.
 - Chẩn đoán Windows read-only: pin, ổ đĩa, audio/camera/microphone/Bluetooth,
   máy in, Windows Update, ngày giờ, timezone và startup apps.
 - Offline eval cho intent/diagnostics/safety; security headers, JSON rotating log
   và Windows CI cho test, coverage, lint, type check, dependency audit.
 - Theo dõi cài/gỡ ứng dụng từ Windows Registry và cập nhật tab Tiện ích qua SSE.
-- Tab **Patch Update** hiển thị nội dung phiên bản mới nhất từ dữ liệu cục bộ.
+- Tab **Cập nhật WinAssist** hiển thị trạng thái cập nhật và nội dung phiên bản.
 - Tab **Trợ lý** là lối vào phụ cho người dùng chưa biết cần mở công cụ nào;
   các chức năng chính vẫn có thể dùng trực tiếp qua từng tab.
 - Trợ lý hiểu các mô tả phổ thông như máy chậm, máy đơ, máy nóng hoặc mở ứng
   dụng lâu và trả về suggestion có thể bấm để làm rõ triệu chứng.
+- Desktop shell dùng WebView2, single-instance, backend lifecycle và local API
+  token; dữ liệu runtime nằm trong `%LOCALAPPDATA%\WinAssist Local`.
+- Khi khởi động, cửa sổ được căn giữa theo vùng làm việc của monitor đang dùng,
+  tự trừ taskbar và thu nhỏ vừa màn hình nếu độ phân giải thấp.
+- Khi bấm nút X, WinAssist hỏi **Đóng xuống khay**, **Thoát hoàn toàn** hoặc
+  **Quay lại**. Menu Thoát trong system tray đóng ngay và dừng backend, không hỏi lặp.
+- PyInstaller onedir build đã sẵn sàng. Ký số và kiểm thử installer trên máy
+  Windows sạch vẫn là điều kiện bắt buộc trước khi phát hành Beta công khai.
+
+Hiện tại project tiếp tục mở rộng danh sách **Tiện ích** và tinh chỉnh trải
+nghiệm Windows Beta. Onboarding tự quét cấu hình, cài Ollama và chọn model Qwen
+được hoãn sang **Giai đoạn 10**; bản hiện tại vẫn fallback an toàn sang
+rule-based router khi AI local chưa khả dụng.
 
 Kế hoạch phát triển nằm tại [docs/ROADMAP.md](docs/ROADMAP.md).
+Quy trình phát hành GitHub/public domain nằm tại
+[docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
 
 ## Quy ước cập nhật tài liệu
 
@@ -65,7 +143,7 @@ app/                              Code ứng dụng FastAPI
 │   ├── repairs.py                API chuẩn bị sửa chữa mạng LOW_RISK
 │   ├── system.py                 API đọc thông số máy ở chế độ read-only
 │   ├── windows.py                API chẩn đoán Windows phổ thông
-│   ├── patches.py                API release notes cho tab Patch Update
+│   ├── patches.py                API phiên bản cho tab Cập nhật WinAssist
 │   └── health.py                 Kiểm tra backend và Ollama
 ├── core/                         Logic an toàn, không phụ thuộc giao diện
 │   ├── command_registry.py       Danh sách command duy nhất được phép chạy
@@ -91,6 +169,7 @@ app/                              Code ứng dụng FastAPI
 ├── database/                     SQLite schema và repositories
 ├── static/                       Frontend app, API client và local state
 ├── config.py                     Cấu hình từ biến môi trường
+├── desktop.py                    Desktop shell, mutex và embedded backend
 └── main.py                       Khởi tạo FastAPI và đăng ký router
 
 agents/
@@ -111,7 +190,13 @@ evals/                            Đánh giá chất lượng intent/AI/safety
 docs/                             Roadmap và tài liệu kiến trúc
 .github/workflows/ci.yml          Quality gate chạy trên Windows
 run.ps1                           Script khởi động ứng dụng trên Windows
+run-desktop.ps1                   Chạy ứng dụng trong cửa sổ WebView2
+build-windows.ps1                 Build Windows Beta bằng PyInstaller
+build-installer.ps1               Build installer Beta bằng Inno Setup 6
+packaging/WinAssist.spec          Cấu hình bundle executable onedir
+packaging/WinAssist.iss           Cấu hình install/upgrade/uninstall per-user
 requirements.txt                  Dependency Python
+requirements-desktop.txt          Dependency desktop shell và build
 .env.example                      Mẫu biến môi trường, không chứa secret thật
 ```
 
@@ -168,6 +253,50 @@ Mở:
 - Ứng dụng: `http://127.0.0.1:8000`
 - API docs: `http://127.0.0.1:8000/docs`
 - Health check: `http://127.0.0.1:8000/api/health`
+
+## Chạy Windows Desktop Beta
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-desktop.txt
+.\run-desktop.ps1
+```
+
+Desktop shell dùng WebView2 qua pywebview, chỉ bind backend vào `127.0.0.1` và
+tự dừng backend khi đóng cửa sổ. Mỗi lần mở app có token phiên ngẫu nhiên lưu
+trong cookie `HttpOnly`; API (trừ health check) từ chối request không thuộc phiên.
+Chỉ một desktop instance được chạy cùng lúc.
+
+Desktop dùng `/api/ready` để xác nhận FastAPI đã mở, không dùng health check đầy
+đủ vì kiểm tra Ollama có thể mất vài giây.
+
+Dữ liệu ghi lúc chạy không nằm trong thư mục cài đặt:
+
+```text
+%LOCALAPPDATA%\WinAssist Local\data\winassist.db
+%LOCALAPPDATA%\WinAssist Local\data\logs\winassist.jsonl
+```
+
+## Build Windows Beta
+
+```powershell
+.\build-windows.ps1
+```
+
+Kết quả nằm tại `dist\WinAssist\WinAssist.exe`. Đây là build Beta chưa ký số;
+không phát hành công khai trước khi có certificate, ký binary và kiểm thử trên
+Windows 10/11 sạch. Chi tiết tại [docs/WINDOWS_BETA.md](docs/WINDOWS_BETA.md).
+Spec resolve asset từ project root để build ổn định dù file nằm trong
+`packaging/`. Build onedir `0.9.7` được tạo bằng PyInstaller 6.21.0
+trên Windows 11/Python 3.14; GUI vẫn cần smoke test thủ công trên máy sạch.
+
+Installer nội bộ:
+
+```powershell
+.\build-installer.ps1
+```
+
+Script yêu cầu Inno Setup 6 và tạo installer per-user trong `dist\installer`.
+Máy phát triển hiện chưa có `ISCC.exe`, nên installer chưa được build/xác minh.
 
 ## Chạy test
 
@@ -363,7 +492,7 @@ nâng cao vẫn có thể đặt tên model cụ thể bằng `WINASSIST_OLLAMA_
 - Thiếu `.venv`: chạy lại phần Cài đặt.
 - Port 8000 đang bận: chạy uvicorn với `--port 8001`.
 - Không mở được giao diện: kiểm tra uvicorn còn chạy và dùng đúng địa chỉ.
-- Patch Update báo backend cũ/Not Found: dừng tiến trình uvicorn hiện tại, chạy
+- Cập nhật WinAssist báo backend cũ/Not Found: dừng tiến trình uvicorn hiện tại, chạy
   lại `run.ps1`, sau đó nhấn `Ctrl + F5`.
 - `run.ps1` tự thay thế uvicorn cũ nếu process đó thuộc đúng thư mục WinAssist
   hiện tại. Script không dừng process khác đang dùng port 8000.

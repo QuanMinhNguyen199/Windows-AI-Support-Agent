@@ -13,3 +13,9 @@ class HealthResponse(BaseModel):
     application: str
     version: str
     ollama: ServiceStatus
+
+
+class ReadinessResponse(BaseModel):
+    status: Literal["ready"]
+    application: str
+    version: str

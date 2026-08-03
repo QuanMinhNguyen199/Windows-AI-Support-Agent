@@ -2,9 +2,11 @@
   "software": {
     "vscode": {
       "display_name": "Visual Studio Code",
+      "description": "Soạn thảo và viết code gọn nhẹ, dễ cài thêm tiện ích.",
       "publisher": "Microsoft",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 1,
       "winget_id": "Microsoft.VisualStudioCode",
       "check_commands": [
         ["where", "code"],
@@ -15,9 +17,11 @@
     },
     "git": {
       "display_name": "Git",
+      "description": "Lưu lại và theo dõi các lần thay đổi trong code.",
       "publisher": "Git Project",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 2,
       "winget_id": "Git.Git",
       "check_commands": [
         ["where", "git"],
@@ -28,9 +32,11 @@
     },
     "python": {
       "display_name": "Python 3.12",
+      "description": "Chạy chương trình và các công việc tự động viết bằng Python.",
       "publisher": "Python Software Foundation",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 3,
       "winget_id": "Python.Python.3.12",
       "check_commands": [
         ["where", "python"],
@@ -43,9 +49,11 @@
     },
     "nodejs": {
       "display_name": "Node.js LTS",
+      "description": "Chạy ứng dụng web và công cụ viết bằng JavaScript.",
       "publisher": "OpenJS Foundation",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 5,
       "winget_id": "OpenJS.NodeJS.LTS",
       "check_commands": [
         ["where", "node"],
@@ -57,6 +65,7 @@
     },
     "ollama": {
       "display_name": "Ollama",
+      "description": "Chạy mô hình AI ngay trên máy, không cần gửi dữ liệu lên mạng.",
       "publisher": "Ollama",
       "category": "developer_tools",
       "audience": "advanced",
@@ -70,9 +79,11 @@
     },
     "firefox": {
       "display_name": "Mozilla Firefox",
+      "description": "Lướt web, tải file và dùng các dịch vụ trực tuyến.",
       "publisher": "Mozilla",
       "category": "browsers",
       "audience": "general",
+      "display_rank": 7,
       "winget_id": "Mozilla.Firefox",
       "check_commands": [
         ["where", "firefox"],
@@ -99,9 +110,11 @@
     },
     "7zip": {
       "display_name": "7-Zip",
+      "description": "Nén và giải nén file ZIP, 7Z cùng nhiều định dạng khác.",
       "publisher": "Igor Pavlov",
       "category": "utilities",
       "audience": "general",
+      "display_rank": 2,
       "winget_id": "7zip.7zip",
       "check_commands": [
         ["where", "7z"],
@@ -112,9 +125,11 @@
     },
     "vlc": {
       "display_name": "VLC media player",
+      "description": "Mở gần như mọi loại video và nhạc trên máy.",
       "publisher": "VideoLAN",
       "category": "media",
       "audience": "general",
+      "display_rank": 3,
       "winget_id": "VideoLAN.VLC",
       "check_commands": [
         ["where", "vlc"],
@@ -125,9 +140,12 @@
     },
     "libreoffice": {
       "display_name": "LibreOffice",
+      "description": "Soạn văn bản, làm bảng tính và trình chiếu miễn phí.",
       "publisher": "The Document Foundation",
       "category": "office_pdf",
       "audience": "general",
+      "advanced_group": "office",
+      "display_rank": 8,
       "winget_id": "TheDocumentFoundation.LibreOffice",
       "check_commands": [
         ["where", "soffice"],
@@ -138,6 +156,7 @@
     },
     "speedtest": {
       "display_name": "Ookla Speedtest CLI",
+      "description": "Đo tốc độ tải xuống, tải lên và độ trễ mạng.",
       "publisher": "Ookla",
       "category": "utilities",
       "audience": "general",
@@ -151,9 +170,11 @@
     },
     "chrome": {
       "display_name": "Google Chrome",
+      "description": "Lướt web và đồng bộ dữ liệu với tài khoản Google.",
       "publisher": "Google",
       "category": "browsers",
       "audience": "general",
+      "display_rank": 1,
       "winget_id": "Google.Chrome",
       "check_commands": [
         ["winget", "list", "--id", "Google.Chrome", "--exact", "--disable-interactivity"]
@@ -163,9 +184,12 @@
     },
     "adobe-reader": {
       "display_name": "Adobe Acrobat Reader",
+      "description": "Mở, đọc, ký và in tài liệu PDF.",
       "publisher": "Adobe",
       "category": "office_pdf",
       "audience": "general",
+      "advanced_group": "office",
+      "display_rank": 4,
       "winget_id": "Adobe.Acrobat.Reader.64-bit",
       "check_commands": [
         ["winget", "list", "--id", "Adobe.Acrobat.Reader.64-bit", "--exact", "--disable-interactivity"]
@@ -175,9 +199,11 @@
     },
     "sumatrapdf": {
       "display_name": "SumatraPDF",
+      "description": "Đọc PDF nhanh, nhẹ và ít tốn tài nguyên máy.",
       "publisher": "Krzysztof Kowalczyk",
       "category": "office_pdf",
       "audience": "general",
+      "advanced_group": "office",
       "winget_id": "SumatraPDF.SumatraPDF",
       "check_commands": [
         ["winget", "list", "--id", "SumatraPDF.SumatraPDF", "--exact", "--disable-interactivity"]
@@ -187,9 +213,12 @@
     },
     "zoom": {
       "display_name": "Zoom Workplace",
+      "description": "Họp, gọi video và chia sẻ màn hình qua mạng.",
       "publisher": "Zoom",
       "category": "office_pdf",
       "audience": "general",
+      "advanced_group": "office",
+      "display_rank": 6,
       "winget_id": "Zoom.Zoom",
       "check_commands": [
         ["winget", "list", "--id", "Zoom.Zoom", "--exact", "--disable-interactivity"]
@@ -199,9 +228,12 @@
     },
     "teams": {
       "display_name": "Microsoft Teams",
+      "description": "Nhắn tin, họp và làm việc chung với đồng nghiệp.",
       "publisher": "Microsoft",
       "category": "office_pdf",
       "audience": "general",
+      "advanced_group": "office",
+      "display_rank": 9,
       "winget_id": "Microsoft.Teams",
       "check_commands": [
         ["winget", "list", "--id", "Microsoft.Teams", "--exact", "--disable-interactivity"]
@@ -211,9 +243,11 @@
     },
     "spotify": {
       "display_name": "Spotify",
+      "description": "Nghe nhạc, podcast và quản lý danh sách phát.",
       "publisher": "Spotify",
       "category": "media",
       "audience": "general",
+      "display_rank": 5,
       "winget_id": "Spotify.Spotify",
       "check_commands": [
         ["winget", "list", "--id", "Spotify.Spotify", "--exact", "--disable-interactivity"]
@@ -223,6 +257,7 @@
     },
     "powertoys": {
       "display_name": "Microsoft PowerToys",
+      "description": "Bổ sung nhiều công cụ nhỏ giúp dùng Windows tiện hơn.",
       "publisher": "Microsoft",
       "category": "utilities",
       "audience": "advanced",
@@ -235,9 +270,11 @@
     },
     "everything": {
       "display_name": "Everything Search",
+      "description": "Tìm file và thư mục trên máy gần như ngay lập tức.",
       "publisher": "voidtools",
       "category": "utilities",
       "audience": "advanced",
+      "display_rank": 3,
       "winget_id": "voidtools.Everything",
       "check_commands": [
         ["winget", "list", "--id", "voidtools.Everything", "--exact", "--disable-interactivity"]
@@ -247,9 +284,11 @@
     },
     "notepad-plus-plus": {
       "display_name": "Notepad++",
+      "description": "Soạn văn bản và chỉnh sửa code nhanh, nhẹ.",
       "publisher": "Notepad++ Team",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 7,
       "winget_id": "Notepad++.Notepad++",
       "check_commands": [
         ["winget", "list", "--id", "Notepad++.Notepad++", "--exact", "--disable-interactivity"]
@@ -259,9 +298,11 @@
     },
     "github-desktop": {
       "display_name": "GitHub Desktop",
+      "description": "Quản lý code GitHub bằng giao diện, không cần nhớ nhiều lệnh.",
       "publisher": "GitHub",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 8,
       "winget_id": "GitHub.GitHubDesktop",
       "check_commands": [
         ["winget", "list", "--id", "GitHub.GitHubDesktop", "--exact", "--disable-interactivity"]
@@ -271,9 +312,11 @@
     },
     "postman": {
       "display_name": "Postman",
+      "description": "Gửi thử và kiểm tra API trong lúc phát triển phần mềm.",
       "publisher": "Postman",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 10,
       "winget_id": "Postman.Postman",
       "check_commands": [
         ["winget", "list", "--id", "Postman.Postman", "--exact", "--disable-interactivity"]
@@ -283,9 +326,11 @@
     },
     "windows-terminal": {
       "display_name": "Windows Terminal",
+      "description": "Mở PowerShell, Command Prompt và các dòng lệnh trong một nơi.",
       "publisher": "Microsoft",
       "category": "developer_tools",
       "audience": "advanced",
+      "display_rank": 4,
       "winget_id": "Microsoft.WindowsTerminal",
       "check_commands": [
         ["winget", "list", "--id", "Microsoft.WindowsTerminal", "--exact", "--disable-interactivity"]
@@ -295,6 +340,7 @@
     },
     "onlyoffice": {
       "display_name": "ONLYOFFICE Desktop Editors",
+      "description": "Soạn văn bản, bảng tính và trình chiếu trên máy.",
       "publisher": "Ascensio System SIA",
       "category": "office_pdf",
       "audience": "advanced",
@@ -304,6 +350,421 @@
       ],
       "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/ONLYOFFICE/DesktopEditors",
       "license_note": "AGPL-3.0"
+    },
+    "steam": {
+      "display_name": "Steam",
+      "description": "Mua, tải, cập nhật và chơi game trên máy tính.",
+      "publisher": "Valve Corporation",
+      "category": "entertainment",
+      "audience": "general",
+      "display_rank": 8,
+      "winget_id": "Valve.Steam",
+      "check_commands": [
+        ["winget", "list", "--id", "Valve.Steam", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/Valve/Steam",
+      "license_note": "Steam Subscriber Agreement"
+    },
+    "epic-games": {
+      "display_name": "Epic Games Launcher",
+      "description": "Tải và chơi game trong cửa hàng Epic Games.",
+      "publisher": "Epic Games, Inc.",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "EpicGames.EpicGamesLauncher",
+      "check_commands": [
+        ["winget", "list", "--id", "EpicGames.EpicGamesLauncher", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EpicGames/EpicGamesLauncher",
+      "license_note": "Epic Games End User License Agreement"
+    },
+    "gog-galaxy": {
+      "display_name": "GOG GALAXY",
+      "description": "Tải game GOG và gom nhiều thư viện game vào một nơi.",
+      "publisher": "GOG.com",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "GOG.Galaxy",
+      "check_commands": [
+        ["winget", "list", "--id", "GOG.Galaxy", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GOG/Galaxy",
+      "license_note": "GOG User Agreement"
+    },
+    "discord": {
+      "display_name": "Discord",
+      "description": "Nhắn tin, gọi thoại và trò chuyện cùng cộng đồng.",
+      "publisher": "Discord Inc.",
+      "category": "entertainment",
+      "audience": "general",
+      "display_rank": 6,
+      "winget_id": "Discord.Discord",
+      "check_commands": [
+        ["winget", "list", "--id", "Discord.Discord", "--exact", "--disable-interactivity"]
+      ],
+      "verification_commands": [
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", "$root=Join-Path $env:LOCALAPPDATA 'Discord';if(!(Test-Path -LiteralPath $root)){exit 1};$exe=Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue|Where-Object {$_.Name -like 'app-*'}|Sort-Object Name -Descending|ForEach-Object {Join-Path $_.FullName 'Discord.exe'}|Where-Object {Test-Path -LiteralPath $_}|Select-Object -First 1;if($exe){(Get-Item -LiteralPath $exe).VersionInfo.FileVersion}else{exit 1}"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Discord/Discord",
+      "license_note": "Discord Terms of Service"
+    },
+    "ea-app": {
+      "display_name": "EA app",
+      "description": "Tải, cập nhật và chơi các game của Electronic Arts.",
+      "publisher": "Electronic Arts",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "ElectronicArts.EADesktop",
+      "check_commands": [
+        ["winget", "list", "--id", "ElectronicArts.EADesktop", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/ElectronicArts/EADesktop",
+      "license_note": "EA User Agreement"
+    },
+    "ubisoft-connect": {
+      "display_name": "Ubisoft Connect",
+      "description": "Tải, cập nhật và chơi các game của Ubisoft.",
+      "publisher": "Ubisoft",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "Ubisoft.Connect",
+      "check_commands": [
+        ["winget", "list", "--id", "Ubisoft.Connect", "--exact", "--disable-interactivity"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/u/Ubisoft/Connect",
+      "license_note": "Ubisoft Terms of Use"
+    },
+    "league-of-legends": {
+      "display_name": "League of Legends",
+      "description": "Game đấu đội miễn phí, được cài và cập nhật qua Riot Client.",
+      "publisher": "Riot Games, Inc.",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "RiotGames.LeagueOfLegends.VN2",
+      "check_commands": [
+        ["winget", "list", "--id", "RiotGames.LeagueOfLegends.VN2", "--exact", "--disable-interactivity"]
+      ],
+      "verification_commands": [
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", "$config=Join-Path $env:ProgramData 'Riot Games\\RiotClientInstalls.json';if(!(Test-Path -LiteralPath $config)){exit 1};$json=Get-Content -LiteralPath $config -Raw|ConvertFrom-Json;$roots=@($json.associated_client.psobject.Properties.Name|Where-Object {$_ -match '(?i)League of Legends'});$found=$roots|ForEach-Object {Join-Path $_ 'LeagueClient.exe'}|Where-Object {Test-Path -LiteralPath $_}|Select-Object -First 1;if($found){'League of Legends'}else{exit 1}"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/RiotGames/LeagueOfLegends/VN2",
+      "license_note": "Riot Games Terms of Service; Riot Client tiếp tục tải dữ liệu game"
+    },
+    "valorant": {
+      "display_name": "VALORANT",
+      "description": "Game bắn súng đấu đội, được cài và cập nhật qua Riot Client.",
+      "publisher": "Riot Games, Inc.",
+      "category": "entertainment",
+      "audience": "general",
+      "winget_id": "RiotGames.Valorant.AP",
+      "check_commands": [
+        ["winget", "list", "--id", "RiotGames.Valorant.AP", "--exact", "--disable-interactivity"]
+      ],
+      "verification_commands": [
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", "$config=Join-Path $env:ProgramData 'Riot Games\\RiotClientInstalls.json';if(!(Test-Path -LiteralPath $config)){exit 1};$json=Get-Content -LiteralPath $config -Raw|ConvertFrom-Json;$roots=@($json.associated_client.psobject.Properties.Name|Where-Object {$_ -match '(?i)VALORANT'});$found=$roots|Where-Object {Test-Path -LiteralPath $_}|ForEach-Object {Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction SilentlyContinue|Where-Object {$_.Name -in @('VALORANT.exe','VALORANT-Win64-Shipping.exe')}|Select-Object -First 1}|Select-Object -First 1;if($found){'VALORANT'}else{exit 1}"]
+      ],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/RiotGames/Valorant/AP",
+      "license_note": "Riot Games Terms of Service; cần Riot Vanguard và có thể phải khởi động lại"
+    },
+    "telegram": {
+      "display_name": "Telegram Desktop",
+      "description": "Nhắn tin, gọi điện và gửi file trên máy tính.",
+      "publisher": "Telegram FZ-LLC",
+      "category": "media",
+      "audience": "general",
+      "display_rank": 10,
+      "winget_id": "Telegram.TelegramDesktop",
+      "check_commands": [["winget", "list", "--id", "Telegram.TelegramDesktop", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/Telegram/TelegramDesktop",
+      "license_note": "GNU GPL và Telegram Terms of Service"
+    },
+    "google-drive": {
+      "display_name": "Google Drive",
+      "description": "Đồng bộ file giữa máy tính và tài khoản Google Drive.",
+      "publisher": "Google LLC",
+      "category": "utilities",
+      "audience": "general",
+      "advanced_group": "office",
+      "display_rank": 7,
+      "winget_id": "Google.GoogleDrive",
+      "check_commands": [["winget", "list", "--id", "Google.GoogleDrive", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/GoogleDrive",
+      "license_note": "Google Terms of Service"
+    },
+    "dropbox": {
+      "display_name": "Dropbox",
+      "description": "Sao lưu và đồng bộ file giữa nhiều thiết bị.",
+      "publisher": "Dropbox, Inc.",
+      "category": "utilities",
+      "audience": "general",
+      "advanced_group": "office",
+      "winget_id": "Dropbox.Dropbox",
+      "check_commands": [["winget", "list", "--id", "Dropbox.Dropbox", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Dropbox/Dropbox",
+      "license_note": "Dropbox Terms of Service"
+    },
+    "notion": {
+      "display_name": "Notion",
+      "description": "Ghi chú, quản lý công việc và sắp xếp tài liệu.",
+      "publisher": "Notion Labs, Inc.",
+      "category": "office_pdf",
+      "audience": "general",
+      "advanced_group": "marketing",
+      "display_rank": 2,
+      "winget_id": "Notion.Notion",
+      "check_commands": [["winget", "list", "--id", "Notion.Notion", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/n/Notion/Notion",
+      "license_note": "Notion Terms and Privacy"
+    },
+    "obs-studio": {
+      "display_name": "OBS Studio",
+      "description": "Quay màn hình, ghi hình và phát trực tiếp.",
+      "publisher": "OBS Project",
+      "category": "media",
+      "audience": "general",
+      "advanced_group": "marketing",
+      "display_rank": 3,
+      "winget_id": "OBSProject.OBSStudio",
+      "check_commands": [["winget", "list", "--id", "OBSProject.OBSStudio", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OBSProject/OBSStudio",
+      "license_note": "GPL-2.0"
+    },
+    "winrar": {
+      "display_name": "WinRAR",
+      "description": "Nén và giải nén file RAR, ZIP cùng nhiều định dạng khác.",
+      "publisher": "win.rar GmbH",
+      "category": "utilities",
+      "audience": "general",
+      "winget_id": "RARLab.WinRAR",
+      "check_commands": [["winget", "list", "--id", "RARLab.WinRAR", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/RARLab/WinRAR",
+      "license_note": "WinRAR End User License Agreement"
+    },
+    "canva": {
+      "display_name": "Canva",
+      "description": "Thiết kế ảnh, bài đăng và tài liệu bằng mẫu có sẵn.",
+      "publisher": "Canva Pty Ltd",
+      "category": "media",
+      "audience": "general",
+      "advanced_group": "marketing",
+      "display_rank": 1,
+      "winget_id": "Canva.Canva",
+      "check_commands": [["winget", "list", "--id", "Canva.Canva", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/Canva/Canva",
+      "license_note": "Canva Terms of Use"
+    },
+    "docker-desktop": {
+      "display_name": "Docker Desktop",
+      "description": "Tạo môi trường riêng để chạy và thử ứng dụng khi lập trình.",
+      "publisher": "Docker Inc.",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "display_rank": 6,
+      "winget_id": "Docker.DockerDesktop",
+      "check_commands": [["winget", "list", "--id", "Docker.DockerDesktop", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/Docker/DockerDesktop",
+      "license_note": "Docker Subscription Service Agreement"
+    },
+    "jetbrains-toolbox": {
+      "display_name": "JetBrains Toolbox",
+      "description": "Cài và cập nhật các công cụ lập trình của JetBrains.",
+      "publisher": "JetBrains",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "JetBrains.Toolbox",
+      "check_commands": [["winget", "list", "--id", "JetBrains.Toolbox", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/j/JetBrains/Toolbox",
+      "license_note": "JetBrains User Agreement"
+    },
+    "dbeaver": {
+      "display_name": "DBeaver Community",
+      "description": "Xem, sửa và quản lý nhiều loại cơ sở dữ liệu.",
+      "publisher": "DBeaver Corp",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "DBeaver.DBeaver.Community",
+      "check_commands": [["winget", "list", "--id", "DBeaver.DBeaver.Community", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/d/DBeaver/DBeaver/Community",
+      "license_note": "Apache-2.0"
+    },
+    "winscp": {
+      "display_name": "WinSCP",
+      "description": "Chuyển file an toàn giữa máy tính và máy chủ.",
+      "publisher": "Martin Prikryl",
+      "category": "utilities",
+      "audience": "advanced",
+      "winget_id": "WinSCP.WinSCP",
+      "check_commands": [["winget", "list", "--id", "WinSCP.WinSCP", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/w/WinSCP/WinSCP",
+      "license_note": "GPL-3.0"
+    },
+    "putty": {
+      "display_name": "PuTTY",
+      "description": "Kết nối và điều khiển máy chủ từ xa bằng SSH.",
+      "publisher": "Simon Tatham",
+      "category": "utilities",
+      "audience": "advanced",
+      "winget_id": "PuTTY.PuTTY",
+      "check_commands": [["winget", "list", "--id", "PuTTY.PuTTY", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/PuTTY/PuTTY",
+      "license_note": "MIT"
+    },
+    "wireshark": {
+      "display_name": "Wireshark",
+      "description": "Xem chi tiết dữ liệu mạng để tìm lỗi kết nối.",
+      "publisher": "Wireshark Foundation",
+      "category": "utilities",
+      "audience": "advanced",
+      "winget_id": "WiresharkFoundation.Wireshark",
+      "check_commands": [["winget", "list", "--id", "WiresharkFoundation.Wireshark", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/w/WiresharkFoundation/Wireshark",
+      "license_note": "GPL-2.0"
+    },
+    "virtualbox": {
+      "display_name": "Oracle VirtualBox",
+      "description": "Chạy thêm một hệ điều hành khác bên trong Windows.",
+      "publisher": "Oracle",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Oracle.VirtualBox",
+      "check_commands": [["winget", "list", "--id", "Oracle.VirtualBox", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Oracle/VirtualBox",
+      "license_note": "GNU GPL và Oracle licensing terms"
+    },
+    "github-cli": {
+      "display_name": "GitHub CLI",
+      "description": "Quản lý GitHub bằng dòng lệnh ngay trong terminal.",
+      "publisher": "GitHub, Inc.",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "GitHub.cli",
+      "check_commands": [["winget", "list", "--id", "GitHub.cli", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GitHub/cli",
+      "license_note": "MIT"
+    },
+    "cursor": {
+      "display_name": "Cursor",
+      "description": "Viết và sửa code với trợ lý AI tích hợp sẵn.",
+      "publisher": "Anysphere",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "display_rank": 4,
+      "winget_id": "Anysphere.Cursor",
+      "check_commands": [["winget", "list", "--id", "Anysphere.Cursor", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Anysphere/Cursor",
+      "license_note": "Cursor Terms of Service"
+    },
+    "codex-cli": {
+      "display_name": "Codex CLI",
+      "description": "Nhờ AI đọc, sửa và chạy code ngay trong terminal.",
+      "publisher": "OpenAI, Inc.",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "display_rank": 11,
+      "winget_id": "OpenAI.Codex",
+      "check_commands": [["winget", "list", "--id", "OpenAI.Codex", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenAI/Codex",
+      "license_note": "Apache-2.0 và OpenAI Terms of Use; đây là công cụ dòng lệnh, không phải IDE"
+    },
+    "antigravity-ide": {
+      "display_name": "Antigravity IDE",
+      "description": "Môi trường viết code của Google có trợ lý AI.",
+      "publisher": "Google",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Google.AntigravityIDE",
+      "check_commands": [["winget", "list", "--id", "Google.AntigravityIDE", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/AntigravityIDE",
+      "license_note": "Google Terms of Service"
+    },
+    "windsurf": {
+      "display_name": "Windsurf",
+      "description": "Viết code và làm việc với dự án bằng trợ lý AI.",
+      "publisher": "Codeium",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Codeium.Windsurf",
+      "check_commands": [["winget", "list", "--id", "Codeium.Windsurf", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/Codeium/Windsurf",
+      "license_note": "Windsurf Terms of Service"
+    },
+    "zed": {
+      "display_name": "Zed",
+      "description": "Trình soạn code nhanh, nhẹ và hỗ trợ làm việc nhóm.",
+      "publisher": "Zed Industries",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "ZedIndustries.Zed",
+      "check_commands": [["winget", "list", "--id", "ZedIndustries.Zed", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/ZedIndustries/Zed",
+      "license_note": "GPL-3.0 và Zed Terms of Service"
+    },
+    "sublime-text": {
+      "display_name": "Sublime Text 4",
+      "description": "Soạn văn bản và code nhanh, nhẹ, dễ sử dụng.",
+      "publisher": "Sublime HQ Pty Ltd",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "SublimeHQ.SublimeText.4",
+      "check_commands": [["winget", "list", "--id", "SublimeHQ.SublimeText.4", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/SublimeHQ/SublimeText/4",
+      "license_note": "Sublime Text End User License Agreement"
+    },
+    "visual-studio-community": {
+      "display_name": "Visual Studio Community 2022",
+      "description": "Làm ứng dụng Windows, .NET, C++ và nhiều loại dự án lớn.",
+      "publisher": "Microsoft Corporation",
+      "category": "developer_tools",
+      "audience": "advanced",
+      "winget_id": "Microsoft.VisualStudio.2022.Community",
+      "check_commands": [["winget", "list", "--id", "Microsoft.VisualStudio.2022.Community", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VisualStudio/2022/Community",
+      "license_note": "Microsoft Visual Studio Community License; installer có thể yêu cầu chọn workload"
+    },
+    "brave": {
+      "display_name": "Brave",
+      "description": "Lướt web với tính năng giảm quảng cáo và theo dõi được bật sẵn.",
+      "publisher": "Brave Software Inc",
+      "category": "browsers",
+      "audience": "general",
+      "display_rank": 4,
+      "winget_id": "Brave.Brave",
+      "check_commands": [["winget", "list", "--id", "Brave.Brave", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/b/Brave/Brave",
+      "license_note": "MPL-2.0 và Brave Terms of Use"
+    },
+    "opera": {
+      "display_name": "Opera",
+      "description": "Lướt web với chặn quảng cáo và nhiều tiện ích có sẵn.",
+      "publisher": "Opera Software",
+      "category": "browsers",
+      "audience": "general",
+      "winget_id": "Opera.Opera",
+      "check_commands": [["winget", "list", "--id", "Opera.Opera", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/Opera/Opera",
+      "license_note": "Opera End User License Agreement"
+    },
+    "vivaldi": {
+      "display_name": "Vivaldi",
+      "description": "Lướt web, giảm theo dõi và tùy chỉnh giao diện theo ý bạn.",
+      "publisher": "Vivaldi Technologies AS",
+      "category": "browsers",
+      "audience": "general",
+      "winget_id": "Vivaldi.Vivaldi",
+      "check_commands": [["winget", "list", "--id", "Vivaldi.Vivaldi", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/v/Vivaldi/Vivaldi",
+      "license_note": "Vivaldi End User License Agreement"
+    },
+    "librewolf": {
+      "display_name": "LibreWolf",
+      "description": "Lướt web riêng tư hơn với chặn theo dõi được cấu hình sẵn.",
+      "publisher": "LibreWolf",
+      "category": "browsers",
+      "audience": "general",
+      "winget_id": "LibreWolf.LibreWolf",
+      "check_commands": [["winget", "list", "--id", "LibreWolf.LibreWolf", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/LibreWolf/LibreWolf",
+      "license_note": "MPL-2.0"
     }
   }
 }

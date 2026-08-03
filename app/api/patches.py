@@ -4,8 +4,9 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.config import BASE_DIR
-from app.models.patches import PatchNotesFile, PatchRelease
+from app.config import BASE_DIR, get_settings
+from app.models.patches import PatchNotesFile, PatchRelease, UpdateStatus
+from app.services.update_service import UpdateService
 
 router = APIRouter(prefix="/api/patches", tags=["patches"])
 PATCH_NOTES_PATH = BASE_DIR.parent / "data" / "processed" / "patch_notes.json"
@@ -25,3 +26,8 @@ def list_patches() -> list[PatchRelease]:
 @router.get("/latest", response_model=PatchRelease)
 def latest_patch() -> PatchRelease:
     return load_patch_notes().releases[0]
+
+
+@router.get("/update-status", response_model=UpdateStatus)
+def update_status() -> UpdateStatus:
+    return UpdateService(get_settings().app_version).check()

@@ -1,10 +1,11 @@
+import secrets
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.actions import action_task_manager
@@ -59,7 +60,42 @@ async def security_and_logging_middleware(request: Request, call_next):
     started = time.perf_counter()
     status_code = 500
     try:
-        response = await call_next(request)
+        desktop_token = settings.desktop_api_token
+        supplied_token = request.query_params.get("desktop_token", "")
+        session_token = request.cookies.get("winassist_desktop_session", "")
+        valid_session = bool(desktop_token) and secrets.compare_digest(
+            session_token,
+            desktop_token,
+        )
+        if (
+            desktop_token
+            and request.url.path == "/"
+            and secrets.compare_digest(supplied_token, desktop_token)
+        ):
+            response = RedirectResponse(url="/", status_code=303)
+            response.set_cookie(
+                "winassist_desktop_session",
+                desktop_token,
+                httponly=True,
+                samesite="strict",
+            )
+        elif (
+            desktop_token
+            and not valid_session
+            and (
+                request.url.path == "/"
+                or (
+                    request.url.path.startswith("/api/")
+                    and request.url.path not in {"/api/health", "/api/ready"}
+                )
+            )
+        ):
+            response = JSONResponse(
+                status_code=403,
+                content={"detail": "Desktop session không hợp lệ."},
+            )
+        else:
+            response = await call_next(request)
         status_code = response.status_code
         return response
     finally:

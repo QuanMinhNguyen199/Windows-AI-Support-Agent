@@ -47,7 +47,7 @@ def test_latest_patch_api() -> None:
         response = client.get("/api/patches/latest")
 
     assert response.status_code == 200
-    assert response.json()["version"] == "0.8.3"
+    assert response.json()["version"] == "0.9.7"
     assert response.json()["highlights"]
 
 

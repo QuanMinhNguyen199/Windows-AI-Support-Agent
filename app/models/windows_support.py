@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.models.command import CommandResult
+
 
 class CapabilityState(StrEnum):
     AVAILABLE = "available"
@@ -25,3 +27,9 @@ class WindowsOverviewResponse(BaseModel):
     available_count: int
     warning_count: int
     message: str
+
+
+class WindowsActionResponse(BaseModel):
+    success: bool
+    message: str
+    result: CommandResult

@@ -21,6 +21,8 @@ window.WinAssistApi = {
   },
   health: () => window.WinAssistApi.request("/api/health"),
   systemSpecs: () => window.WinAssistApi.request("/api/system/specs"),
+  graphicsDriver: () => window.WinAssistApi.request("/api/system/graphics-driver"),
+  openGraphicsApp: (vendor) => window.WinAssistApi.request(`/api/system/graphics-driver/${encodeURIComponent(vendor)}/open`, { method: "POST" }),
   chat: (message, sessionId) => window.WinAssistApi.request("/api/chat", { method: "POST", body: JSON.stringify({ message, session_id: sessionId }) }),
   software: () => window.WinAssistApi.request("/api/software"),
   scanSoftware: () => window.WinAssistApi.request("/api/software/scan", { method: "POST" }),
@@ -39,5 +41,7 @@ window.WinAssistApi = {
   windowsCapabilities: () => window.WinAssistApi.request("/api/windows/capabilities"),
   windowsOverview: () => window.WinAssistApi.request("/api/windows/overview", { method: "POST", timeoutMs: 90000 }),
   inspectWindows: (id) => window.WinAssistApi.request(`/api/windows/${id}`, { method: "POST" }),
+  openWindowsUpdate: () => window.WinAssistApi.request("/api/windows/update/open", { method: "POST" }),
   latestPatch: () => window.WinAssistApi.request("/api/patches/latest"),
+  updateStatus: () => window.WinAssistApi.request("/api/patches/update-status", { timeoutMs: 12000 }),
 };

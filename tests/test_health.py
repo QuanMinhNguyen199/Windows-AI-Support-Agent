@@ -30,6 +30,14 @@ def test_health_check() -> None:
     assert body["ollama"]["status"] == "available"
 
 
+def test_readiness_does_not_require_ollama() -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/ready")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "ready"
+
+
 def test_root_serves_chat_ui() -> None:
     with TestClient(app) as client:
         response = client.get("/")

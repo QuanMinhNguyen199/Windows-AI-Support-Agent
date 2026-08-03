@@ -26,3 +26,25 @@ class SystemSpecsResponse(BaseModel):
     message: str
     specs: SystemSpecs | None = None
     result: CommandResult
+
+
+class GraphicsAdapter(BaseModel):
+    name: str
+    vendor: str
+    driver_version: str | None = None
+    recommendation: str
+    download_url: str
+    management_app_installed: bool = False
+
+
+class GraphicsAppOpenResponse(BaseModel):
+    success: bool
+    message: str
+    result: CommandResult
+
+
+class GraphicsDriverResponse(BaseModel):
+    available: bool
+    message: str
+    adapters: list[GraphicsAdapter] = Field(default_factory=list)
+    result: CommandResult

@@ -11,6 +11,7 @@ class SoftwareCategory(StrEnum):
     OFFICE_PDF = "office_pdf"
     UTILITIES = "utilities"
     MEDIA = "media"
+    ENTERTAINMENT = "entertainment"
     DEVELOPER_TOOLS = "developer_tools"
 
 
@@ -19,13 +20,23 @@ class SoftwareAudience(StrEnum):
     ADVANCED = "advanced"
 
 
+class SoftwareAdvancedGroup(StrEnum):
+    DEVELOPER = "developer"
+    MARKETING = "marketing"
+    OFFICE = "office"
+    SYSTEM = "system"
+
+
 class SoftwareEntry(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     display_name: str = Field(min_length=1)
+    description: str = Field(min_length=3, max_length=120)
     publisher: str = Field(min_length=1)
     category: SoftwareCategory
     audience: SoftwareAudience
+    advanced_group: SoftwareAdvancedGroup | None = None
+    display_rank: int = Field(default=1000, ge=1, le=1000)
     winget_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._+-]+$")
     check_commands: tuple[tuple[str, ...], ...] = Field(min_length=1)
     verification_commands: tuple[tuple[str, ...], ...] = ()
@@ -74,9 +85,12 @@ class SoftwareCatalogFile(BaseModel):
 class SoftwareSummary(BaseModel):
     id: str
     display_name: str
+    description: str
     publisher: str
     category: SoftwareCategory
     audience: SoftwareAudience
+    advanced_group: SoftwareAdvancedGroup | None = None
+    display_rank: int = Field(default=1000, ge=1, le=1000)
     winget_id: str
     license_note: str
 

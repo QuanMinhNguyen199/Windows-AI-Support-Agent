@@ -1,7 +1,8 @@
 const api = window.WinAssistApi;
 const state = window.WinAssistState;
 const terminalStates = new Set(["completed", "failed", "cancelled", "expired"]);
-const categoryNames = { browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", developer_tools: "Công cụ phát triển" };
+const categoryNames = { browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", entertainment: "Game & giải trí", developer_tools: "Công cụ phát triển" };
+const advancedGroupNames = { developer: "Dành cho lập trình", marketing: "Marketing & sáng tạo", office: "Văn phòng chuyên sâu", system: "Quản trị hệ thống" };
 let selectedAction = null;
 let pollTimer = null;
 let pollInProgress = false;
@@ -15,8 +16,17 @@ let selectedAudience = "general";
 let patchNotesLoaded = false;
 let systemSpecsLoaded = false;
 let systemSpecsLoading = false;
+let updateCheckStarted = false;
 
 const byId = (id) => document.getElementById(id);
+
+window.WinAssistDesktop = {
+  showCloseDialog() {
+    const dialog = byId("close-dialog");
+    if (!dialog.open) dialog.showModal();
+    return true;
+  },
+};
 const iconPaths = {
   home: ["M3 10.5 12 3l9 7.5", "M5 9.5V21h14V9.5", "M9 21v-7h6v7"],
   chat: ["M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4.5A2.5 2.5 0 0 1 4 13.5z"],
@@ -66,7 +76,7 @@ function elapsed(createdAt) {
 function switchView(name) {
   document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${name}`));
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
-  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", activity: "Hoạt động", patches: "Patch Update" }[name];
+  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", graphics: "Card màn hình", "windows-update": "Cập nhật Windows", activity: "Hoạt động", patches: "Cập nhật WinAssist" }[name];
   if (name === "overview") loadSystemSpecs();
   if (name === "suggestions" && (!softwareViewLoaded || softwareNeedsRescan || state.activeActions.size)) {
     loadSoftware(!softwareViewLoaded, softwareNeedsRescan);
@@ -76,7 +86,10 @@ function switchView(name) {
     loadWindowsCapabilities();
   }
   if (name === "activity") loadActivity();
-  if (name === "patches") loadLatestPatch();
+  if (name === "patches") {
+    loadLatestPatch();
+    checkForUpdates();
+  }
 }
 
 function specCard(label, value, detail = "") {
@@ -146,7 +159,7 @@ function addChatSuggestions(suggestions) {
   const bubble = element("div", "bubble suggestion-bubble");
   bubble.append(element("p", "suggestion-title", "Bạn có thể chọn:"));
   const actions = element("div", "chat-suggestions");
-  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "activity", "patches"]);
+  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "graphics", "windows-update", "activity", "patches"]);
   suggestions.forEach((suggestion) => {
     if (!suggestion.message && !allowedViews.has(suggestion.view)) return;
     const button = element("button", "chat-suggestion", suggestion.label);
@@ -176,8 +189,32 @@ function openAction(action, title = "Xem lại thao tác") {
   selectedAction = action;
   state.trackAction(action.id);
   byId("action-title").textContent = title;
+  const actionName = title === "Xem lại thao tác"
+    ? "ứng dụng này"
+    : title.replace(/^(Cài|Gỡ)\s+/i, "");
+  const gameInstallIds = new Set([
+    "steam", "epic-games", "gog-galaxy", "discord", "ea-app",
+    "ubisoft-connect", "league-of-legends", "valorant",
+  ]);
+  const gameInstallSummary = `WinAssist sẽ tải và chạy installer chính thức của ${actionName} ngay trên máy. Sau khi cài launcher, bạn có thể cần đăng nhập và tải thêm dữ liệu game.`;
+  const summaries = {
+    software_install: gameInstallIds.has(action.resource_id)
+      ? gameInstallSummary
+      : `WinAssist sẽ tải và cài ${actionName} từ nguồn ứng dụng Windows đã kiểm tra.`,
+    software_uninstall: `WinAssist sẽ gỡ ${actionName} khỏi máy. Dữ liệu riêng của ứng dụng có thể vẫn được giữ lại.`,
+    network_repair: "WinAssist sẽ thực hiện thao tác sửa kết nối mạng này.",
+  };
+  const buttonLabels = {
+    software_install: "Cài đặt",
+    software_uninstall: "Gỡ cài đặt",
+    network_repair: "Thực hiện",
+  };
+  byId("action-summary").textContent = summaries[action.kind] || "WinAssist sẽ thực hiện thay đổi này trên máy.";
   byId("command-text").textContent = action.display_command;
   byId("command-warning").textContent = action.warning;
+  byId("confirm-command").textContent = buttonLabels[action.kind] || "Tiếp tục";
+  byId("confirm-command").className = action.kind === "software_uninstall" ? "danger" : "primary";
+  byId("action-dialog").querySelector("details").open = false;
   byId("action-dialog").showModal();
 }
 
@@ -261,14 +298,39 @@ async function loadSoftware(showLoading = true, rescan = true) {
     activeByResource.forEach((item) => state.trackAction(item.action.id));
     const groups = new Map();
     software
-      .filter((item) => item.audience === selectedAudience)
-      .forEach((item) => { if (!groups.has(item.category)) groups.set(item.category, []); groups.get(item.category).push(item); });
+      .filter((item) => selectedAudience === "general"
+        ? item.audience === "general"
+        : item.audience === "advanced" || Boolean(item.advanced_group))
+      .forEach((item) => {
+        const fallbackAdvancedGroup = item.category === "developer_tools"
+          ? "developer"
+          : (item.category === "office_pdf" ? "office" : "system");
+        const group = selectedAudience === "advanced"
+          ? (item.advanced_group || fallbackAdvancedGroup)
+          : item.category;
+        if (!groups.has(group)) groups.set(group, []);
+        groups.get(group).push(item);
+      });
     root.replaceChildren();
-    groups.forEach((items, category) => {
+    const advancedOrder = ["developer", "marketing", "office", "system"];
+    const generalOrder = ["browsers", "utilities", "office_pdf", "media", "entertainment"];
+    const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
+      const order = selectedAudience === "advanced" ? advancedOrder : generalOrder;
+      return order.indexOf(left) - order.indexOf(right);
+    });
+    orderedGroups.forEach(([category, items]) => {
       const section = element("section", "software-section");
-      section.append(element("h2", "", categoryNames[category] || category));
+      section.append(element("h2", "", selectedAudience === "advanced"
+        ? (advancedGroupNames[category] || category)
+        : (categoryNames[category] || category)));
       const grid = element("div", "software-grid");
-      items.forEach((item) => grid.append(softwareCard(item, activeByResource.get(item.id), softwareInventory.get(item.id))));
+      const riotItems = items.filter((item) => ["league-of-legends", "valorant"].includes(item.id));
+      if (riotItems.length) {
+        grid.append(riotGamesCard(riotItems, activeByResource));
+      }
+      items
+        .filter((item) => !["league-of-legends", "valorant"].includes(item.id))
+        .forEach((item) => grid.append(softwareCard(item, activeByResource.get(item.id), softwareInventory.get(item.id))));
       section.append(grid);
       root.append(section);
     });
@@ -341,7 +403,7 @@ async function loadLatestPatch() {
     patchNotesLoaded = true;
   } catch (error) {
     const message = error.message === "Not Found"
-      ? "Backend đang chạy phiên bản cũ. Hãy khởi động lại WinAssist để tải Patch Update."
+      ? "Backend đang chạy phiên bản cũ. Hãy khởi động lại WinAssist để kiểm tra cập nhật."
       : `Không thể tải thông tin phiên bản: ${error.message}`;
     const errorBox = element("div", "patch-error");
     errorBox.append(element("p", "error-text", message));
@@ -352,11 +414,138 @@ async function loadLatestPatch() {
   }
 }
 
+async function checkForUpdates(showLoading = true) {
+  if (updateCheckStarted && !showLoading) return;
+  updateCheckStarted = true;
+  const root = byId("update-status");
+  const button = byId("check-update");
+  if (showLoading) {
+    button.disabled = true;
+    button.textContent = "Đang kiểm tra…";
+  }
+  try {
+    const status = await api.updateStatus();
+    const text = element("div");
+    text.append(
+      element("strong", "", status.update_available ? `Có WinAssist ${status.latest_version}` : "Trạng thái cập nhật"),
+      element("p", "muted", status.message),
+    );
+    root.replaceChildren(text);
+    if (status.update_available && status.installer_available) {
+      const download = element("a", "primary update-download", "Tải và cập nhật");
+      download.href = status.installer_url;
+      download.target = "_blank";
+      download.rel = "noopener noreferrer";
+      root.append(download);
+    } else {
+      const retry = element("button", "secondary", "Kiểm tra lại");
+      retry.addEventListener("click", () => checkForUpdates(true));
+      root.append(retry);
+    }
+  } catch (error) {
+    root.firstElementChild?.querySelector("p")?.replaceChildren(`Không thể kiểm tra cập nhật: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Kiểm tra ngay";
+  }
+}
+
+async function scanGraphicsDriver() {
+  const button = byId("scan-graphics-driver");
+  const root = byId("graphics-driver-result");
+  button.disabled = true;
+  button.textContent = "Đang kiểm tra…";
+  const loading = element("div", "inventory-loading");
+  loading.append(element("div", "loader"), element("p", "", "Đang kiểm tra card màn hình và phiên bản hiện tại…"));
+  root.replaceChildren(loading);
+  try {
+    const response = await api.graphicsDriver();
+    if (!response.available || !response.adapters.length) {
+      root.replaceChildren(element("div", "driver-notice", response.message));
+      return;
+    }
+    const notice = element("div", "driver-notice");
+    notice.append(
+      element("strong", "", "Đã nhận diện card màn hình"),
+      element("p", "muted", "WinAssist không tự cài driver ở bước này. Công cụ chính hãng có thể mở cửa sổ hoặc trình duyệt riêng để hoàn tất cập nhật. Với laptop, hãy ưu tiên bản do hãng máy hoặc Windows Update đề xuất."),
+    );
+    const grid = element("div", "driver-grid");
+    const toolNames = {
+      NVIDIA: "NVIDIA App",
+      AMD: "AMD Software",
+      Intel: "Intel Driver Assistant",
+    };
+    response.adapters.forEach((adapter) => {
+      const card = element("article", "driver-card");
+      const toolName = toolNames[adapter.vendor] || `công cụ ${adapter.vendor}`;
+      card.append(
+        element("h3", "", adapter.name),
+        element("p", "driver-version", adapter.driver_version ? `Phiên bản hiện tại: ${adapter.driver_version}` : "Chưa đọc được phiên bản hiện tại"),
+        element("p", `driver-tool-status ${adapter.management_app_installed ? "installed" : "missing"}`, adapter.management_app_installed ? `${toolName} đã có trên máy` : `${toolName} chưa có trên máy`),
+        element("p", "muted", adapter.recommendation),
+      );
+      if (adapter.management_app_installed) {
+        const open = element("button", "primary driver-download", `Mở ${toolName}`);
+        open.addEventListener("click", async () => {
+          open.disabled = true;
+          try {
+            const response = await api.openGraphicsApp(adapter.vendor);
+            showToast(response.message, response.success ? "success" : "error");
+          } catch (error) {
+            showToast(`Không thể mở ứng dụng: ${error.message}`, "error");
+          } finally { open.disabled = false; }
+        });
+        card.append(open);
+      } else {
+        const link = element("a", "primary driver-download", "Mở trang tải chính hãng");
+        link.href = adapter.download_url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        card.append(link);
+      }
+      grid.append(card);
+    });
+    root.replaceChildren(notice, grid);
+  } catch (error) {
+    root.replaceChildren(element("p", "error-text", `Không thể kiểm tra card màn hình: ${error.message}`));
+  } finally {
+    button.disabled = false;
+    button.textContent = "Kiểm tra lại";
+  }
+}
+
+function riotGamesCard(items, activeByResource) {
+  const card = element("article", "software-card riot-group-card");
+  const head = element("div", "software-head");
+  const title = element("div");
+  title.append(
+    element("h3", "", "Riot Games"),
+    element("p", "muted", "League of Legends và VALORANT dùng chung Riot Client"),
+  );
+  head.append(title);
+  const options = element("div", "riot-game-options");
+  items.forEach((item) => {
+    const option = softwareCard(
+      item,
+      activeByResource.get(item.id),
+      softwareInventory.get(item.id),
+    );
+    option.classList.add("riot-game-option");
+    options.append(option);
+  });
+  card.append(head, options);
+  return card;
+}
+
 function softwareCard(item, active, inventory) {
   const card = element("article", "software-card");
   const head = element("div", "software-head");
   const title = element("div");
-  title.append(element("h3", "", item.display_name), element("p", "muted", item.publisher));
+  title.append(
+    element("h3", "", item.display_name),
+    element("p", "muted", item.publisher),
+    element("p", "software-description", item.description),
+  );
   head.append(title);
   const statusText = active
     ? `${active.message} · ${elapsed(active.action.created_at)}`
@@ -457,7 +646,7 @@ async function loadWindowsCapabilities() {
   root.replaceChildren(element("p", "muted", "Đang chuẩn bị các mục kiểm tra…"));
   try {
     const capabilities = await api.windowsCapabilities();
-    root.replaceChildren(...capabilities.map((capability) => {
+    root.replaceChildren(...capabilities.filter((capability) => capability.id !== "update").map((capability) => {
       const card = element("article", "card windows-card");
       card.dataset.capabilityId = capability.id;
       const title = element("div", "windows-card-title");
@@ -536,6 +725,13 @@ function formatCapacity(bytes) {
   return `${(Number(bytes) / (1024 ** 3)).toFixed(1)} GB`;
 }
 
+function formatUpdateDate(value) {
+  if (!value) return "Không rõ ngày cài";
+  const legacy = String(value).match(/^\/Date\((\d+)(?:[+-]\d+)?\)\/$/);
+  const date = new Date(legacy ? Number(legacy[1]) : value);
+  return Number.isNaN(date.getTime()) ? "Không rõ ngày cài" : `Cài ngày ${date.toLocaleDateString("vi-VN")}`;
+}
+
 function renderCapabilityDetails(capability) {
   const grid = element("div", "friendly-grid");
   const data = capability.data || {};
@@ -576,15 +772,40 @@ function renderCapabilityDetails(capability) {
       ));
     });
   } else if (capability.id === "update") {
-    grid.append(
-      detailItem("Dịch vụ cập nhật", data.service_status || "Không xác định", `Chế độ khởi động: ${data.start_type || "không xác định"}`),
-      detailItem("Khởi động lại", data.reboot_pending ? "Đang chờ khởi động lại" : "Không yêu cầu"),
-    );
+    if (data.update_check_succeeded) {
+      const count = Number(data.available_update_count || 0);
+      grid.append(detailItem(
+        "Bản cập nhật mới",
+        count ? `${count} bản đang chờ` : "Không có",
+        count ? "Bạn có thể xem và cài bằng nút bên dưới." : "Máy đang dùng các bản cập nhật mới nhất mà Windows tìm thấy.",
+      ));
+      (data.available_updates || []).forEach((update, index) => {
+        const kb = Array.isArray(update.kb) && update.kb.length
+          ? `KB${update.kb.join(", KB")}`
+          : "Windows không cung cấp mã KB";
+        grid.append(detailItem(
+          `Bản cập nhật ${index + 1}`,
+          update.title || "Bản cập nhật Windows",
+          update.severity ? `${kb} · Mức độ: ${update.severity}` : kb,
+        ));
+      });
+    } else {
+      grid.append(detailItem(
+        "Bản cập nhật mới",
+        "Chưa kiểm tra được",
+        "Hãy thử kiểm tra lại hoặc mở Windows Update.",
+      ));
+    }
+    grid.append(detailItem(
+      "Máy có cần khởi động lại?",
+      data.reboot_pending ? "Có" : "Không",
+      data.reboot_pending ? "Hãy lưu công việc trước khi khởi động lại." : "Bạn có thể tiếp tục sử dụng máy bình thường.",
+    ));
     if (data.latest_hotfix) {
       grid.append(detailItem(
-        "Bản vá gần nhất",
+        "Lần cập nhật gần nhất",
         data.latest_hotfix.HotFixID || "Không xác định",
-        data.latest_hotfix.InstalledOn ? `Cài ngày ${new Date(data.latest_hotfix.InstalledOn).toLocaleDateString("vi-VN")}` : "",
+        formatUpdateDate(data.latest_hotfix.InstalledOn),
       ));
     }
   } else if (capability.id === "datetime") {
@@ -615,6 +836,33 @@ async function runWindowsCapability(id, button, target) {
   } finally {
     button.disabled = false;
   }
+}
+
+async function scanWindowsUpdate() {
+  const button = byId("scan-windows-update");
+  const target = byId("windows-update-result");
+  button.disabled = true;
+  button.textContent = "Đang kiểm tra…";
+  target.replaceChildren(element("div", "loader"), element("p", "", "Đang tìm các bản cập nhật mới… Việc này có thể mất vài phút."));
+  try {
+    renderWindowsResult(await api.inspectWindows("update"), target);
+  } catch (error) {
+    target.replaceChildren(element("p", "error-text", `Không thể kiểm tra: ${error.message}`));
+  } finally {
+    button.disabled = false;
+    button.textContent = "Kiểm tra lại";
+  }
+}
+
+async function openWindowsUpdate() {
+  const button = byId("open-windows-update");
+  button.disabled = true;
+  try {
+    const response = await api.openWindowsUpdate();
+    showToast(response.message, response.success ? "success" : "error");
+  } catch (error) {
+    showToast(`Không thể mở Windows Update: ${error.message}`, "error");
+  } finally { button.disabled = false; }
 }
 
 async function runDiagnostic(type, button) {
@@ -684,6 +932,10 @@ document.querySelectorAll(".nav-item").forEach((button) => button.addEventListen
 document.querySelectorAll("[data-view-target]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.viewTarget)));
 document.querySelectorAll("[data-message]").forEach((button) => button.addEventListener("click", () => { byId("message-input").value = button.dataset.message; byId("message-input").focus(); }));
 document.querySelectorAll(".diagnostic-run").forEach((button) => button.addEventListener("click", () => runDiagnostic(button.dataset.diagnostic, button)));
+byId("scan-graphics-driver").addEventListener("click", scanGraphicsDriver);
+byId("scan-windows-update").addEventListener("click", scanWindowsUpdate);
+byId("open-windows-update").addEventListener("click", openWindowsUpdate);
+byId("check-update").addEventListener("click", () => checkForUpdates(true));
 byId("refresh-software").addEventListener("click", () => loadSoftware(true, true));
 document.querySelectorAll(".audience-tab").forEach((button) => {
   button.addEventListener("click", () => {
@@ -769,10 +1021,27 @@ byId("cancel-command").addEventListener("click", async (event) => {
   byId("action-dialog").close();
 });
 
+byId("close-to-tray").addEventListener("click", async (event) => {
+  event.preventDefault();
+  const bridge = window.pywebview?.api;
+  if (!bridge) return byId("close-dialog").close();
+  const response = await bridge.close_to_tray();
+  if (response.success) byId("close-dialog").close();
+  else showToast(response.message, "error");
+});
+
+byId("exit-winassist").addEventListener("click", async (event) => {
+  event.preventDefault();
+  const bridge = window.pywebview?.api;
+  if (!bridge) return byId("close-dialog").close();
+  await bridge.exit_app();
+});
+
 document.querySelectorAll("[data-icon]").forEach((container) => {
   container.replaceChildren(iconSvg(container.dataset.icon));
 });
 checkHealth();
 loadSystemSpecs();
+checkForUpdates(false);
 startSoftwareEventStream();
 startPolling();

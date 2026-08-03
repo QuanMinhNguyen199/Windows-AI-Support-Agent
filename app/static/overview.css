@@ -117,6 +117,27 @@ svg {
 .inventory-loading p { margin: 5px 0 0; }
 .software-status.installed { color: #6ee7b7; }
 .software-status.not-installed { color: #94a3b8; }
+.software-description {
+  margin: 7px 0 0;
+  color: #c5d0dc;
+  font-size: .84rem;
+  line-height: 1.4;
+}
+.riot-group-card { grid-column: span 2; }
+.riot-game-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.riot-game-option {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #111c27;
+}
+.riot-game-option .software-head p.muted { display: none; }
 .software-toolbar {
   display: flex;
   align-items: center;
@@ -418,6 +439,19 @@ svg {
   background: #081522;
   color: #d8e5f3;
 }
+.action-summary { color: #dce7f4; font-size: 1rem; line-height: 1.6; }
+.technical-details { margin-top: 14px; color: var(--muted); }
+.technical-details summary { cursor: pointer; font-size: .86rem; }
+.technical-details code { margin-top: 10px; }
+.technical-details p { margin-bottom: 0; font-size: .84rem; color: var(--muted); }
+.close-dialog-card { border-color: var(--line); }
+.close-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
 .windows-heading { margin-top: 28px; }
 .primary.is-loading {
   display: inline-flex;
@@ -659,11 +693,58 @@ svg {
   background: #211a1e;
 }
 .patch-error p { margin: 0 0 14px; }
+.update-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.update-status p { margin: 5px 0 0; }
+.update-download { text-decoration: none; white-space: nowrap; }
+.heading-actions { display: flex; gap: 8px; align-items: center; }
+.graphics-driver-result:empty { display: none; }
+.graphics-driver-result { margin: -8px 0 28px; }
+.driver-notice, .driver-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 16px;
+}
+.driver-notice p { margin: 6px 0 0; line-height: 1.5; }
+.driver-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.driver-card h3 { margin: 0 0 7px; }
+.driver-card p { line-height: 1.5; }
+.driver-version { color: #b7c7da; font-size: .86rem; }
+.driver-tool-status { margin: 8px 0; font-size: .88rem; font-weight: 700; }
+.driver-tool-status.installed { color: #6ee7b7; }
+.driver-tool-status.missing { color: #d8b778; }
+.driver-download { display: inline-block; text-decoration: none; margin-top: 5px; }
+.update-standalone { min-height: auto; }
+.update-standalone .card-copy p { margin-bottom: 16px; }
+.windows-update-panel { margin-bottom: 14px; }
+.update-actions-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.update-actions-panel p { margin: 5px 0 0; }
 @media (max-width: 900px) {
   .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .patch-grid { grid-template-columns: 1fr; }
+  .patch-grid, .driver-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
+  .riot-group-card { grid-column: auto; }
+  .riot-game-options { grid-template-columns: 1fr; }
   .spec-grid { grid-template-columns: 1fr; }
   .overview-hero { flex-direction: column; }
   .audience-selector { grid-template-columns: 1fr; }

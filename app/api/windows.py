@@ -2,7 +2,11 @@ from functools import lru_cache
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.models.windows_support import WindowsCapability, WindowsOverviewResponse
+from app.models.windows_support import (
+    WindowsActionResponse,
+    WindowsCapability,
+    WindowsOverviewResponse,
+)
 from app.services.windows_support_service import WindowsSupportService
 
 
@@ -26,6 +30,13 @@ async def windows_overview(
     service: WindowsSupportService = Depends(get_windows_support_service),
 ) -> WindowsOverviewResponse:
     return await service.overview()
+
+
+@router.post("/update/open", response_model=WindowsActionResponse)
+async def open_windows_update(
+    service: WindowsSupportService = Depends(get_windows_support_service),
+) -> WindowsActionResponse:
+    return await service.open_update_settings()
 
 
 @router.post("/{capability_id}", response_model=WindowsCapability)

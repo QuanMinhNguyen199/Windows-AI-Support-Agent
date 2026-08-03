@@ -72,3 +72,96 @@ def test_privacy_sensitive_fields_are_not_selected_by_commands() -> None:
     assert "documentname" not in printers
     assert "get-content" not in devices
     assert "start-process" not in devices
+
+
+def test_open_windows_update_uses_registered_settings_command() -> None:
+    service = WindowsSupportService(
+        runner=FakeRunner({"windows.open_update_settings": {}}),
+        registry=CommandRegistry(),
+    )
+
+    response = asyncio.run(service.open_update_settings())
+
+    assert response.success is True
+    assert response.result.command_id == "windows.open_update_settings"
+    assert response.result.executable == "powershell"
+
+
+def test_windows_update_stopped_manual_service_is_not_a_warning() -> None:
+    service = WindowsSupportService(
+        runner=FakeRunner(
+            {
+                "windows.update_status": {
+                    "supported": True,
+                    "service_status": "Stopped",
+                    "start_type": "Manual",
+                    "reboot_pending": False,
+                    "latest_hotfix": None,
+                    "update_check_succeeded": True,
+                    "available_update_count": 0,
+                    "available_updates": [],
+                }
+            }
+        ),
+        registry=CommandRegistry(),
+    )
+
+    response = asyncio.run(service.inspect("update"))
+
+    assert response.state == "available"
+    assert response.summary == "Máy đã cập nhật. Hiện không có bản cập nhật mới."
+
+
+def test_windows_update_disabled_service_has_plain_language_warning() -> None:
+    service = WindowsSupportService(
+        runner=FakeRunner(
+            {
+                "windows.update_status": {
+                    "supported": True,
+                    "service_status": "Stopped",
+                    "start_type": "Disabled",
+                    "reboot_pending": False,
+                    "latest_hotfix": None,
+                    "update_check_succeeded": True,
+                    "available_update_count": 0,
+                    "available_updates": [],
+                }
+            }
+        ),
+        registry=CommandRegistry(),
+    )
+
+    response = asyncio.run(service.inspect("update"))
+
+    assert response.state == "warning"
+    assert response.summary == "Windows Update đang bị tắt trên máy."
+
+
+def test_windows_update_reports_available_updates() -> None:
+    service = WindowsSupportService(
+        runner=FakeRunner(
+            {
+                "windows.update_status": {
+                    "supported": True,
+                    "service_status": "Running",
+                    "start_type": "Manual",
+                    "reboot_pending": False,
+                    "latest_hotfix": None,
+                    "update_check_succeeded": True,
+                    "available_update_count": 2,
+                    "available_updates": [
+                        {"title": "Security Update", "kb": ["123"], "severity": "Critical"},
+                        {"title": "Cumulative Update", "kb": [], "severity": None},
+                    ],
+                    "update_error": None,
+                }
+            }
+        ),
+        registry=CommandRegistry(),
+    )
+
+    response = asyncio.run(service.inspect("update"))
+
+    assert response.state == "warning"
+    assert response.summary == "Có 2 bản cập nhật mới đang chờ bạn xem và cài."
+    assert len(response.data["available_updates"]) == 2

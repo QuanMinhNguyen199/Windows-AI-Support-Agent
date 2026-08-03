@@ -114,19 +114,37 @@ _COMMANDS = {
                 "$svc=Get-Service wuauserv -ErrorAction SilentlyContinue;"
                 "$hotfix=Get-HotFix -ErrorAction SilentlyContinue|"
                 "Sort-Object InstalledOn -Descending|Select-Object -First 1 "
-                "HotFixID,InstalledOn,Description;"
+                "HotFixID,@{Name='InstalledOn';Expression={if($_.InstalledOn){"
+                "$_.InstalledOn.ToString('yyyy-MM-dd')}else{$null}}},Description;"
                 "$pending=(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\"
                 "CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired');"
+                "$updates=@();$updateCheckSucceeded=$false;$updateError=$null;"
+                "try{$session=New-Object -ComObject Microsoft.Update.Session;"
+                "$searcher=$session.CreateUpdateSearcher();"
+                "$search=$searcher.Search('IsInstalled=0 and IsHidden=0');"
+                "for($i=0;$i-lt $search.Updates.Count;$i++){"
+                "$u=$search.Updates.Item($i);$updates+=[pscustomobject]@{"
+                "title=$u.Title;kb=@($u.KBArticleIDs);severity=$u.MsrcSeverity}};"
+                "$updateCheckSucceeded=$true}catch{$updateError=$_.Exception.Message};"
                 "$status=if($svc){$svc.Status.ToString()}else{$null};"
                 "$start=if($svc){$svc.StartType.ToString()}else{$null};"
                 "[pscustomobject]@{supported=($null-ne $svc);service_status=$status;"
                 "start_type=$start;"
-                "reboot_pending=$pending;latest_hotfix=$hotfix}|"
-                "ConvertTo-Json -Depth 4 -Compress"
+                "reboot_pending=$pending;latest_hotfix=$hotfix;"
+                "update_check_succeeded=$updateCheckSucceeded;"
+                "available_update_count=@($updates).Count;available_updates=@($updates);"
+                "update_error=$updateError}|ConvertTo-Json -Depth 6 -Compress"
             ),
         ),
         "Đọc trạng thái dịch vụ Windows Update và bản vá gần nhất.",
-        timeout_seconds=40,
+        timeout_seconds=120,
+    ),
+    "windows.open_update_settings": _definition(
+        "windows.open_update_settings",
+        "powershell",
+        ("-NoProfile", "-Command", "Start-Process 'ms-settings:windowsupdate'"),
+        "Mở trang Windows Update trong Settings.",
+        risk_level=RiskLevel.LOW_RISK,
     ),
     "windows.datetime": _definition(
         "windows.datetime",
@@ -197,6 +215,60 @@ _COMMANDS = {
         ),
         "Đọc thông số phần cứng và Windows cơ bản.",
         timeout_seconds=30,
+    ),
+    "system.graphics_adapters": _definition(
+        "system.graphics_adapters",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$items=@(Get-CimInstance Win32_VideoController -ErrorAction "
+                "SilentlyContinue|Select-Object Name,DriverVersion,PNPDeviceID);"
+                "$apps=[pscustomobject]@{"
+                "nvidia=(Test-Path 'C:/Program Files/NVIDIA Corporation/NVIDIA App/CEF/NVIDIA app.exe');"
+                "amd=(Test-Path 'C:/Program Files/AMD/CNext/CNext/RadeonSoftware.exe');"
+                "intel=(Test-Path 'C:/Program Files (x86)/Intel/Driver and Support Assistant/DSATray.exe')};"
+                "[pscustomobject]@{adapters=$items;management_apps=$apps}|"
+                "ConvertTo-Json -Depth 4 -Compress"
+            ),
+        ),
+        "Đọc tên và phiên bản trình điều khiển cạc đồ họa.",
+        timeout_seconds=30,
+    ),
+    "system.graphics.open_nvidia": _definition(
+        "system.graphics.open_nvidia",
+        "powershell",
+        (
+            "-NoProfile",
+            "-Command",
+            "Start-Process -FilePath 'C:/Program Files/NVIDIA Corporation/NVIDIA App/CEF/NVIDIA app.exe'",
+        ),
+        "Mở NVIDIA App đã cài trên máy.",
+        risk_level=RiskLevel.LOW_RISK,
+    ),
+    "system.graphics.open_amd": _definition(
+        "system.graphics.open_amd",
+        "powershell",
+        (
+            "-NoProfile",
+            "-Command",
+            "Start-Process -FilePath 'C:/Program Files/AMD/CNext/CNext/RadeonSoftware.exe'",
+        ),
+        "Mở AMD Software đã cài trên máy.",
+        risk_level=RiskLevel.LOW_RISK,
+    ),
+    "system.graphics.open_intel": _definition(
+        "system.graphics.open_intel",
+        "powershell",
+        (
+            "-NoProfile",
+            "-Command",
+            "Start-Process -FilePath 'C:/Program Files (x86)/Intel/Driver and Support Assistant/DSATray.exe'",
+        ),
+        "Mở Intel Driver & Support Assistant đã cài trên máy.",
+        risk_level=RiskLevel.LOW_RISK,
     ),
     "network.ipconfig_basic": _definition(
         "network.ipconfig_basic", "ipconfig", (), "Đọc cấu hình IP cơ bản."

@@ -20,7 +20,13 @@ class SoftwareCatalog:
     def list(self) -> list[SoftwareSummary]:
         return [
             self._summary(software_id, entry)
-            for software_id, entry in sorted(self._entries.items())
+            for software_id, entry in sorted(
+                self._entries.items(),
+                key=lambda item: (
+                    item[1].display_rank,
+                    item[1].display_name.casefold(),
+                ),
+            )
         ]
 
     def get(self, software_id: str) -> SoftwareEntry:
@@ -45,9 +51,12 @@ class SoftwareCatalog:
         return SoftwareSummary(
             id=software_id,
             display_name=entry.display_name,
+            description=entry.description,
             publisher=entry.publisher,
             category=entry.category,
             audience=entry.audience,
+            advanced_group=entry.advanced_group,
+            display_rank=entry.display_rank,
             winget_id=entry.winget_id,
             license_note=entry.license_note,
         )

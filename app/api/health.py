@@ -1,11 +1,21 @@
 from fastapi import APIRouter, Depends
 
 from app.config import get_settings
-from app.models.health import HealthResponse, ServiceStatus
+from app.models.health import HealthResponse, ReadinessResponse, ServiceStatus
 from app.services.ollama_service import OllamaService, get_ollama_service
 
 
 router = APIRouter(tags=["health"])
+
+
+@router.get("/api/ready", response_model=ReadinessResponse)
+def readiness_check() -> ReadinessResponse:
+    settings = get_settings()
+    return ReadinessResponse(
+        status="ready",
+        application=settings.app_name,
+        version=settings.app_version,
+    )
 
 
 @router.get("/api/health", response_model=HealthResponse)

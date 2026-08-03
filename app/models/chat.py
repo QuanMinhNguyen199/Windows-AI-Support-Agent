@@ -66,7 +66,10 @@ class ChatRequest(BaseModel):
 class ChatSuggestion(BaseModel):
     label: str = Field(min_length=1, max_length=80)
     message: str | None = Field(default=None, min_length=1, max_length=300)
-    view: str | None = Field(default=None, pattern=r"^(overview|chat|suggestions|diagnostics|activity|patches)$")
+    view: str | None = Field(
+        default=None,
+        pattern=r"^(overview|chat|suggestions|diagnostics|graphics|windows-update|activity|patches)$",
+    )
 
 
 class ChatResponse(BaseModel):

@@ -12,3 +12,6 @@ data/logs/
 *.log
 .idea/
 .vscode/
+build/
+dist/
+packaging/MicrosoftEdgeWebview2Setup.exe
