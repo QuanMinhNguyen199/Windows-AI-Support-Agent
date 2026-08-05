@@ -204,10 +204,16 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 
 - [x] Bọc frontend hiện tại trong desktop shell pywebview/WebView2, không viết lại UI.
 - [x] Quản lý window/backend lifecycle và single-instance bằng Windows mutex.
+- [x] Launcher source chạy bằng `pythonw.exe`; cảnh báo runtime được chuyển vào log
+  local thay vì hiện trong terminal khi mở app.
+- [x] Giới hạn pywebview JavaScript bridge, không để lộ đối tượng native gây vòng
+  lặp `FontFamily/SyncRoot` trong lúc pywebview đăng ký API.
+- [x] Mở close dialog ngoài callback native để popup không khóa luồng UI và vẫn
+  nhận được thao tác chọn, quay lại hoặc xác nhận.
 - [x] Căn giữa cửa sổ theo work area của monitor chứa con trỏ, không che taskbar
   và tự co kích thước trên màn hình nhỏ hoặc cấu hình nhiều monitor.
-- [x] Thêm close confirmation với ba lựa chọn: xuống system tray, thoát hoàn toàn
-  hoặc quay lại; thoát từ tray không hiển thị dialog lần hai.
+- [x] Close confirmation hiển thị giữa ứng dụng, dùng lựa chọn có dấu tick cho
+  xuống system tray hoặc thoát hoàn toàn; thoát từ tray không hỏi lần hai.
 - [x] Hiển thị lỗi native khi backend không sẵn sàng hoặc port bị chiếm.
 - [x] Readiness endpoint nhẹ, tách khỏi Ollama health để tránh startup timeout giả.
 - [x] Nhận diện GPU NVIDIA/AMD/Intel và điều hướng đến công cụ driver chính hãng.
@@ -220,6 +226,10 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
   thiếu; ghi rõ công cụ chính hãng có thể mở cửa sổ/trình duyệt riêng và không
   mô tả nhầm rằng WinAssist đang tự cài driver.
 - [x] Tab Cập nhật WinAssist tự kiểm tra GitHub Release và hiển thị release notes.
+- [x] Rút gọn Patch Notes cho người dùng phổ thông và thêm form ticket trong tab
+  Hỗ trợ: chọn lỗi, mô tả, ảnh tối đa 5 MB và mã `Ticket#...` sau khi gửi email.
+- [x] Thêm language switcher `VI / EN`, lưu lựa chọn local và dịch cả nội dung
+  giao diện được tạo động thông qua lớp i18n frontend tập trung.
 - [x] Tự kiểm tra GitHub Release khi khởi động và thông báo phiên bản mới.
 - [x] Nút tải installer trực tiếp; Inno Setup đóng bản cũ và mở lại sau nâng cấp.
 - [x] Pipeline theo tag build/test, tạo installer, SHA-256 và đính kèm GitHub Release.
@@ -236,9 +246,15 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 - [x] Bổ sung icon `.ico` nhất quán và system tray Mở/Ẩn/Thoát.
 - [x] Cài Inno Setup 6.7.3, build installer per-user và smoke test cài/gỡ trong
   thư mục cách ly: executable tồn tại, uninstaller exit 0 và xóa sạch thư mục.
+- [x] Luôn hiển thị bước chọn thư mục cài đặt; mặc định dùng LocalAppData nhưng
+  cho phép chọn ổ/thư mục khác mà người dùng có quyền ghi.
+- [x] Thêm tab nhỏ Gỡ WinAssist với xác nhận rõ ràng; chỉ chạy uninstaller nằm
+  cạnh executable, xóa dữ liệu WinAssist và giữ nguyên mọi tiện ích đã cài.
 - [ ] Ký số desktop shell và installer bằng certificate phát hành.
 - [ ] Kiểm thử Windows 10/11 trên máy sạch và pipeline release artifact.
 - [x] Tinh gọn Tổng quan máy; loại bỏ chức năng xuất báo cáo JSON không cần thiết.
+- [x] Sửa layout Trợ lý theo viewport: chat log tự co giãn, composer luôn hiển
+  thị đủ và không làm trang bị tràn margin/scrollbar dọc ngoài ý muốn.
 - [x] Chọn hướng Community Beta, dùng `minhquanpro65@gmail.com` và GitHub Issues
   làm kênh hỗ trợ; chưa công bố license và phải cảnh báo rõ nếu installer chưa ký số.
 

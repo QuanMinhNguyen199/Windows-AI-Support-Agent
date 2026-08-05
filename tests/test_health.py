@@ -44,3 +44,13 @@ def test_root_serves_chat_ui() -> None:
 
     assert response.status_code == 200
     assert "WinAssist Local" in response.text
+
+
+def test_root_exposes_vietnamese_english_language_switcher() -> None:
+    with TestClient(app) as client:
+        response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'data-language="vi"' in response.text
+    assert 'data-language="en"' in response.text
+    assert "/static/i18n.js" in response.text

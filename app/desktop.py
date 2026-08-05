@@ -5,6 +5,7 @@ import json
 import os
 import secrets
 import socket
+import subprocess
 import sys
 import threading
 import time
@@ -87,60 +88,62 @@ def desktop_icon_path() -> Path:
     return bundled if bundled.exists() else bundle_root / "packaging" / "WinAssist.ico"
 
 
+def installed_uninstaller_path() -> Path | None:
+    """Return the trusted Inno uninstaller beside the frozen desktop executable."""
+    if not getattr(sys, "frozen", False):
+        return None
+    install_dir = Path(sys.executable).resolve().parent
+    candidate = (install_dir / "unins000.exe").resolve()
+    if candidate.parent != install_dir or candidate.name.casefold() != "unins000.exe":
+        return None
+    return candidate if candidate.is_file() else None
+
+
 class DesktopController:
     """Coordinates close confirmation, tray hiding and final shutdown."""
 
     def __init__(self) -> None:
-        self.window: Any | None = None
+        # Keep native objects private. pywebview inspects public js_api members and
+        # recursively walking a Window reaches WinForms Font/Families/SyncRoot.
+        self._window: Any | None = None
         self.tray_available = False
         self.exit_requested = False
+        self._close_dialog_pending = False
 
     def bind(self, window: Any) -> None:
-        self.window = window
+        self._window = window
 
     def on_closing(self) -> bool:
         if self.exit_requested:
             return True
-        threading.Timer(0.05, self._show_close_dialog).start()
+        if not self._close_dialog_pending:
+            self._close_dialog_pending = True
+            # The closing callback runs on the native UI thread. Evaluating JS
+            # synchronously here displays the modal but blocks all its clicks.
+            threading.Timer(0.05, self._show_close_dialog).start()
         return False
 
     def _show_close_dialog(self) -> None:
-        if self.window is None:
-            return
         try:
-            shown = self.window.evaluate_js(
+            if self._window is None:
+                return
+            shown = self._window.evaluate_js(
                 "window.WinAssistDesktop?.showCloseDialog?.() ?? false"
             )
             if shown:
                 return
-        except Exception:  # noqa: BLE001 - native fallback at desktop boundary
-            pass
-        self._native_close_fallback()
-
-    def _native_close_fallback(self) -> None:
-        if os.name != "nt":
+        except Exception:  # noqa: BLE001 - keep the app open if UI is not ready
             return
-        choice = ctypes.windll.user32.MessageBoxW(
-            None,
-            "Bạn muốn đóng WinAssist thế nào?\n\n"
-            "Có: Đóng xuống khay hệ thống\n"
-            "Không: Thoát hoàn toàn\n"
-            "Hủy: Quay lại ứng dụng",
-            "Đóng WinAssist",
-            0x23,
-        )
-        if choice == 6:
-            self.close_to_tray()
-        elif choice == 7:
-            self.exit_app()
+        finally:
+            self._close_dialog_pending = False
 
     def close_to_tray(self) -> dict[str, object]:
-        if self.window is None or not self.tray_available:
+        if self._window is None or not self.tray_available:
             return {
                 "success": False,
                 "message": "Khay hệ thống chưa sẵn sàng. Bạn có thể thoát hoàn toàn.",
             }
-        self.window.hide()
+        self._window.hide()
         return {
             "success": True,
             "message": "WinAssist vẫn đang chạy dưới khay hệ thống.",
@@ -148,9 +151,50 @@ class DesktopController:
 
     def exit_app(self) -> dict[str, object]:
         self.exit_requested = True
-        if self.window is not None:
-            self.window.destroy()
+        if self._window is not None:
+            self._window.destroy()
         return {"success": True, "message": "Đang thoát WinAssist."}
+
+    def uninstall_status(self) -> dict[str, object]:
+        available = installed_uninstaller_path() is not None
+        return {
+            "available": available,
+            "message": (
+                "WinAssist đã sẵn sàng để gỡ khỏi máy."
+                if available
+                else "Chỉ có thể gỡ WinAssist từ bản đã cài bằng Setup."
+            ),
+        }
+
+    def uninstall_app(self) -> dict[str, object]:
+        uninstaller = installed_uninstaller_path()
+        if uninstaller is None:
+            return {
+                "success": False,
+                "message": "Không tìm thấy bộ gỡ cài đặt WinAssist hợp lệ.",
+            }
+        try:
+            subprocess.Popen(  # noqa: S603 - exact trusted path beside frozen executable
+                [
+                    str(uninstaller),
+                    "/SILENT",
+                    "/SUPPRESSMSGBOXES",
+                    "/NORESTART",
+                    "/PURGEDATA=1",
+                ],
+                shell=False,
+                close_fds=True,
+            )
+        except OSError:
+            return {
+                "success": False,
+                "message": "Không thể mở bộ gỡ cài đặt. Hãy thử lại sau.",
+            }
+        self.exit_app()
+        return {
+            "success": True,
+            "message": "Đang đóng và gỡ WinAssist khỏi máy.",
+        }
 
 
 class DesktopTray:

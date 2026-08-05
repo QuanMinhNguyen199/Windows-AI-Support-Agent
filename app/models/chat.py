@@ -68,7 +68,7 @@ class ChatSuggestion(BaseModel):
     message: str | None = Field(default=None, min_length=1, max_length=300)
     view: str | None = Field(
         default=None,
-        pattern=r"^(overview|chat|suggestions|diagnostics|graphics|windows-update|activity|patches)$",
+        pattern=r"^(overview|chat|suggestions|diagnostics|graphics|windows-update|activity|patches|support)$",
     )
 
 

@@ -15,6 +15,7 @@ from app.desktop import (
     desktop_icon_path,
     loopback_port_is_available,
 )
+from app import desktop
 from app.main import app, settings
 
 
@@ -74,6 +75,52 @@ class FakeWindow:
         self.destroyed = True
 
 
+class FakeDialogWindow(FakeWindow):
+    def __init__(self) -> None:
+        super().__init__()
+        self.scripts: list[str] = []
+
+    def evaluate_js(self, script: str) -> bool:
+        self.scripts.append(script)
+        return True
+
+
+def test_closing_opens_in_app_dialog_without_blocking_native_event(monkeypatch) -> None:
+    window = FakeDialogWindow()
+    controller = DesktopController()
+    controller.bind(window)
+    scheduled: list[object] = []
+
+    class FakeTimer:
+        def __init__(self, _delay, callback) -> None:
+            scheduled.append(callback)
+
+        def start(self) -> None:
+            return None
+
+    monkeypatch.setattr(desktop.threading, "Timer", FakeTimer)
+
+    should_close = controller.on_closing()
+
+    assert should_close is False
+    assert window.destroyed is False
+    assert window.scripts == []
+    assert len(scheduled) == 1
+
+    scheduled[0]()
+
+    assert window.scripts == ["window.WinAssistDesktop?.showCloseDialog?.() ?? false"]
+    assert controller._close_dialog_pending is False
+
+
+def test_native_window_is_not_exposed_as_public_js_api_state() -> None:
+    controller = DesktopController()
+    controller.bind(FakeWindow())
+
+    assert "window" not in vars(controller)
+    assert vars(controller)["_window"] is not None
+
+
 def test_desktop_controller_hides_to_tray_or_exits() -> None:
     window = FakeWindow()
     controller = DesktopController()
@@ -101,6 +148,45 @@ def test_desktop_controller_does_not_hide_without_tray() -> None:
 
     assert response["success"] is False
     assert window.hidden is False
+
+
+def test_desktop_controller_uninstall_requires_installed_build(monkeypatch) -> None:
+    controller = DesktopController()
+    monkeypatch.setattr(desktop, "installed_uninstaller_path", lambda: None)
+
+    assert controller.uninstall_status()["available"] is False
+    assert controller.uninstall_app()["success"] is False
+    assert controller.exit_requested is False
+
+
+def test_desktop_controller_launches_trusted_uninstaller(tmp_path, monkeypatch) -> None:
+    uninstaller = tmp_path / "unins000.exe"
+    uninstaller.write_bytes(b"test")
+    calls: list[tuple[list[str], dict[str, object]]] = []
+
+    def fake_popen(arguments, **kwargs):
+        calls.append((arguments, kwargs))
+        return object()
+
+    window = FakeWindow()
+    controller = DesktopController()
+    controller.bind(window)
+    monkeypatch.setattr(desktop, "installed_uninstaller_path", lambda: uninstaller)
+    monkeypatch.setattr(desktop.subprocess, "Popen", fake_popen)
+
+    response = controller.uninstall_app()
+
+    assert response["success"] is True
+    assert calls[0][0] == [
+        str(uninstaller),
+        "/SILENT",
+        "/SUPPRESSMSGBOXES",
+        "/NORESTART",
+        "/PURGEDATA=1",
+    ]
+    assert calls[0][1]["shell"] is False
+    assert controller.exit_requested is True
+    assert window.destroyed is True
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows monitor API only")

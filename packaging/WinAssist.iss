@@ -11,6 +11,7 @@ AppPublisher={#MyAppPublisher}
 AppContact=minhquanpro65@gmail.com
 AppSupportURL=mailto:minhquanpro65@gmail.com
 DefaultDirName={localappdata}\Programs\WinAssist
+DisableDirPage=no
 DefaultGroupName=WinAssist
 OutputDir=..\dist\installer
 OutputBaseFilename=WinAssist-{#MyAppVersion}-Setup
@@ -41,3 +42,12 @@ Name: "desktopicon"; Description: "Tạo biểu tượng ngoài Desktop"; GroupD
 [Run]
 Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; StatusMsg: "Đang chuẩn bị giao diện Windows..."; Flags: waituntilterminated
 Filename: "{app}\{#MyAppExeName}"; Description: "Mở WinAssist"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{localappdata}\WinAssist Local"; Check: PurgeWinAssistData
+
+[Code]
+function PurgeWinAssistData(): Boolean;
+begin
+  Result := CompareText(ExpandConstant('{param:PURGEDATA|0}'), '1') = 0;
+end;

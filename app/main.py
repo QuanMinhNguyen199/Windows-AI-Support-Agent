@@ -109,7 +109,9 @@ async def security_and_logging_middleware(request: Request, call_next):
             )
             response.headers["Content-Security-Policy"] = (
                 "default-src 'self'; script-src 'self'; style-src 'self'; "
-                "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+                "img-src 'self' data:; connect-src 'self' "
+                "https://winassist-support.minhquanpro65.workers.dev; "
+                "frame-ancestors 'none'"
             )
             response.headers["X-Request-ID"] = request_id
             if request.url.path.startswith("/api/"):

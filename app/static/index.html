@@ -6,7 +6,7 @@
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
     <link rel="stylesheet" href="/static/styles.css?v=0.9.7">
-    <link rel="stylesheet" href="/static/overview.css?v=0.9.7-close-dialog">
+    <link rel="stylesheet" href="/static/overview.css?v=0.9.7-support">
   </head>
   <body>
     <div class="app-layout">
@@ -23,6 +23,8 @@
           <button class="nav-item" data-view="windows-update"><span data-icon="update"></span> Cập nhật Windows</button>
           <button class="nav-item" data-view="activity"><span data-icon="history"></span> Hoạt động</button>
           <button class="nav-item" data-view="patches"><span data-icon="patch"></span> Cập nhật WinAssist</button>
+          <button class="nav-item" data-view="support"><span data-icon="support"></span> Hỗ trợ</button>
+          <button class="nav-item nav-item-danger" data-view="uninstall"><span data-icon="trash"></span> Gỡ WinAssist</button>
         </nav>
         <div class="service-status" aria-live="polite">
           <span id="backend-dot" class="status-dot pending"></span>
@@ -36,7 +38,13 @@
             <p class="eyebrow">Hỗ trợ máy tính Windows</p>
             <h1 id="view-title">Tổng quan máy</h1>
           </div>
-          <p class="privacy">Dữ liệu được giữ trên máy của bạn</p>
+          <div class="topbar-tools">
+            <p class="privacy">Dữ liệu được giữ trên máy của bạn</p>
+            <div class="language-switcher" role="group" aria-label="Ngôn ngữ">
+              <button type="button" data-language="vi" aria-pressed="true">VI</button>
+              <button type="button" data-language="en" aria-pressed="false">EN</button>
+            </div>
+          </div>
         </header>
 
         <section id="view-overview" class="view active">
@@ -156,6 +164,47 @@
             <div class="inventory-loading"><div class="loader"></div><p>Đang tải thông tin phiên bản…</p></div>
           </div>
         </section>
+
+        <section id="view-support" class="view">
+          <div class="section-heading">
+            <div><h2>Hỗ trợ</h2><p>Gặp lỗi hoặc chưa biết cách sử dụng? Hãy gửi thông tin để được hỗ trợ.</p></div>
+          </div>
+          <form id="support-form" class="support-ticket-form">
+            <label for="support-issue-type">Bạn đang gặp lỗi gì?</label>
+            <select id="support-issue-type" required>
+              <option value="">Chọn một mục</option><option value="startup">Không mở được WinAssist</option>
+              <option value="install">Không cài được tiện ích</option><option value="uninstall">Không gỡ được ứng dụng</option>
+              <option value="diagnostics">Kiểm tra máy hoặc mạng bị lỗi</option><option value="updates">Lỗi cập nhật</option>
+              <option value="assistant">Trợ lý trả lời chưa đúng</option><option value="interface">Giao diện hoặc nút bấm bị lỗi</option>
+              <option value="other">Lỗi khác</option>
+            </select>
+            <label for="support-description">Mô tả lỗi</label>
+            <textarea id="support-description" rows="6" minlength="10" maxlength="4000" required placeholder="Bạn đã làm gì và lỗi xuất hiện như thế nào?"></textarea>
+            <label for="support-attachment">Ảnh chụp màn hình <span class="muted">(không bắt buộc, PNG/JPG/WebP, tối đa 5 MB)</span></label>
+            <input id="support-attachment" type="file" accept="image/png,image/jpeg,image/webp">
+            <input id="support-website" class="support-honeypot" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <p class="support-privacy muted">Không gửi mật khẩu, mã xác thực hoặc thông tin tài khoản cá nhân.</p>
+            <div class="support-submit-row"><button id="submit-ticket" type="submit" class="primary">Gửi báo cáo</button></div>
+          </form>
+          <section id="support-ticket-result" class="support-ticket-result" hidden aria-live="polite"></section>
+        </section>
+
+        <section id="view-uninstall" class="view">
+          <div class="section-heading">
+            <div>
+              <h2>Gỡ WinAssist</h2>
+              <p>Xóa WinAssist khỏi máy mà không ảnh hưởng đến các tiện ích bạn đã cài.</p>
+            </div>
+          </div>
+          <section class="uninstall-panel">
+            <div>
+              <strong>Chỉ gỡ WinAssist</strong>
+              <p>Các ứng dụng như Chrome, Discord, Steam hoặc VS Code vẫn được giữ nguyên.</p>
+              <p id="uninstall-status" class="muted">Đang kiểm tra bộ gỡ cài đặt…</p>
+            </div>
+            <button id="request-uninstall" class="danger" disabled>Gỡ WinAssist</button>
+          </section>
+        </section>
       </main>
     </div>
     <div id="toast-region" class="toast-region" aria-live="assertive"></div>
@@ -178,17 +227,43 @@
       <form method="dialog" class="dialog-card close-dialog-card">
         <p class="eyebrow">Đóng WinAssist</p>
         <h2>Bạn muốn đóng ứng dụng thế nào?</h2>
-        <p class="action-summary">WinAssist có thể tiếp tục chạy dưới khay hệ thống để mở lại nhanh, hoặc thoát hoàn toàn.</p>
+        <p class="action-summary">Chọn một cách đóng bên dưới.</p>
+        <fieldset class="close-options">
+          <legend class="sr-only">Cách đóng WinAssist</legend>
+          <label class="close-option">
+            <input type="radio" name="close-choice" value="tray" checked>
+            <span class="option-check" aria-hidden="true"></span>
+            <span><strong>Thu nhỏ xuống khay</strong><small>WinAssist vẫn chạy và có thể mở lại nhanh.</small></span>
+          </label>
+          <label class="close-option">
+            <input type="radio" name="close-choice" value="exit">
+            <span class="option-check" aria-hidden="true"></span>
+            <span><strong>Thoát hoàn toàn</strong><small>Đóng WinAssist và dừng các tiến trình nền.</small></span>
+          </label>
+        </fieldset>
         <div class="close-dialog-actions">
           <button id="cancel-close" class="secondary" value="cancel">Quay lại</button>
-          <button id="close-to-tray" class="secondary" value="default">Đóng xuống khay</button>
-          <button id="exit-winassist" class="danger" value="default">Thoát hoàn toàn</button>
+          <button id="confirm-close" class="primary" value="default">Xác nhận</button>
         </div>
       </form>
     </dialog>
 
+    <dialog id="uninstall-dialog">
+      <form method="dialog" class="dialog-card uninstall-dialog-card">
+        <p class="eyebrow">Xác nhận gỡ ứng dụng</p>
+        <h2>Gỡ WinAssist khỏi máy?</h2>
+        <p class="action-summary">WinAssist sẽ đóng, xóa thư mục cài đặt cùng dữ liệu riêng như lịch sử và log.</p>
+        <p class="uninstall-safe-note"><strong>Các tiện ích bạn đã cài sẽ không bị gỡ.</strong></p>
+        <div class="dialog-actions">
+          <button id="cancel-uninstall" class="secondary" value="cancel">Quay lại</button>
+          <button id="confirm-uninstall" class="danger" value="default">Gỡ WinAssist</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/static/i18n.js?v=0.9.7" defer></script>
     <script src="/static/api-client.js?v=0.9.7" defer></script>
     <script src="/static/state.js?v=0.9.7" defer></script>
-    <script src="/static/app.js?v=0.9.7-close-dialog" defer></script>
+    <script src="/static/app.js?v=0.9.7-support" defer></script>
   </body>
 </html>

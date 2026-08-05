@@ -6,30 +6,21 @@
       "title": "WinAssist đã có phiên bản ứng dụng Windows",
       "summary": "Bạn có thể mở WinAssist như một ứng dụng bình thường mà không cần tự khởi động backend hoặc mở trình duyệt.",
       "highlights": [
-        "Mở WinAssist trong cửa sổ riêng giống các ứng dụng Windows khác.",
-        "Các dịch vụ cần thiết tự chạy khi mở ứng dụng và tự dừng khi bạn thoát.",
-        "Ứng dụng ngăn mở nhiều cửa sổ trùng nhau để máy không bị chạy nặng.",
-        "Lịch sử và nhật ký được lưu trong thư mục dữ liệu riêng của tài khoản Windows.",
-        "Bổ sung mục kiểm tra cạc đồ họa và hướng dẫn đến đúng công cụ cập nhật của hãng.",
-        "WinAssist tự kiểm tra bản mới khi khởi động và hiện nút cập nhật khi GitHub có installer.",
-        "Trình điều khiển đồ họa có tab riêng; Windows Update nằm trong Chẩn đoán và tab cập nhật dành riêng cho WinAssist.",
-        "Có thể xuất báo cáo tình trạng máy đã che dữ liệu riêng tư.",
-        "Bổ sung icon ứng dụng, menu system tray và pipeline tạo bộ cài Windows.",
-        "Chuẩn bị trang tải công khai và bộ cài một file, không yêu cầu người dùng mở terminal.",
-        "Tab Cập nhật WinAssist tự kiểm tra bản mới và hiển thị nội dung thay đổi ở cùng một nơi.",
-        "Sau khi quét GPU, nút mở ứng dụng hãng nếu đã cài và chỉ hiện tải xuống khi còn thiếu.",
-        "Cập nhật Windows có tab riêng, hiển thị các bản mới đang chờ hoặc báo rõ khi máy không có bản cập nhật mới.",
-        "Tiện ích được mở rộng lên 57 ứng dụng phổ biến, gồm các trình duyệt giảm quảng cáo/theo dõi, IDE AI, công cụ văn phòng, game và quản trị hệ thống; WinAssist tải installer trực tiếp qua Winget sau khi bạn xác nhận."
+        "WinAssist giờ hoạt động như một ứng dụng Windows bình thường.",
+        "Có thêm mục kiểm tra card màn hình và cập nhật Windows.",
+        "Kho Tiện ích có thêm nhiều ứng dụng phổ biến cho học tập, làm việc và giải trí.",
+        "WinAssist tự báo khi có phiên bản mới.",
+        "Có thể chuyển giao diện giữa tiếng Việt và tiếng Anh.",
+        "Có thể gửi báo cáo lỗi và ảnh chụp ngay trong WinAssist."
       ],
       "fixes": [
-        "Thông báo rõ hơn khi ứng dụng không thể khởi động.",
-        "Sửa lỗi báo backend không hoạt động dù dịch vụ thực tế đã chạy.",
-        "Sửa trường hợp giao diện cũ còn được lưu sau khi cập nhật phiên bản."
+        "Mở và đóng ứng dụng ổn định hơn.",
+        "Trạng thái ứng dụng đã cài được cập nhật chính xác hơn.",
+        "Giao diện mới được hiển thị đúng sau khi cập nhật."
       ],
       "security": [
-        "WinAssist chỉ kết nối với dịch vụ chạy trên chính máy của bạn.",
-        "Mọi thao tác làm thay đổi máy vẫn cần bạn xem lại và xác nhận.",
-        "Cập nhật cạc đồ họa chỉ dẫn đến công cụ chính hãng; WinAssist không tự cài âm thầm."
+        "Dữ liệu sử dụng được giữ trên máy của bạn.",
+        "WinAssist luôn hỏi lại trước khi cài, gỡ hoặc thay đổi máy."
       ]
     },
     {
@@ -39,9 +30,9 @@
       "summary": "WinAssist phản hồi nhanh hơn, tự nhận biết thay đổi ứng dụng từ Windows và có giao diện Fluent nhất quán.",
       "highlights": [
         "Tự phát hiện ứng dụng được cài hoặc gỡ từ bên ngoài WinAssist.",
-        "Cập nhật tab Tiện ích qua sự kiện SSE mà không quét liên tục.",
-        "Thêm tab Patch Update để xem nội dung phiên bản mới nhất.",
-        "Đồng bộ color palette và SVG icon theo phong cách Windows Fluent."
+        "Tab Tiện ích cập nhật nhanh hơn và không quét lại liên tục.",
+        "Có thêm mục xem nội dung phiên bản mới.",
+        "Giao diện giữa các mục đã đồng nhất và dễ nhìn hơn."
       ],
       "fixes": [
         "Không quét lại thông số máy mỗi khi quay lại tab Tổng quan.",
@@ -50,8 +41,8 @@
         "Nút cài, gỡ và hủy lớn hơn, rõ trạng thái và cập nhật trực tiếp."
       ],
       "security": [
-        "Registry watcher chỉ đọc các khóa Uninstall và không sửa Registry.",
-        "Cài đặt và gỡ ứng dụng vẫn phải đi qua command registry, risk policy và bước xác nhận."
+        "WinAssist chỉ đọc danh sách ứng dụng và không tự sửa thiết lập Windows.",
+        "Bạn luôn được hỏi lại trước khi cài hoặc gỡ ứng dụng."
       ]
     }
   ]

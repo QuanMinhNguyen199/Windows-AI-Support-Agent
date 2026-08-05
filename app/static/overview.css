@@ -8,6 +8,18 @@ body {
   background: #0f151d;
   color: #f2f5f8;
 }
+.app-layout {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow-y: auto;
+}
 svg {
   display: block;
   width: 1.35rem;
@@ -204,6 +216,11 @@ svg {
 .nav-item.active { color: #eafcff; }
 .nav-item span { vertical-align: middle; color: #9babbc; }
 .nav-item.active span { color: #8eb4ff; }
+.topbar-tools { display: flex; align-items: center; gap: 14px; }
+.language-switcher { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: #0b1725; }
+.language-switcher button { min-width: 38px; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: .78rem; font-weight: 750; }
+.language-switcher button:hover { color: white; }
+.language-switcher button.active { background: #274f87; color: white; }
 .service-status {
   border-color: #2b3743;
   background: #17212b;
@@ -277,6 +294,19 @@ svg {
   border-color: #2b3743;
   border-radius: 14px;
   background: #121a23;
+}
+#view-chat.active {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+#view-chat .quick-actions,
+#view-chat .composer { flex: 0 0 auto; }
+#view-chat .chat-log {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
 }
 .avatar {
   border: 1px solid #3b4a59;
@@ -444,7 +474,40 @@ svg {
 .technical-details summary { cursor: pointer; font-size: .86rem; }
 .technical-details code { margin-top: 10px; }
 .technical-details p { margin-bottom: 0; font-size: .84rem; color: var(--muted); }
-.close-dialog-card { border-color: var(--line); }
+.close-dialog-card { border-color: var(--line); width: min(500px, calc(100vw - 30px)); }
+.close-options {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+.close-option {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0c1928;
+  cursor: pointer;
+}
+.close-option:hover { border-color: #49647f; }
+.close-option:has(input:checked) { border-color: #4f86dc; background: #10243a; }
+.close-option input { position: absolute; opacity: 0; pointer-events: none; }
+.option-check {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #64778d;
+  border-radius: 6px;
+}
+.close-option input:checked + .option-check { border-color: #70a5ff; background: #4f86dc; }
+.close-option input:checked + .option-check::after { content: "✓"; color: white; font-size: 14px; font-weight: 800; }
+.close-option strong,.close-option small { display: block; }
+.close-option small { margin-top: 4px; color: var(--muted); line-height: 1.4; }
 .close-dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -693,6 +756,29 @@ svg {
   background: #211a1e;
 }
 .patch-error p { margin: 0 0 14px; }
+.support-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.support-card, .support-guide {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 20px;
+}
+.support-card h3, .support-guide h3 { margin: 0 0 8px; }
+.support-card p { min-height: 52px; margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+.support-link { display: inline-block; text-decoration: none; }
+.support-guide { margin-top: 14px; }
+.support-guide ol { margin: 12px 0; padding-left: 22px; }
+.support-guide li { margin: 8px 0; line-height: 1.5; }
+.support-ticket-form { max-width: 760px; display: grid; gap: 10px; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.support-ticket-form label { margin-top: 6px; font-weight: 700; }
+.support-ticket-form select, .support-ticket-form textarea, .support-ticket-form input[type="file"] { width: 100%; border: 1px solid #334a63; border-radius: 10px; background: #0a1726; color: white; padding: 11px 12px; font: inherit; }
+.support-ticket-form textarea { resize: vertical; min-height: 130px; }
+.support-ticket-form select:focus, .support-ticket-form textarea:focus { outline: 2px solid #4f86dc; outline-offset: 1px; }
+.support-honeypot { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; }
+.support-privacy { margin: 6px 0 0; }
+.support-submit-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+.support-ticket-result { max-width: 760px; margin-top: 14px; padding: 18px; border: 1px solid #2d6955; border-radius: 12px; background: #0c2823; }
+.support-ticket-result h3 { margin: 0 0 6px; color: #72e7bd; }
 .update-status {
   display: flex;
   align-items: center;
@@ -738,11 +824,28 @@ svg {
   background: var(--panel);
 }
 .update-actions-panel p { margin: 5px 0 0; }
+.nav-item-danger { margin-top: 6px; color: #d7a5aa; }
+.nav-item-danger:hover, .nav-item-danger.active { color: #ffd6da; background: #2a1b21; }
+.uninstall-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px;
+  border: 1px solid #51363d;
+  border-radius: 14px;
+  background: #211a1e;
+}
+.uninstall-panel p { margin: 7px 0 0; line-height: 1.5; }
+.uninstall-safe-note { padding: 12px; border-radius: 10px; background: #14251f; color: #8be0b8; }
 @media (max-width: 900px) {
   .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .patch-grid, .driver-grid { grid-template-columns: 1fr; }
+  .patch-grid, .driver-grid, .support-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
+  .app-layout { height: auto; overflow: visible; }
+  main { height: auto; overflow: visible; }
+  #view-chat.active { height: 70vh; min-height: 500px; }
   .riot-group-card { grid-column: auto; }
   .riot-game-options { grid-template-columns: 1fr; }
   .spec-grid { grid-template-columns: 1fr; }

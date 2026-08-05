@@ -1,5 +1,6 @@
 const api = window.WinAssistApi;
 const state = window.WinAssistState;
+const SUPPORT_ENDPOINT = "https://winassist-support.minhquanpro65.workers.dev/";
 const terminalStates = new Set(["completed", "failed", "cancelled", "expired"]);
 const categoryNames = { browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", entertainment: "Game & giải trí", developer_tools: "Công cụ phát triển" };
 const advancedGroupNames = { developer: "Dành cho lập trình", marketing: "Marketing & sáng tạo", office: "Văn phòng chuyên sâu", system: "Quản trị hệ thống" };
@@ -48,6 +49,7 @@ const iconPaths = {
   trash: ["M5 7h14", "M9 7V4h6v3", "M7 7l1 13h8l1-13", "M10 11v5", "M14 11v5"],
   stop: ["M7 7h10v10H7z"],
   patch: ["M6 3h12v18H6z", "M9 8h6", "M9 12h6", "M9 16h4"],
+  support: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18", "M9.8 9a2.3 2.3 0 1 1 3.4 2c-.8.5-1.2 1-1.2 2", "M12 17h.01"],
 };
 function iconSvg(name, className = "") {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -76,7 +78,7 @@ function elapsed(createdAt) {
 function switchView(name) {
   document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${name}`));
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
-  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", graphics: "Card màn hình", "windows-update": "Cập nhật Windows", activity: "Hoạt động", patches: "Cập nhật WinAssist" }[name];
+  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", graphics: "Card màn hình", "windows-update": "Cập nhật Windows", activity: "Hoạt động", patches: "Cập nhật WinAssist", support: "Hỗ trợ", uninstall: "Gỡ WinAssist" }[name];
   if (name === "overview") loadSystemSpecs();
   if (name === "suggestions" && (!softwareViewLoaded || softwareNeedsRescan || state.activeActions.size)) {
     loadSoftware(!softwareViewLoaded, softwareNeedsRescan);
@@ -89,6 +91,26 @@ function switchView(name) {
   if (name === "patches") {
     loadLatestPatch();
     checkForUpdates();
+  }
+  if (name === "uninstall") loadUninstallStatus();
+}
+
+async function loadUninstallStatus() {
+  const button = byId("request-uninstall");
+  const status = byId("uninstall-status");
+  const bridge = window.pywebview?.api;
+  if (!bridge) {
+    button.disabled = true;
+    status.textContent = "Chức năng này chỉ có trong ứng dụng WinAssist đã cài trên Windows.";
+    return;
+  }
+  try {
+    const response = await bridge.uninstall_status();
+    button.disabled = !response.available;
+    status.textContent = response.message;
+  } catch (error) {
+    button.disabled = true;
+    status.textContent = "Không thể kiểm tra bộ gỡ cài đặt.";
   }
 }
 
@@ -159,7 +181,7 @@ function addChatSuggestions(suggestions) {
   const bubble = element("div", "bubble suggestion-bubble");
   bubble.append(element("p", "suggestion-title", "Bạn có thể chọn:"));
   const actions = element("div", "chat-suggestions");
-  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "graphics", "windows-update", "activity", "patches"]);
+  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "graphics", "windows-update", "activity", "patches", "support"]);
   suggestions.forEach((suggestion) => {
     if (!suggestion.message && !allowedViews.has(suggestion.view)) return;
     const button = element("button", "chat-suggestion", suggestion.label);
@@ -1021,20 +1043,100 @@ byId("cancel-command").addEventListener("click", async (event) => {
   byId("action-dialog").close();
 });
 
-byId("close-to-tray").addEventListener("click", async (event) => {
+byId("confirm-close").addEventListener("click", async (event) => {
   event.preventDefault();
   const bridge = window.pywebview?.api;
   if (!bridge) return byId("close-dialog").close();
+  const choice = document.querySelector('input[name="close-choice"]:checked')?.value;
+  if (choice === "exit") return bridge.exit_app();
   const response = await bridge.close_to_tray();
   if (response.success) byId("close-dialog").close();
   else showToast(response.message, "error");
 });
 
-byId("exit-winassist").addEventListener("click", async (event) => {
+byId("request-uninstall").addEventListener("click", () => {
+  byId("uninstall-dialog").showModal();
+});
+
+byId("cancel-uninstall").addEventListener("click", (event) => {
   event.preventDefault();
+  byId("uninstall-dialog").close();
+});
+
+byId("confirm-uninstall").addEventListener("click", async (event) => {
+  event.preventDefault();
+  const button = event.currentTarget;
   const bridge = window.pywebview?.api;
-  if (!bridge) return byId("close-dialog").close();
-  await bridge.exit_app();
+  if (!bridge) {
+    byId("uninstall-dialog").close();
+    return showToast("Chỉ có thể gỡ từ ứng dụng WinAssist đã cài.", "error");
+  }
+  button.disabled = true;
+  button.textContent = "Đang gỡ…";
+  try {
+    const response = await bridge.uninstall_app();
+    if (!response.success) {
+      button.disabled = false;
+      button.textContent = "Gỡ WinAssist";
+      showToast(response.message, "error");
+    }
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = "Gỡ WinAssist";
+    showToast("Không thể mở bộ gỡ cài đặt.", "error");
+  }
+});
+
+function readAttachment(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",", 2)[1]);
+    reader.onerror = () => reject(new Error("Không thể đọc ảnh đính kèm."));
+    reader.readAsDataURL(file);
+  });
+}
+
+byId("support-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = byId("submit-ticket");
+  const result = byId("support-ticket-result");
+  const file = byId("support-attachment").files[0];
+  if (file && (file.size > 5 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type))) {
+    return showToast("Chỉ chọn ảnh PNG, JPG hoặc WebP không quá 5 MB.", "error");
+  }
+  button.disabled = true;
+  button.textContent = "Đang gửi…";
+  result.hidden = true;
+  try {
+    const attachment = file ? {
+      filename: file.name,
+      content_type: file.type,
+      content: await readAttachment(file),
+    } : null;
+    const response = await fetch(SUPPORT_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        issue_type: byId("support-issue-type").value,
+        description: byId("support-description").value.trim(),
+        website: byId("support-website").value,
+        attachment,
+      }),
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !body.ticket_id) throw new Error(body.error || "Máy chủ hỗ trợ chưa sẵn sàng.");
+    result.replaceChildren(
+      element("h3", "", `Đã gửi ${body.ticket_id}`),
+      element("p", "", "Hãy lưu mã này để đối chiếu khi cần hỗ trợ tiếp."),
+    );
+    result.hidden = false;
+    event.currentTarget.reset();
+  } catch (error) {
+    showToast(`Không thể gửi báo cáo: ${error.message}`, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Gửi báo cáo";
+  }
 });
 
 document.querySelectorAll("[data-icon]").forEach((container) => {

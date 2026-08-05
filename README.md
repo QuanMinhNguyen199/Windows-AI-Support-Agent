@@ -44,6 +44,8 @@ Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn
 - Cấu hình qua biến môi trường `WINASSIST_*`.
 - Unit/integration test dùng fixture và mock, không chạy mạng thật.
 - Giao diện app gồm Chat, Tiện ích, Diagnostics và Activity.
+- Tab Trợ lý dùng layout co giãn theo chiều cao cửa sổ; khung hội thoại cuộn bên
+  trong và ô nhập luôn nằm gọn phía dưới, không tạo khoảng tràn toàn trang.
 - Màn hình Tổng quan máy luôn mở trước, hiển thị Windows, CPU, RAM, GPU và ổ hệ thống.
 - Mục Chẩn đoán nhận diện GPU NVIDIA/AMD/Intel, hiển thị phiên bản driver và
   mở đúng công cụ cập nhật chính hãng. WinAssist không tự chạy driver installer
@@ -60,6 +62,11 @@ Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn
   nếu chưa có, app mở trang tải chính hãng và báo trước rằng công cụ có thể tiếp
   tục bằng cửa sổ hoặc trình duyệt riêng. WinAssist chưa tự cài driver trực tiếp.
 - Desktop có icon riêng và system tray với Mở, Ẩn, Thoát.
+- Tab **Gỡ WinAssist** gọi đúng Inno uninstaller sau xác nhận, xóa thư mục cài
+  và dữ liệu riêng của WinAssist; các ứng dụng đã cài từ Tiện ích không bị ảnh hưởng.
+- Bộ cài luôn hiển thị bước chọn thư mục, cho phép người dùng đổi sang ổ hoặc
+  thư mục khác; mặc định vẫn dùng `%LOCALAPPDATA%\Programs\WinAssist` để không
+  yêu cầu quyền Administrator.
 - Pipeline Windows Release chạy test, build PyInstaller/Inno Setup, tạo SHA-256
   và đính kèm artifact khi push tag. Installer 0.9.7 đã qua smoke test cài/gỡ;
   bản hiện tại chưa ký số nên chỉ dùng nội bộ.
@@ -112,6 +119,12 @@ Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn
   và Windows CI cho test, coverage, lint, type check, dependency audit.
 - Theo dõi cài/gỡ ứng dụng từ Windows Registry và cập nhật tab Tiện ích qua SSE.
 - Tab **Cập nhật WinAssist** hiển thị trạng thái cập nhật và nội dung phiên bản.
+- Patch Notes chỉ dùng câu ngắn, dễ hiểu và tránh thuật ngữ kỹ thuật.
+- Tab **Hỗ trợ** có form chọn lỗi, mô tả và đính kèm ảnh. Cloudflare Worker gửi
+  báo cáo về email hỗ trợ và chỉ trả mã `Ticket#...` sau khi email được chấp nhận.
+  Người dùng không cần mở Gmail hoặc GitHub.
+- Bộ chuyển ngôn ngữ `VI / EN` nằm trên thanh đầu trang và ghi nhớ lựa chọn trên
+  máy cho những lần mở WinAssist tiếp theo.
 - Tab **Trợ lý** là lối vào phụ cho người dùng chưa biết cần mở công cụ nào;
   các chức năng chính vẫn có thể dùng trực tiếp qua từng tab.
 - Trợ lý hiểu các mô tả phổ thông như máy chậm, máy đơ, máy nóng hoặc mở ứng
@@ -120,8 +133,9 @@ Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn
   token; dữ liệu runtime nằm trong `%LOCALAPPDATA%\WinAssist Local`.
 - Khi khởi động, cửa sổ được căn giữa theo vùng làm việc của monitor đang dùng,
   tự trừ taskbar và thu nhỏ vừa màn hình nếu độ phân giải thấp.
-- Khi bấm nút X, WinAssist hỏi **Đóng xuống khay**, **Thoát hoàn toàn** hoặc
-  **Quay lại**. Menu Thoát trong system tray đóng ngay và dừng backend, không hỏi lặp.
+- Khi bấm nút X, WinAssist mở popup giữa ứng dụng với lựa chọn có dấu tick:
+  **Thu nhỏ xuống khay** hoặc **Thoát hoàn toàn**, sau đó mới xác nhận. Menu Thoát
+  trong system tray đóng ngay và dừng backend, không hỏi lặp.
 - PyInstaller onedir build đã sẵn sàng. Ký số và kiểm thử installer trên máy
   Windows sạch vẫn là điều kiện bắt buộc trước khi phát hành Beta công khai.
 
@@ -275,6 +289,15 @@ Desktop shell dùng WebView2 qua pywebview, chỉ bind backend vào `127.0.0.1` 
 tự dừng backend khi đóng cửa sổ. Mỗi lần mở app có token phiên ngẫu nhiên lưu
 trong cookie `HttpOnly`; API (trừ health check) từ chối request không thuộc phiên.
 Chỉ một desktop instance được chạy cùng lúc.
+
+Launcher `run-desktop.ps1` dùng `pythonw.exe` để không hiện cảnh báo runtime trong
+terminal. Log kỹ thuật được lưu tại `%LOCALAPPDATA%\WinAssist Local\data\logs\`
+(`desktop-stdout.log` và `desktop-stderr.log`).
+
+Cầu nối pywebview chỉ công khai các thao tác desktop cần thiết; đối tượng cửa sổ
+native được giữ nội bộ để tránh lỗi đệ quy `FontFamily/SyncRoot` khi khởi động.
+Popup đóng được mở sau khi callback native đã trả về, nên giao diện vẫn nhận click
+và không bị treo trong lúc người dùng chọn cách đóng.
 
 Desktop dùng `/api/ready` để xác nhận FastAPI đã mở, không dùng health check đầy
 đủ vì kiểm tra Ollama có thể mất vài giây.
