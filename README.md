@@ -46,6 +46,8 @@ nội dung để giao diện cân đối hơn trên các kích thước màn hì
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản ngay trên trang; người dùng phổ thông không cần mở GitHub.
+Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu
+ước tính hoặc social proof giả.
 
 Giao diện desktop giữ nội dung cân giữa, đặt thanh cuộn sát mép cửa sổ và chừa
 khoảng cách an toàn để nội dung không dính vào scrollbar.
