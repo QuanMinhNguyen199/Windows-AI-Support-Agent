@@ -6,7 +6,7 @@
   <meta name="description" content="Tải WinAssist - trợ lý kiểm tra và hỗ trợ Windows chạy trên máy của bạn.">
   <title>Tải WinAssist cho Windows</title>
   <style>
-    :root{font-family:"Segoe UI",system-ui,sans-serif;color:#172033;background:#f5f7fa}*{box-sizing:border-box}body{margin:0}.wrap{width:min(920px,calc(100% - 32px));margin:auto}.hero{padding:84px 0 48px}.brand{font-weight:800;color:#087f91}.hero h1{font-size:clamp(2.2rem,6vw,4.6rem);line-height:1.05;max-width:760px;margin:18px 0}.lead{font-size:1.15rem;line-height:1.7;color:#526078;max-width:680px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}.button{display:inline-block;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:750;background:#087f91;color:white}.button.secondary{background:white;color:#24344f;border:1px solid #cbd5e1}.note{font-size:.9rem;color:#68758b}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px 0 72px}.card{padding:22px;background:white;border:1px solid #dce3eb;border-radius:14px}.card h2{font-size:1.05rem;margin:0 0 9px}.card p{color:#5d6b80;line-height:1.55;margin:0}footer{border-top:1px solid #dce3eb;padding:24px 0 40px;color:#68758b}@media(max-width:700px){.hero{padding-top:48px}.grid{grid-template-columns:1fr}}
+    :root{font-family:"Segoe UI",system-ui,sans-serif;color:#172033;background:#f5f7fa}*{box-sizing:border-box}body{margin:0}.wrap{width:min(920px,calc(100% - 32px));margin:auto}.hero{padding:84px 0 48px}.brand{font-weight:800;color:#087f91}.hero h1{font-size:clamp(2.2rem,6vw,4.6rem);line-height:1.05;max-width:760px;margin:18px 0}.lead{font-size:1.15rem;line-height:1.7;color:#526078;max-width:680px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}.button{display:inline-block;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:750;background:#087f91;color:white}.button.secondary{background:white;color:#24344f;border:1px solid #cbd5e1}.note{font-size:.9rem;color:#68758b}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px 0 72px}.card{padding:22px;background:white;border:1px solid #dce3eb;border-radius:14px}.card h2{font-size:1.05rem;margin:0 0 9px}.card p{color:#5d6b80;line-height:1.55;margin:0}footer{border-top:1px solid #dce3eb;padding:24px 0 40px;color:#68758b}footer a{color:#526078}footer p{margin:6px 0}@media(max-width:700px){.hero{padding-top:48px}.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -27,7 +27,11 @@
       <article class="card"><h2>Kiểm soát thay đổi</h2><p>WinAssist cho bạn xem và xác nhận trước khi cài, gỡ hoặc sửa chữa.</p></article>
     </section>
   </main>
-  <footer><div class="wrap">WinAssist Local · Mã nguồn và bản phát hành trên GitHub</div></footer>
+  <footer><div class="wrap">
+    <p>WinAssist Local · Dự án Community Beta phục vụ cộng đồng.</p>
+    <p>Hỗ trợ: <a href="mailto:minhquanpro65@gmail.com">minhquanpro65@gmail.com</a> · <a href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/issues">Báo lỗi trên GitHub</a></p>
+    <p>Project hiện chưa công bố license. Installer Beta chưa ký số có thể bị Windows SmartScreen cảnh báo.</p>
+  </div></footer>
   <script>
     fetch("https://api.github.com/repos/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest")
       .then(response => { if (!response.ok) throw new Error(); return response.json(); })
