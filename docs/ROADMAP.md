@@ -238,6 +238,8 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 - [ ] Ký số desktop shell và installer bằng certificate phát hành.
 - [ ] Kiểm thử Windows 10/11 trên máy sạch và pipeline release artifact.
 - [x] Tinh gọn Tổng quan máy; loại bỏ chức năng xuất báo cáo JSON không cần thiết.
+- [x] Chọn hướng Community Beta, dùng `minhquanpro65@gmail.com` và GitHub Issues
+  làm kênh hỗ trợ; chưa công bố license và phải cảnh báo rõ nếu installer chưa ký số.
 
 Các mục còn mở phụ thuộc phát hành hoặc có rủi ro hệ thống cao: certificate ký
 số, ma trận máy sạch Windows 10/11, updater tải/chạy nền có rollback và cài

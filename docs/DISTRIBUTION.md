@@ -1,5 +1,15 @@
 # Phát hành WinAssist cho người dùng phổ thông
 
+## Kênh phát hành Community Beta
+
+- Tên ứng dụng hiển thị: `WinAssist Local`.
+- Mục tiêu: phát hành Beta miễn phí để cộng đồng dùng thử và phản hồi.
+- Hỗ trợ: `minhquanpro65@gmail.com` và GitHub Issues.
+- Project hiện chưa công bố license; cần chọn license trước khi cho phép bên khác
+  sao chép, sửa đổi hoặc phân phối lại source code.
+- Bản chưa ký số chỉ dùng cho Community Beta có cảnh báo rõ về SmartScreen;
+  không mô tả là bản phát hành ổn định hoặc đã được Windows xác minh.
+
 ## Trải nghiệm cài đặt
 
 1. Người dùng mở trang tải công khai.

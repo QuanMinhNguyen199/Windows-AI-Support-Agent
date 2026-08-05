@@ -14,6 +14,13 @@ tới hai nhóm nhu cầu:
 Ứng dụng ưu tiên kiểm tra read-only. Mọi hành động thay đổi hệ thống phải được
 hiển thị trước và chỉ chạy sau khi người dùng xác nhận.
 
+Project đang được chuẩn bị dưới dạng **Community Beta** để phục vụ cộng đồng.
+Kênh hỗ trợ: [minhquanpro65@gmail.com](mailto:minhquanpro65@gmail.com) hoặc
+[GitHub Issues](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/issues).
+Project hiện chưa công bố license; việc public source code không tự động cấp
+quyền sao chép, sửa đổi hoặc phân phối lại. Installer Beta chưa ký số có thể bị
+Windows SmartScreen hiển thị cảnh báo.
+
 ## Trạng thái hiện tại
 
 Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn 9 Windows Beta**:
