@@ -1017,6 +1017,12 @@ byId("chat-form").addEventListener("submit", async (event) => {
   } catch (error) { addMessage(`Không thể xử lý: ${error.message}`); } finally { input.disabled = false; input.focus(); }
 });
 
+byId("message-input").addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+  event.preventDefault();
+  byId("chat-form").requestSubmit();
+});
+
 byId("confirm-command").addEventListener("click", async (event) => {
   event.preventDefault();
   if (!selectedAction) return;

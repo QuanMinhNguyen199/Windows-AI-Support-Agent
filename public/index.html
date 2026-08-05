@@ -2,49 +2,126 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Tải WinAssist - trợ lý kiểm tra và hỗ trợ Windows chạy trên máy của bạn.">
-  <title>Tải WinAssist cho Windows</title>
-  <style>
-    :root{font-family:"Segoe UI",system-ui,sans-serif;color:#172033;background:#f5f7fa}*{box-sizing:border-box}body{margin:0}.wrap{width:min(920px,calc(100% - 32px));margin:auto}.hero{padding:84px 0 48px}.brand{font-weight:800;color:#087f91}.hero h1{font-size:clamp(2.2rem,6vw,4.6rem);line-height:1.05;max-width:760px;margin:18px 0}.lead{font-size:1.15rem;line-height:1.7;color:#526078;max-width:680px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}.button{display:inline-block;padding:14px 20px;border-radius:10px;text-decoration:none;font-weight:750;background:#087f91;color:white}.button.secondary{background:white;color:#24344f;border:1px solid #cbd5e1}.note{font-size:.9rem;color:#68758b}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px 0 72px}.card{padding:22px;background:white;border:1px solid #dce3eb;border-radius:14px}.card h2{font-size:1.05rem;margin:0 0 9px}.card p{color:#5d6b80;line-height:1.55;margin:0}footer{border-top:1px solid #dce3eb;padding:24px 0 40px;color:#68758b}footer a{color:#526078}footer p{margin:6px 0}@media(max-width:700px){.hero{padding-top:48px}.grid{grid-template-columns:1fr}}
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WinAssist giúp kiểm tra, chăm sóc và cài ứng dụng cho máy tính Windows theo cách đơn giản, an toàn.">
+  <meta name="theme-color" content="#f6f8fb">
+  <title>WinAssist — Hỗ trợ Windows đơn giản hơn</title>
+  <link rel="stylesheet" href="styles.css?v=0.9.8">
+  <script src="app.js?v=0.9.8" defer></script>
 </head>
 <body>
-  <main class="wrap">
-    <section class="hero">
-      <div class="brand">WinAssist</div>
-      <h1>Hỗ trợ Windows dễ hiểu, ngay trên máy của bạn.</h1>
-      <p class="lead">Kiểm tra máy, mạng, cập nhật Windows và cài những ứng dụng phổ biến. Dữ liệu được xử lý cục bộ và mọi thay đổi đều cần bạn xác nhận.</p>
-      <div class="actions">
-        <a id="download" class="button" href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe">Đang kiểm tra bản phát hành…</a>
-        <a class="button secondary" href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest">Xem phiên bản mới nhất</a>
+  <header class="site-header">
+    <div class="shell nav-wrap">
+      <a class="brand" href="#top" aria-label="WinAssist - Trang chủ">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span>WinAssist</span>
+      </a>
+      <nav aria-label="Điều hướng chính">
+        <a href="#features">Tính năng</a>
+        <a href="#how-it-works">Cách cài</a>
+        <a href="#whats-new">Có gì mới?</a>
+      </nav>
+      <a class="button button-small" href="#download-section">Tải cho Windows</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="status-dot"></span> Community Beta cho Windows 10/11</div>
+        <h1>Chăm sóc máy tính<br><span>dễ hiểu hơn.</span></h1>
+        <p class="hero-lead">WinAssist giúp bạn kiểm tra máy, xử lý lỗi thường gặp và cài ứng dụng phổ biến — không cần biết kỹ thuật.</p>
+        <div class="hero-actions">
+          <a id="download" class="button button-primary" href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe">
+            <span>Tải WinAssist</span><span aria-hidden="true">↓</span>
+          </a>
+          <a class="button button-quiet" href="#whats-new">Xem có gì mới</a>
+        </div>
+        <p class="download-note">Miễn phí · Một file cài đặt · Không cần tài khoản GitHub</p>
       </div>
-      <p class="note">Dành cho Windows 10/11 64-bit. Bộ cài tự chuẩn bị WebView2 nếu máy còn thiếu.</p>
+
+      <div class="product-preview" aria-label="Xem trước giao diện WinAssist">
+        <div class="window-bar"><span></span><strong>WinAssist</strong><div class="window-actions">—　□　×</div></div>
+        <div class="window-body">
+          <aside class="preview-nav">
+            <div class="preview-brand"><span>W</span> WinAssist</div>
+            <div class="preview-item active">Tổng quan máy</div>
+            <div class="preview-item">Trợ lý</div>
+            <div class="preview-item">Tiện ích</div>
+            <div class="preview-item">Chẩn đoán</div>
+          </aside>
+          <div class="preview-main">
+            <div class="preview-kicker">MÁY TÍNH CỦA BẠN</div>
+            <h2>Mọi thứ đều ổn</h2>
+            <p>WinAssist đã kiểm tra các thông tin cơ bản.</p>
+            <div class="health-card"><span class="health-check">✓</span><div><strong>Máy đang hoạt động bình thường</strong><small>Không phát hiện vấn đề cần xử lý ngay.</small></div></div>
+            <div class="mini-grid"><div><small>Bộ nhớ</small><strong>16 GB</strong></div><div><small>Ổ đĩa còn trống</small><strong>184 GB</strong></div></div>
+          </div>
+        </div>
+      </div>
     </section>
-    <section class="grid">
-      <article class="card"><h2>Cài đặt đơn giản</h2><p>Tải một file, mở bộ cài và WinAssist tự tạo lối tắt rồi khởi động.</p></article>
-      <article class="card"><h2>Không cần terminal</h2><p>Backend và các dịch vụ cần thiết tự chạy theo ứng dụng.</p></article>
-      <article class="card"><h2>Kiểm soát thay đổi</h2><p>WinAssist cho bạn xem và xác nhận trước khi cài, gỡ hoặc sửa chữa.</p></article>
+
+    <section class="trust-strip">
+      <div class="shell trust-grid">
+        <div><strong>Dữ liệu ở lại trên máy</strong><span>Ưu tiên xử lý cục bộ</span></div>
+        <div><strong>Luôn hỏi trước</strong><span>Bạn kiểm soát mọi thay đổi</span></div>
+        <div><strong>Dành cho mọi người</strong><span>Không cần dùng terminal</span></div>
+      </div>
+    </section>
+
+    <section id="features" class="section shell">
+      <div class="section-heading"><span>WINASSIST GIÚP GÌ CHO BẠN?</span><h2>Những việc thường ngày,<br>gom lại trong một ứng dụng.</h2></div>
+      <div class="feature-grid">
+        <article class="feature feature-large"><span class="feature-number">01</span><h3>Hiểu tình trạng máy</h3><p>Xem CPU, RAM, ổ đĩa, Windows và card màn hình bằng câu chữ dễ hiểu.</p><div class="feature-visual bars"><i></i><i></i><i></i></div></article>
+        <article class="feature"><span class="feature-number">02</span><h3>Kiểm tra mạng</h3><p>Tìm nguyên nhân Wi-Fi yếu, lỗi DNS hoặc mạng chậm.</p></article>
+        <article class="feature"><span class="feature-number">03</span><h3>Cài ứng dụng</h3><p>Chọn phần mềm phổ biến và để WinAssist chuẩn bị phần còn lại.</p></article>
+        <article class="feature"><span class="feature-number">04</span><h3>Theo dõi cập nhật</h3><p>Biết khi Windows hoặc WinAssist có phiên bản mới.</p></article>
+        <article class="feature feature-dark"><span class="feature-number">05</span><h3>Trợ lý ngay trên máy</h3><p>Mô tả vấn đề bằng lời thường ngày và nhận hướng dẫn phù hợp.</p><span class="chat-line">Máy của tôi đang chậm…</span></article>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="section soft-section">
+      <div class="shell">
+        <div class="section-heading centered"><span>BẮT ĐẦU NHANH</span><h2>Chỉ ba bước để sử dụng.</h2></div>
+        <ol class="steps">
+          <li><span>1</span><div><h3>Tải bộ cài</h3><p>Một file duy nhất dành cho Windows 10/11 64-bit.</p></div></li>
+          <li><span>2</span><div><h3>Cài WinAssist</h3><p>Chọn thư mục cài và làm theo hướng dẫn trên màn hình.</p></div></li>
+          <li><span>3</span><div><h3>Mở và kiểm tra máy</h3><p>Thông tin cơ bản của máy sẽ tự xuất hiện khi ứng dụng mở.</p></div></li>
+        </ol>
+        <div class="beta-note"><strong>Lưu ý về bản Beta</strong><p>WinAssist chưa ký số nên Windows có thể hiện cảnh báo SmartScreen. Hãy bảo đảm bạn tải đúng từ website này.</p></div>
+      </div>
+    </section>
+
+    <section id="whats-new" class="section shell release-section">
+      <div class="release-copy">
+        <span class="section-label">CÓ GÌ MỚI?</span>
+        <h2 id="release-title">WinAssist 0.9.8</h2>
+        <p id="release-date" class="release-date">Bản Community Beta mới nhất</p>
+      </div>
+      <div class="release-card">
+        <ul>
+          <li>Khởi động ổn định hơn sau khi cài đặt.</li>
+          <li>Chuyển nhanh giữa tiếng Việt và tiếng Anh.</li>
+          <li>Gửi báo cáo lỗi kèm ảnh ngay trong ứng dụng.</li>
+        </ul>
+        <a class="text-link" href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest">Thông tin kỹ thuật trên GitHub <span>↗</span></a>
+      </div>
+    </section>
+
+    <section id="download-section" class="download-section">
+      <div class="shell download-inner">
+        <div><span class="section-label">SẴN SÀNG BẮT ĐẦU?</span><h2>Để WinAssist giúp bạn<br>chăm sóc máy tính.</h2></div>
+        <div class="download-action"><a class="button button-light" href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe">Tải cho Windows <span>↓</span></a><small>Windows 10/11 · 64-bit</small></div>
+      </div>
     </section>
   </main>
-  <footer><div class="wrap">
-    <p>WinAssist Local · Dự án Community Beta phục vụ cộng đồng.</p>
-    <p>Hỗ trợ: <a href="mailto:minhquanpro65@gmail.com">minhquanpro65@gmail.com</a> · <a href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/issues">Báo lỗi trên GitHub</a></p>
-    <p>Project hiện chưa công bố license. Installer Beta chưa ký số có thể bị Windows SmartScreen cảnh báo.</p>
-  </div></footer>
-  <script>
-    fetch("https://api.github.com/repos/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest")
-      .then(response => { if (!response.ok) throw new Error(); return response.json(); })
-      .then(release => {
-        const available = release.assets.some(asset => asset.name === "WinAssist-Setup.exe");
-        document.getElementById("download").textContent = available ? `Tải WinAssist ${release.tag_name}` : "Installer đang được chuẩn bị";
-        if (!available) document.getElementById("download").removeAttribute("href");
-      })
-      .catch(() => {
-        const download = document.getElementById("download");
-        download.textContent = "Sắp phát hành";
-        download.removeAttribute("href");
-      });
-  </script>
+
+  <footer>
+    <div class="shell footer-grid">
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark">W</span><span>WinAssist</span></a><p>Hỗ trợ Windows đơn giản và dễ hiểu.</p></div>
+      <div class="footer-links"><a href="mailto:minhquanpro65@gmail.com">Liên hệ hỗ trợ</a><a href="https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent">Mã nguồn GitHub</a></div>
+    </div>
+    <div class="shell footer-bottom"><span>© 2026 WinAssist Community Beta</span><span>Dữ liệu của bạn được giữ trên máy.</span></div>
+  </footer>
 </body>
 </html>

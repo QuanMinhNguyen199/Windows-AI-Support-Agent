@@ -277,6 +277,13 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
 
 ### 10. Release 1.0
 
+- [x] Rút gọn README thành trang giới thiệu sản phẩm dễ đọc; chuyển hướng dẫn
+  kỹ thuật chi tiết sang thư mục `docs/`.
+- [x] Trợ lý hiển thị danh sách ứng dụng cơ bản khi yêu cầu cài đặt còn chung
+  chung; `Enter` gửi tin nhắn và `Shift+Enter` xuống dòng.
+- [x] Làm mới website tải WinAssist với giao diện responsive, giới thiệu tính
+  năng, hướng dẫn ba bước và ghi chú phiên bản dễ hiểu ngay trên trang.
+
 - Cài Windows Update trực tiếp trong WinAssist qua API hệ thống được hỗ trợ, có
   yêu cầu quyền Administrator rõ ràng, progress thật, xác nhận trước khi cài,
   xử lý yêu cầu khởi động lại và không báo thành công trước khi Windows xác nhận.

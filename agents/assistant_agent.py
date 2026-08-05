@@ -310,10 +310,21 @@ class AssistantAgent:
         if not decision.software_id:
             return ChatResponse(
                 **base,
-                message="Bạn muốn kiểm tra hoặc cài phần mềm nào trong catalog?",
+                message=(
+                    "Đây là những ứng dụng cơ bản nhiều người thường cài. "
+                    "Chọn một ứng dụng để WinAssist kiểm tra và chuẩn bị cài đặt."
+                ),
                 results=[
                     {"id": item.id, "name": item.display_name}
                     for item in self.software.list_software()
+                ],
+                suggestions=[
+                    ChatSuggestion(label="Google Chrome", message="Cài Google Chrome"),
+                    ChatSuggestion(label="7-Zip", message="Cài 7-Zip"),
+                    ChatSuggestion(label="VLC", message="Cài VLC"),
+                    ChatSuggestion(label="Adobe Reader", message="Cài Adobe Reader"),
+                    ChatSuggestion(label="Zoom", message="Cài Zoom"),
+                    ChatSuggestion(label="Xem tất cả ứng dụng", view="suggestions"),
                 ],
             )
         try:

@@ -58,6 +58,25 @@ def test_agent_falls_back_and_creates_pending_install(tmp_path) -> None:
     assert not any(call[0].startswith("software.install.") for call in runner.calls)
 
 
+def test_agent_offers_common_apps_for_ambiguous_install_request(tmp_path) -> None:
+    agent, runner, _, _ = make_agent(tmp_path)
+
+    response = asyncio.run(agent.handle("Tôi muốn cài những thứ cơ bản"))
+
+    assert response.pending_action is None
+    assert [item.label for item in response.suggestions] == [
+        "Google Chrome",
+        "7-Zip",
+        "VLC",
+        "Adobe Reader",
+        "Zoom",
+        "Xem tất cả ứng dụng",
+    ]
+    assert response.suggestions[0].message == "Cài Google Chrome"
+    assert response.suggestions[-1].view == "suggestions"
+    assert runner.calls == []
+
+
 def test_prompt_injection_cannot_run_command(tmp_path) -> None:
     agent, runner, _, _ = make_agent(tmp_path)
 
