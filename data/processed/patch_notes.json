@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "0.9.9",
+      "released_at": "2026-08-05",
+      "title": "Hotfix giao diện",
+      "summary": "Thanh cuộn và khoảng cách nội dung đã gọn gàng, dễ nhìn hơn.",
+      "highlights": [
+        "Thanh cuộn nằm đúng sát mép cửa sổ.",
+        "Nội dung có khoảng cách đều trên mọi mục."
+      ],
+      "fixes": [
+        "Sửa khoảng trống bất thường cạnh thanh cuộn.",
+        "Giữ bố cục ổn định trên màn hình nhỏ."
+      ],
+      "security": [
+        "Hotfix chỉ thay đổi giao diện, không thay đổi dữ liệu hoặc quyền hệ thống."
+      ]
+    },
+    {
       "version": "0.9.8",
       "released_at": "2026-08-05",
       "title": "WinAssist khởi động ổn định hơn",

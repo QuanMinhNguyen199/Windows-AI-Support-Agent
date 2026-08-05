@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     app_name: str = "WinAssist Local"
-    app_version: str = "0.9.8"
+    app_version: str = "0.9.9"
     environment: str = "development"
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "auto"

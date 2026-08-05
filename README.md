@@ -27,8 +27,8 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-**WinAssist 0.9.8 Community Beta** sửa lỗi ứng dụng không mở được sau Setup và
-cải thiện độ ổn định của bản Windows.
+**WinAssist 0.9.9 Community Beta Hotfix** chỉnh lại thanh cuộn và khoảng cách
+nội dung để giao diện cân đối hơn trên các kích thước màn hình.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
 - [Xem thay đổi của phiên bản](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest)
