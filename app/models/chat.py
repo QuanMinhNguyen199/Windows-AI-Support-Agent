@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -61,6 +61,7 @@ class AIExplanation(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     session_id: str | None = Field(default=None, max_length=64)
+    language: Literal["vi", "en"] = "vi"
 
 
 class ChatSuggestion(BaseModel):

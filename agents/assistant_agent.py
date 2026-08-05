@@ -14,6 +14,7 @@ from app.services.software_catalog import SoftwareCatalogError
 from app.services.software_service import SoftwareService
 from app.services.speedtest_service import SpeedTestProvider
 from app.services.windows_support_service import WindowsSupportService
+from agents.localization import localize_response
 
 _NETWORK_INTENTS = {
     Intent.NETWORK_STATUS,
@@ -47,7 +48,7 @@ class AssistantAgent:
         self.windows = windows
 
     async def handle(
-        self, message: str, *, session_id: str | None = None
+        self, message: str, *, session_id: str | None = None, language: str = "vi"
     ) -> ChatResponse:
         session = self.chat_repository.get_or_create_session(session_id)
         self.chat_repository.add_message(
@@ -59,6 +60,7 @@ class AssistantAgent:
             session_id=session,
             decision=decision,
             warning=warning,
+            language=language,
         )
         self.chat_repository.add_message(
             session_id=session,
@@ -66,7 +68,7 @@ class AssistantAgent:
             content=response.message,
             intent=response.intent.value,
         )
-        return response
+        return localize_response(response, language)
 
     async def _classify(self, message: str) -> tuple[IntentDecision, str | None]:
         if self.router.is_prompt_injection(message):
@@ -112,6 +114,7 @@ class AssistantAgent:
         session_id: str,
         decision: IntentDecision,
         warning: str | None,
+        language: str,
     ) -> ChatResponse:
         base: dict[str, Any] = {
             "session_id": session_id,
@@ -203,7 +206,8 @@ class AssistantAgent:
                                 for finding in diagnostic.findings
                             ],
                             "recommendations": diagnostic.recommendations,
-                        }
+                        },
+                        language=language,
                     )
                     message_text = explanation.message
                     recommendations = explanation.recommendations or recommendations

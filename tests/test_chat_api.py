@@ -6,7 +6,9 @@ from app.models.chat import ChatResponse, Intent, RouterSource
 
 
 class FakeAgent:
-    async def handle(self, message: str, *, session_id: str | None = None):
+    async def handle(
+        self, message: str, *, session_id: str | None = None, language: str = "vi"
+    ):
         return ChatResponse(
             session_id=session_id or "00000000-0000-0000-0000-000000000001",
             intent=Intent.HELP,
@@ -35,3 +37,12 @@ def test_chat_api_rejects_empty_or_oversized_message() -> None:
 
     assert empty.status_code == 422
     assert oversized.status_code == 422
+
+
+def test_chat_api_rejects_unknown_language() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat", json={"message": "Help", "language": "fr"}
+        )
+
+    assert response.status_code == 422

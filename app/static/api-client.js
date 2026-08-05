@@ -23,7 +23,7 @@ window.WinAssistApi = {
   systemSpecs: () => window.WinAssistApi.request("/api/system/specs"),
   graphicsDriver: () => window.WinAssistApi.request("/api/system/graphics-driver"),
   openGraphicsApp: (vendor) => window.WinAssistApi.request(`/api/system/graphics-driver/${encodeURIComponent(vendor)}/open`, { method: "POST" }),
-  chat: (message, sessionId) => window.WinAssistApi.request("/api/chat", { method: "POST", body: JSON.stringify({ message, session_id: sessionId }) }),
+  chat: (message, sessionId, language = "vi") => window.WinAssistApi.request("/api/chat", { method: "POST", body: JSON.stringify({ message, session_id: sessionId, language }) }),
   software: () => window.WinAssistApi.request("/api/software"),
   scanSoftware: () => window.WinAssistApi.request("/api/software/scan", { method: "POST" }),
   softwareEvents: () => new EventSource("/api/software/events"),

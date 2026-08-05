@@ -1007,7 +1007,7 @@ byId("chat-form").addEventListener("submit", async (event) => {
   if (!message) return;
   addMessage(message, "user"); input.value = ""; input.disabled = true;
   try {
-    const response = await api.chat(message, state.sessionId);
+    const response = await api.chat(message, state.sessionId, window.WinAssistI18n?.language || "vi");
     state.setSession(response.session_id);
     addMessage(response.message);
     addChatSuggestions(response.suggestions);
@@ -1098,6 +1098,7 @@ function readAttachment(file) {
 
 byId("support-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const form = event.currentTarget;
   const button = byId("submit-ticket");
   const result = byId("support-ticket-result");
   const file = byId("support-attachment").files[0];
@@ -1130,7 +1131,7 @@ byId("support-form").addEventListener("submit", async (event) => {
       element("p", "", "Hãy lưu mã này để đối chiếu khi cần hỗ trợ tiếp."),
     );
     result.hidden = false;
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(`Không thể gửi báo cáo: ${error.message}`, "error");
   } finally {

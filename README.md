@@ -123,8 +123,12 @@ Project đã hoàn thành **Giai đoạn 1–8** và nền tảng **Giai đoạn
 - Tab **Hỗ trợ** có form chọn lỗi, mô tả và đính kèm ảnh. Cloudflare Worker gửi
   báo cáo về email hỗ trợ và chỉ trả mã `Ticket#...` sau khi email được chấp nhận.
   Người dùng không cần mở Gmail hoặc GitHub.
+- Form giữ đúng trạng thái thành công và tự xóa nội dung sau khi nhận mã ticket,
+  không hiển thị lỗi giả do submit event đã kết thúc.
 - Bộ chuyển ngôn ngữ `VI / EN` nằm trên thanh đầu trang và ghi nhớ lựa chọn trên
   máy cho những lần mở WinAssist tiếp theo.
+- Ngôn ngữ đang chọn được gửi cùng mỗi yêu cầu chat; AssistantAgent giữ nguyên
+  intent và quy tắc an toàn nhưng trả message, warning và suggestion bằng VI/EN.
 - Tab **Trợ lý** là lối vào phụ cho người dùng chưa biết cần mở công cụ nào;
   các chức năng chính vẫn có thể dùng trực tiếp qua từng tab.
 - Trợ lý hiểu các mô tả phổ thông như máy chậm, máy đơ, máy nóng hoặc mở ứng
@@ -143,6 +147,10 @@ Hiện tại project tiếp tục mở rộng danh sách **Tiện ích** và tin
 nghiệm Windows Beta. Onboarding tự quét cấu hình, cài Ollama và chọn model Qwen
 được hoãn sang **Giai đoạn 10**; bản hiện tại vẫn fallback an toàn sang
 rule-based router khi AI local chưa khả dụng.
+
+Giai đoạn 10 cũng dự kiến có **Dọn dẹp máy**: quét dung lượng trước, cho chọn
+từng nhóm file tạm an toàn rồi mới xác nhận xóa. WinAssist sẽ không tự đụng tới
+Downloads, Documents, Desktop hoặc dữ liệu cá nhân.
 
 Kế hoạch phát triển nằm tại [docs/ROADMAP.md](docs/ROADMAP.md).
 Quy trình phát hành GitHub/public domain nằm tại
@@ -213,8 +221,8 @@ tests/                            Unit/integration test bằng mock và fixture
 evals/                            Đánh giá chất lượng intent/AI/safety
 docs/                             Roadmap và tài liệu kiến trúc
 .github/workflows/ci.yml          Quality gate chạy trên Windows
-run.ps1                           Script khởi động ứng dụng trên Windows
-run-desktop.ps1                   Chạy ứng dụng trong cửa sổ WebView2
+run.ps1                           Khởi động WinAssist thành app Windows riêng
+run-desktop.ps1                   Desktop launcher WebView2 dùng nội bộ
 build-windows.ps1                 Build Windows Beta bằng PyInstaller
 build-installer.ps1               Build installer Beta bằng Inno Setup 6
 packaging/WinAssist.spec          Cấu hình bundle executable onedir
@@ -272,13 +280,20 @@ Nếu PowerShell chặn activation, dùng trực tiếp
 .\run.ps1
 ```
 
-Mở:
+Lệnh trên mở WinAssist trong cửa sổ ứng dụng riêng, không mở giao diện trong
+trình duyệt hoặc VS Code. Chỉ khi phát triển API mới chạy:
+
+```powershell
+.\run.ps1 -ServerOnly
+```
+
+Khi dùng `-ServerOnly`, các địa chỉ dành cho lập trình là:
 
 - Ứng dụng: `http://127.0.0.1:8000`
 - API docs: `http://127.0.0.1:8000/docs`
 - Health check: `http://127.0.0.1:8000/api/health`
 
-## Chạy Windows Desktop Beta
+## Chạy Windows Desktop Beta trực tiếp
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-desktop.txt

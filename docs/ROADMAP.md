@@ -206,6 +206,8 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 - [x] Quản lý window/backend lifecycle và single-instance bằng Windows mutex.
 - [x] Launcher source chạy bằng `pythonw.exe`; cảnh báo runtime được chuyển vào log
   local thay vì hiện trong terminal khi mở app.
+- [x] `run.ps1` mặc định mở desktop shell thành cửa sổ riêng; chế độ uvicorn cho
+  phát triển API chỉ chạy khi truyền `-ServerOnly`, tránh mở app trong VS Code.
 - [x] Giới hạn pywebview JavaScript bridge, không để lộ đối tượng native gây vòng
   lặp `FontFamily/SyncRoot` trong lúc pywebview đăng ký API.
 - [x] Mở close dialog ngoài callback native để popup không khóa luồng UI và vẫn
@@ -228,8 +230,12 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 - [x] Tab Cập nhật WinAssist tự kiểm tra GitHub Release và hiển thị release notes.
 - [x] Rút gọn Patch Notes cho người dùng phổ thông và thêm form ticket trong tab
   Hỗ trợ: chọn lỗi, mô tả, ảnh tối đa 5 MB và mã `Ticket#...` sau khi gửi email.
+- [x] Hoàn thiện trạng thái submit ticket: giữ mã thành công, reset form an toàn
+  sau thao tác bất đồng bộ và không hiện thông báo lỗi khi email đã được gửi.
 - [x] Thêm language switcher `VI / EN`, lưu lựa chọn local và dịch cả nội dung
   giao diện được tạo động thông qua lớp i18n frontend tập trung.
+- [x] Truyền locale vào Chat API và bản địa hóa phản hồi AssistantAgent sau bước
+  điều phối, tránh giao diện English nhưng kết luận chẩn đoán vẫn bằng tiếng Việt.
 - [x] Tự kiểm tra GitHub Release khi khởi động và thông báo phiên bản mới.
 - [x] Nút tải installer trực tiếp; Inno Setup đóng bản cũ và mở lại sau nâng cấp.
 - [x] Pipeline theo tag build/test, tạo installer, SHA-256 và đính kèm GitHub Release.
@@ -279,6 +285,13 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
   tiếp tục, thử lại và xác minh model trước khi báo hoàn tất.
 - Có phần quản lý AI local để bật sau, đổi model hoặc gỡ model/Ollama có xác nhận.
 - Rule-based router luôn hoạt động khi người dùng bỏ qua AI hoặc cài đặt thất bại.
+- Thêm mục **Dọn dẹp máy** theo hai bước: quét read-only và hiển thị dung lượng
+  trước; sau đó cho tick từng nhóm file tạm an toàn và xác nhận mới xóa. MVP ưu
+  tiên file tạm người dùng, thumbnail cache, crash dump cũ và mở Storage Sense.
+- Không chọn sẵn Thùng rác; không đụng Downloads, Documents, Desktop, Windows
+  Installer cache, restore point, driver package hoặc file đang được sử dụng.
+- Mọi thao tác dọn dẹp phải đi qua `command_registry`, `command_runner` và
+  `risk_policy`, ghi dung lượng thực tế đã xóa; AssistantAgent chỉ điều phối.
 - Ổn định API và database migration.
 - Recovery khi database hỏng hoặc thiếu model.
 - Catalog/troubleshooting rules có version và quy trình review.
@@ -335,7 +348,7 @@ AI không được điều phối tool trước khi Safety Core hoàn thành. Pa
 - Tự sửa Registry.
 - Tắt Defender hoặc Firewall.
 - Tự gỡ/cài driver không có xác nhận, restore point hoặc khả năng rollback.
-- Tự xóa file hoặc dữ liệu người dùng.
+- Tự xóa file hoặc dữ liệu người dùng khi chưa quét, phân loại và xác nhận rõ.
 - Chạy script do LLM tạo.
 - Remote administration.
 

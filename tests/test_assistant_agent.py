@@ -109,3 +109,22 @@ def test_agent_guides_ambiguous_performance_problem(tmp_path) -> None:
     }
     assert runner.calls == []
     assert ollama.classify_calls == 0
+
+
+def test_agent_localizes_response_and_suggestions_to_english(tmp_path) -> None:
+    agent, runner, _, ollama = make_agent(tmp_path)
+
+    response = asyncio.run(
+        agent.handle(
+            "Máy của tôi đang chạy chậm, tôi nên làm gì?", language="en"
+        )
+    )
+
+    assert response.message.startswith("A slow PC can be caused")
+    assert {item.label for item in response.suggestions} >= {
+        "Slow startup",
+        "Storage almost full",
+        "Slow internet",
+    }
+    assert runner.calls == []
+    assert ollama.classify_calls == 0

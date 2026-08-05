@@ -39,4 +39,8 @@ async def chat(
     request: ChatRequest,
     agent: AssistantAgent = Depends(get_assistant_agent),
 ) -> ChatResponse:
-    return await agent.handle(request.message, session_id=request.session_id)
+    return await agent.handle(
+        request.message,
+        session_id=request.session_id,
+        language=request.language,
+    )

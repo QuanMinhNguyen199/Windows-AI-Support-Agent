@@ -1,3 +1,7 @@
+param(
+    [switch]$ServerOnly
+)
+
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VirtualPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
@@ -255,4 +259,10 @@ if ($BootstrapMode -ne "skip") {
     }
 }
 
-& $VirtualPython -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+if ($ServerOnly) {
+    & $VirtualPython -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+    exit $LASTEXITCODE
+}
+
+& (Join-Path $ProjectRoot "run-desktop.ps1")
+exit $LASTEXITCODE

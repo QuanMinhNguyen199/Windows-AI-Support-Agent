@@ -93,7 +93,9 @@ class OllamaService:
             result.confidence = min(result.confidence, 0.5)
         return result
 
-    async def explain_diagnostic(self, evidence: dict[str, Any]) -> AIExplanation:
+    async def explain_diagnostic(
+        self, evidence: dict[str, Any], *, language: str = "vi"
+    ) -> AIExplanation:
         system = self.prompts.load("system/windows_assistant_v1.txt")
         task = self.prompts.load("tool_results/diagnostic_explanation_v1.txt")
         serialized = json.dumps(evidence, ensure_ascii=False, default=str)
@@ -102,7 +104,11 @@ class OllamaService:
                 {"role": "system", "content": system},
                 {
                     "role": "user",
-                    "content": f"{task}\n\nEvidence JSON:\n{serialized[:12_000]}",
+                    "content": (
+                        f"{task}\n\nResponse language: "
+                        f"{'English' if language == 'en' else 'Vietnamese'}"
+                        f"\n\nEvidence JSON:\n{serialized[:12_000]}"
+                    ),
                 },
             ],
             schema=AIExplanation.model_json_schema(),
