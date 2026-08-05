@@ -1,8 +1,9 @@
 # WinAssist Local
 
-> **Cài cho người dùng Windows:** sau khi có bản phát hành đã ký số, tải một file
-> tại [WinAssist-Setup.exe](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe).
-> Không cần Python, PowerShell hoặc terminal.
+> **Cài Community Beta cho Windows:** tải một file tại
+> [WinAssist-Setup.exe](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe).
+> Không cần Python, PowerShell hoặc terminal. Bản 0.9.7 chưa ký số nên Windows
+> SmartScreen có thể cảnh báo; chỉ tải từ trang chính thức hoặc GitHub Release.
 
 WinAssist Local là trợ lý hỗ trợ Windows chạy trên máy người dùng. Ứng dụng hướng
 tới hai nhóm nhu cầu:
@@ -20,6 +21,8 @@ Kênh hỗ trợ: [minhquanpro65@gmail.com](mailto:minhquanpro65@gmail.com) ho�
 Project hiện chưa công bố license; việc public source code không tự động cấp
 quyền sao chép, sửa đổi hoặc phân phối lại. Installer Beta chưa ký số có thể bị
 Windows SmartScreen hiển thị cảnh báo.
+
+Community Beta đầu tiên: [WinAssist 0.9.7](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/tag/v0.9.7).
 
 ## Trạng thái hiện tại
 
