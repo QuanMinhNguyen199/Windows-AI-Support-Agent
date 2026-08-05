@@ -283,6 +283,7 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
   chung; `Enter` gửi tin nhắn và `Shift+Enter` xuống dòng.
 - [x] Làm mới website tải WinAssist với giao diện responsive, giới thiệu tính
   năng, hướng dẫn ba bước và ghi chú phiên bản dễ hiểu ngay trên trang.
+- [x] Chuẩn hóa scrollbar và khoảng cách vùng cuộn trên mọi tab desktop.
 
 - Cài Windows Update trực tiếp trong WinAssist qua API hệ thống được hỗ trợ, có
   yêu cầu quyền Administrator rõ ràng, progress thật, xác nhận trước khi cài,

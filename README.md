@@ -47,6 +47,9 @@ cải thiện độ ổn định của bản Windows.
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản ngay trên trang; người dùng phổ thông không cần mở GitHub.
 
+Giao diện desktop giữ nội dung cân giữa, đặt thanh cuộn sát mép cửa sổ và chừa
+khoảng cách an toàn để nội dung không dính vào scrollbar.
+
 Logic chạy lệnh hệ thống chỉ được quản lý tại:
 `app/core/command_registry.py`, `app/core/command_runner.py` và
 `app/core/risk_policy.py`. AI agent không chạy lệnh shell trực tiếp.
