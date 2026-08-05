@@ -2,7 +2,7 @@
 
 > **Cài Community Beta cho Windows:** tải một file tại
 > [WinAssist-Setup.exe](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe).
-> Không cần Python, PowerShell hoặc terminal. Bản 0.9.7 chưa ký số nên Windows
+> Không cần Python, PowerShell hoặc terminal. Bản Beta chưa ký số nên Windows
 > SmartScreen có thể cảnh báo; chỉ tải từ trang chính thức hoặc GitHub Release.
 
 WinAssist Local là trợ lý hỗ trợ Windows chạy trên máy người dùng. Ứng dụng hướng
@@ -22,7 +22,11 @@ Project hiện chưa công bố license; việc public source code không tự �
 quyền sao chép, sửa đổi hoặc phân phối lại. Installer Beta chưa ký số có thể bị
 Windows SmartScreen hiển thị cảnh báo.
 
-Community Beta đầu tiên: [WinAssist 0.9.7](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/tag/v0.9.7).
+Community Beta hiện tại: [WinAssist 0.9.8](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/tag/v0.9.8).
+Patch `0.9.8` sửa lỗi app không mở được sau Setup:
+backend nhúng không còn phụ thuộc vào cửa sổ terminal, đồng thời desktop shell
+không còn đưa native window vào JavaScript bridge. Người dùng bản 0.9.7 nên tải
+lại installer mới từ link chính thức ở đầu trang.
 
 ## Trạng thái hiện tại
 

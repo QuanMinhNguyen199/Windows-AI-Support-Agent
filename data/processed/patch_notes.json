@@ -1,6 +1,25 @@
 {
   "releases": [
     {
+      "version": "0.9.8",
+      "released_at": "2026-08-05",
+      "title": "WinAssist khởi động ổn định hơn",
+      "summary": "Sửa lỗi một số máy không mở được WinAssist sau khi hoàn tất Setup.",
+      "highlights": [
+        "Có thể chuyển giao diện và phản hồi trợ lý giữa tiếng Việt và tiếng Anh.",
+        "Có thể gửi báo cáo lỗi kèm ảnh ngay trong WinAssist."
+      ],
+      "fixes": [
+        "Sửa lỗi WinAssist không mở được sau khi cài đặt.",
+        "Sửa thông báo thất bại giả sau khi ticket đã gửi thành công.",
+        "Ghi lại chi tiết lỗi khởi động để hỗ trợ dễ hơn."
+      ],
+      "security": [
+        "Ticket chỉ được gửi đến dịch vụ hỗ trợ chính thức của WinAssist.",
+        "Mọi thao tác thay đổi máy vẫn cần bạn xác nhận."
+      ]
+    },
+    {
       "version": "0.9.7",
       "released_at": "2026-08-03",
       "title": "WinAssist đã có phiên bản ứng dụng Windows",

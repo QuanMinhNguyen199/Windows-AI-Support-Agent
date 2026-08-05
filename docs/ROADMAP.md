@@ -243,6 +243,10 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
 - [x] Bộ cài kèm WebView2 Evergreen Bootstrapper đã xác minh chữ ký Microsoft.
 - [x] Tạo GitHub Release `v0.9.7` Community Beta với installer ổn định và SHA-256;
   bản này chưa ký số và landing page hiển thị cảnh báo SmartScreen rõ ràng.
+- [x] Phát hành patch `0.9.8`: cấu hình backend nhúng chạy được khi bản Windows
+  không có terminal, giữ native window ngoài JavaScript bridge để sửa lỗi
+  pywebview `ValueError/SyncRoot`, đồng thời ghi traceback vào
+  `desktop-crash.log`; installer đã pass smoke test trước khi phát hành.
 - [ ] Tải nền có progress, SHA-256/chữ ký số và chạy installer sau một lần xác nhận.
 - [ ] Tải/cài driver có kiểm tra chữ ký số, restore point, progress và rollback.
 - [x] Chỉ bind loopback và bảo vệ local API bằng token phiên/cookie HttpOnly.

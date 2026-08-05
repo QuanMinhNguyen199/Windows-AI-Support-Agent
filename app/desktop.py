@@ -9,6 +9,8 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
+from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Self
@@ -23,6 +25,21 @@ ERROR_ALREADY_EXISTS = 183
 DEFAULT_WINDOW_WIDTH = 1280
 DEFAULT_WINDOW_HEIGHT = 820
 WINDOW_MARGIN = 24
+
+
+def write_desktop_crash_log(exc: BaseException) -> Path:
+    log_dir = (
+        Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+        / "WinAssist Local"
+        / "data"
+        / "logs"
+    )
+    log_dir.mkdir(parents=True, exist_ok=True)
+    path = log_dir / "desktop-crash.log"
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write(f"\n[{datetime.now(UTC).isoformat()}] {type(exc).__name__}: {exc}\n")
+        stream.write("".join(traceback.format_exception(exc)))
+    return path
 
 
 class _Point(ctypes.Structure):
@@ -305,6 +322,22 @@ def loopback_port_is_available(host: str = DESKTOP_HOST, port: int = DESKTOP_POR
     return True
 
 
+def embedded_uvicorn_config(app: Any, host: str, port: int) -> Any:
+    """Create a server config that also works in a windowed PyInstaller build."""
+    import uvicorn
+
+    return uvicorn.Config(
+        app,
+        host=host,
+        port=port,
+        log_level="warning",
+        access_log=False,
+        # A windowed executable has no stdout/stderr. Uvicorn's default formatter
+        # calls isatty() on stderr and otherwise crashes before the UI can open.
+        log_config=None,
+    )
+
+
 class EmbeddedBackend:
     def __init__(self, host: str = DESKTOP_HOST, port: int = DESKTOP_PORT) -> None:
         self.host = host
@@ -318,13 +351,7 @@ class EmbeddedBackend:
 
         from app.main import app
 
-        config = uvicorn.Config(
-            app,
-            host=self.host,
-            port=self.port,
-            log_level="warning",
-            access_log=False,
-        )
+        config = embedded_uvicorn_config(app, host=self.host, port=self.port)
         self.server = uvicorn.Server(config)
         self.thread = threading.Thread(
             target=self._run_server,
@@ -432,9 +459,11 @@ def launch_desktop() -> int:
         )
         return 5
     except Exception as exc:  # noqa: BLE001 - desktop boundary must show a native error
+        write_desktop_crash_log(exc)
         show_native_error(
             f"WinAssist không thể khởi động ({type(exc).__name__}). "
-            "Hãy xem log trong %LOCALAPPDATA%\\WinAssist Local\\data\\logs."
+            "Hãy xem desktop-crash.log trong "
+            "%LOCALAPPDATA%\\WinAssist Local\\data\\logs."
         )
         return 6
     finally:

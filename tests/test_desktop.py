@@ -1,5 +1,6 @@
 import os
 import socket
+import sys
 from uuid import uuid4
 
 import pytest
@@ -35,6 +36,27 @@ def test_runtime_data_is_stored_under_local_app_data(tmp_path, monkeypatch) -> N
     assert os.environ["WINASSIST_LOG_PATH"] == str(
         root / "data" / "logs" / "winassist.jsonl"
     )
+
+
+def test_desktop_crash_log_contains_traceback(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    error = ValueError("desktop startup failed")
+
+    path = desktop.write_desktop_crash_log(error)
+    content = path.read_text(encoding="utf-8")
+
+    assert path == tmp_path / "WinAssist Local" / "data" / "logs" / "desktop-crash.log"
+    assert "ValueError: desktop startup failed" in content
+
+
+def test_embedded_backend_config_works_without_console(monkeypatch) -> None:
+    monkeypatch.setattr(sys, "stdout", None)
+    monkeypatch.setattr(sys, "stderr", None)
+
+    config = desktop.embedded_uvicorn_config(app, DESKTOP_HOST, 8765)
+
+    assert config.log_config is None
+    assert config.access_log is False
 
 
 def test_loopback_port_check_detects_collision() -> None:
