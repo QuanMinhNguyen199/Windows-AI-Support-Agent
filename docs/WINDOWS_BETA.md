@@ -2,7 +2,7 @@
 
 ## Phạm vi hiện tại
 
-WinAssist `0.9.0` có desktop shell chạy frontend hiện tại trong WebView2 thông
+WinAssist `0.9.7` có desktop shell chạy frontend hiện tại trong WebView2 thông
 qua pywebview. Shell khởi động FastAPI trên `127.0.0.1:8000`, chờ health check,
 mở cửa sổ và yêu cầu backend dừng khi cửa sổ đóng.
 
@@ -29,7 +29,7 @@ PyInstaller tạo bundle onedir tại `dist\WinAssist`. Bundle gồm frontend st
 catalog đã xử lý, prompts và runtime pywebview. Onedir được chọn cho Beta để dễ
 kiểm tra file, startup nhanh hơn onefile và hỗ trợ rollback bằng thư mục release.
 
-Build `0.9.0` đã được xác minh tạo executable và đủ static/catalog/prompt trên
+Build `0.9.7` đã được xác minh tạo executable và đủ static/catalog/prompt trên
 Windows 11 với Python 3.14, pywebview 6.2.1 và PyInstaller 6.21.0. Việc mở GUI và
 luồng cài/gỡ vẫn phải smoke-test trên máy sạch trước khi phát hành.
 
@@ -42,8 +42,8 @@ desktop shortcut tùy chọn và uninstall entry. Chạy:
 .\build-installer.ps1
 ```
 
-Script yêu cầu Inno Setup 6. Máy phát triển hiện chưa có `ISCC.exe`, vì vậy
-installer và rollback chưa được xác minh. Installer không xóa database/log trong
+Script dùng Inno Setup 6.7.3 và installer 0.9.7 đã smoke test cài/gỡ thành công
+trong thư mục cách ly. Installer không xóa database/log trong
 `%LOCALAPPDATA%\WinAssist Local`; lựa chọn xóa dữ liệu sẽ được thiết kế riêng.
 
 ## Bảo vệ local API
@@ -84,3 +84,12 @@ installer tương lai phải cung cấp lựa chọn xóa dữ liệu rõ ràng.
   stable installer khớp bản versioned.
 
 Build từ `build-windows.ps1` hiện là Beta nội bộ, chưa được ký số.
+
+## Community Beta 0.9.7
+
+- GitHub Release: `v0.9.7`.
+- Pipeline Windows sạch trên GitHub Actions đã test, build PyInstaller/Inno Setup,
+  tạo SHA-256 và upload đủ installer versioned/stable.
+- GitHub Pages và URL `releases/latest/download/WinAssist-Setup.exe` trả về bình thường.
+- Bản phát hành chưa ký số nên SmartScreen có thể cảnh báo.
+- Còn phải kiểm thử Windows 10/11 sạch, standard user và ký số trước bản stable.

@@ -43,12 +43,15 @@ https://quanminhnguyen199.github.io/Windows-AI-Support-Agent/
 
 ## Tạo bản phát hành
 
-Chỉ tạo tag công khai sau khi executable và installer đã được ký số:
+Community Beta đầu tiên đã được phát hành bằng tag:
 
 ```powershell
 git tag v0.9.7
 git push origin v0.9.7
 ```
+
+Bản 0.9.7 chưa ký số, được ghi rõ là Community Beta trên landing page và release
+notes. Các bản stable chỉ phát hành sau khi executable và installer đã ký số.
 
 Workflow `windows-release` sẽ chạy test, build bộ cài, tạo checksum và xuất cả:
 
