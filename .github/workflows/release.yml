@@ -34,14 +34,21 @@ jobs:
         shell: pwsh
         run: |
           $smokeDir = Join-Path $env:RUNNER_TEMP "WinAssist-release-smoke"
+          $installLog = Join-Path $env:RUNNER_TEMP "WinAssist-install-smoke.log"
           $installer = Get-ChildItem dist/installer/WinAssist-*-Setup.exe | Select-Object -First 1
-          & $installer.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="$smokeDir"
-          if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $smokeDir "WinAssist.exe"))) {
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList @(
+            "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART",
+            "/DIR=`"$smokeDir`"", "/LOG=`"$installLog`""
+          ) -Wait -PassThru
+          if ($install.ExitCode -ne 0 -or -not (Test-Path (Join-Path $smokeDir "WinAssist.exe"))) {
+            if (Test-Path $installLog) { Get-Content $installLog }
             throw "Installer smoke test failed."
           }
           $uninstaller = Join-Path $smokeDir "unins000.exe"
-          & $uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /PURGEDATA=1
-          if ($LASTEXITCODE -ne 0) { throw "Uninstaller smoke test failed." }
+          $uninstall = Start-Process -FilePath $uninstaller -ArgumentList @(
+            "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/PURGEDATA=1"
+          ) -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstaller smoke test failed." }
           for ($attempt = 0; $attempt -lt 20 -and (Test-Path $smokeDir); $attempt++) {
             Start-Sleep -Milliseconds 250
           }
