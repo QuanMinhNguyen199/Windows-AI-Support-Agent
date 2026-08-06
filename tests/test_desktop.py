@@ -294,18 +294,20 @@ def test_desktop_controller_launches_trusted_uninstaller(tmp_path, monkeypatch) 
     controller.bind(window)
     monkeypatch.setattr(desktop, "installed_uninstaller_path", lambda: uninstaller)
     monkeypatch.setattr(desktop.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(desktop.os, "getpid", lambda: 4242)
 
     response = controller.uninstall_app()
 
     assert response["success"] is True
-    assert calls[0][0] == [
-        str(uninstaller),
-        "/SILENT",
-        "/SUPPRESSMSGBOXES",
-        "/NORESTART",
-        "/PURGEDATA=1",
-    ]
+    command = calls[0][0]
+    assert command[0].endswith(r"WindowsPowerShell\v1.0\powershell.exe")
+    encoded_script = command[command.index("-EncodedCommand") + 1]
+    script = desktop.base64.b64decode(encoded_script).decode("utf-16-le")
+    assert "Wait-Process -Id 4242" in script
+    assert str(uninstaller) in script
+    assert "'/PURGEDATA=1'" in script
     assert calls[0][1]["shell"] is False
+    assert calls[0][1]["creationflags"] == getattr(desktop.subprocess, "CREATE_NO_WINDOW", 0)
     assert controller.exit_requested is True
     assert window.destroyed is True
 

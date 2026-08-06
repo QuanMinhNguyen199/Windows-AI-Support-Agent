@@ -247,7 +247,7 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
   không có terminal, giữ native window ngoài JavaScript bridge để sửa lỗi
   pywebview `ValueError/SyncRoot`, đồng thời ghi traceback vào
   `desktop-crash.log`; installer đã pass smoke test trước khi phát hành.
-- [ ] Tải nền có progress, SHA-256/chữ ký số và chạy installer sau một lần xác nhận.
+- [x] Tải nền có progress, kiểm tra SHA-256 và chạy installer trực tiếp trong app.
 - [ ] Tải/cài driver có kiểm tra chữ ký số, restore point, progress và rollback.
 - [x] Chỉ bind loopback và bảo vệ local API bằng token phiên/cookie HttpOnly.
 - [x] Lưu database/log vào `%LOCALAPPDATA%` để tương thích thư mục cài read-only.
@@ -260,6 +260,8 @@ Tiện ích cập nhật mà không cần tải lại trang và không quét n�
   cho phép chọn ổ/thư mục khác mà người dùng có quyền ghi.
 - [x] Thêm tab nhỏ Gỡ WinAssist với xác nhận rõ ràng; chỉ chạy uninstaller nằm
   cạnh executable, xóa dữ liệu WinAssist và giữ nguyên mọi tiện ích đã cài.
+- [x] Hotfix `0.10.1`: chờ tiến trình WinAssist thoát hoàn toàn trước khi chạy
+  uninstaller và dọn thư mục cài đặt, tránh sót `WinAssist.exe` hoặc `_internal`.
 - [ ] Ký số desktop shell và installer bằng certificate phát hành.
 - [ ] Kiểm thử Windows 10/11 trên máy sạch và pipeline release artifact.
 - [x] Tinh gọn Tổng quan máy; loại bỏ chức năng xuất báo cáo JSON không cần thiết.

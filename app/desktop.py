@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import ctypes
 import hashlib
 import json
@@ -117,6 +118,30 @@ def installed_uninstaller_path() -> Path | None:
     if candidate.parent != install_dir or candidate.name.casefold() != "unins000.exe":
         return None
     return candidate if candidate.is_file() else None
+
+
+def delayed_uninstall_command(uninstaller: Path, process_id: int) -> list[str]:
+    """Build a detached Windows command that uninstalls only after WinAssist exits."""
+    system_root = Path(os.environ.get("SystemRoot", r"C:\Windows"))
+    powershell = system_root / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    escaped_uninstaller = str(uninstaller).replace("'", "''")
+    script = (
+        "$ErrorActionPreference='SilentlyContinue';"
+        f"Wait-Process -Id {process_id};"
+        f"Start-Process -FilePath '{escaped_uninstaller}' "
+        "-ArgumentList @('/SILENT','/SUPPRESSMSGBOXES','/NORESTART','/PURGEDATA=1') "
+        "-Wait"
+    )
+    encoded_script = base64.b64encode(script.encode("utf-16-le")).decode("ascii")
+    return [
+        str(powershell),
+        "-NoProfile",
+        "-NonInteractive",
+        "-WindowStyle",
+        "Hidden",
+        "-EncodedCommand",
+        encoded_script,
+    ]
 
 
 class DesktopUpdater:
@@ -365,16 +390,11 @@ class DesktopController:
                 "message": "Không tìm thấy bộ gỡ cài đặt WinAssist hợp lệ.",
             }
         try:
-            subprocess.Popen(  # noqa: S603 - exact trusted path beside frozen executable
-                [
-                    str(uninstaller),
-                    "/SILENT",
-                    "/SUPPRESSMSGBOXES",
-                    "/NORESTART",
-                    "/PURGEDATA=1",
-                ],
+            subprocess.Popen(  # noqa: S603 - fixed system helper and trusted uninstaller
+                delayed_uninstall_command(uninstaller, os.getpid()),
                 shell=False,
                 close_fds=True,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except OSError:
             return {

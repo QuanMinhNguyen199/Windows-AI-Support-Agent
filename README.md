@@ -27,7 +27,7 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-**WinAssist 0.10.0 Community Beta** bổ sung cập nhật ngay trong ứng dụng với
+**WinAssist 0.10.1 Community Beta** bổ sung cập nhật ngay trong ứng dụng với
 tiến trình tải, hủy và kiểm tra SHA-256 trước khi cài.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
@@ -46,6 +46,7 @@ tiến trình tải, hủy và kiểm tra SHA-256 trước khi cài.
 
 Từ `0.10.0`, WinAssist tải bản mới ở nền, kiểm tra SHA-256 rồi tự đóng, cài và
 mở lại. Người dùng `0.9.9` cần cài `0.10.0` thủ công một lần để nhận updater mới.
+Hotfix `0.10.1` cũng sửa luồng gỡ cài đặt để không còn sót file đang bị Windows khóa.
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản ngay trên trang; người dùng phổ thông không cần mở GitHub.

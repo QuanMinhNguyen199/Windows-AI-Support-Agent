@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "version": "0.10.1",
+      "released_at": "2026-08-06",
+      "title": "Gỡ WinAssist sạch hơn",
+      "summary": "WinAssist chờ ứng dụng đóng hẳn rồi mới xóa các file cài đặt.",
+      "highlights": [
+        "Gỡ WinAssist sạch hơn mà không ảnh hưởng đến các tiện ích khác."
+      ],
+      "fixes": [
+        "Sửa lỗi WinAssist.exe và thư mục _internal còn sót sau khi gỡ ứng dụng."
+      ],
+      "security": [
+        "Chỉ xóa thư mục của WinAssist; các tiện ích đã cài không bị ảnh hưởng."
+      ]
+    },
+    {
       "version": "0.10.0",
       "released_at": "2026-08-06",
       "title": "Cập nhật ngay trong WinAssist",
