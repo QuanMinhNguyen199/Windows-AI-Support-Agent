@@ -58,6 +58,12 @@ class UpdateService:
             None,
         )
         installer_url = installer.get("browser_download_url") if installer else None
+        digest = str(installer.get("digest") or "") if installer else ""
+        installer_sha256 = (
+            digest.removeprefix("sha256:")
+            if digest.startswith("sha256:") and len(digest) == 71
+            else None
+        )
         if not update_available:
             message = "Bạn đang dùng phiên bản mới nhất."
         elif installer_url:
@@ -70,6 +76,7 @@ class UpdateService:
             update_available=update_available,
             installer_available=bool(installer_url),
             installer_url=installer_url,
+            installer_sha256=installer_sha256,
             release_url=payload.get("html_url"),
             message=message,
         )

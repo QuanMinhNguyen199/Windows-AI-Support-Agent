@@ -756,6 +756,14 @@ svg {
   font-size: .74rem;
   font-weight: 700;
 }
+.self-update-progress { width: min(620px, 100%); }
+.self-update-row { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 9px; }
+.self-update-row span { color: #a9b8c8; font-size: .82rem; }
+.self-update-track { height: 9px; overflow: hidden; border-radius: 999px; background: #0f1822; }
+.self-update-track span { display: block; height: 100%; border-radius: inherit; background: #4f8cff; transition: width .25s ease; }
+.self-update-track .indeterminate { width: 34%; animation: slide 1.2s ease-in-out infinite; }
+.self-update-progress p { margin: 9px 0 0; }
+.self-update-cancel { margin-top: 10px; }
 .patch-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

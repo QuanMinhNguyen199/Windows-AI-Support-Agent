@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import ctypes
+import hashlib
 import json
 import os
+import re
 import secrets
 import socket
 import subprocess
@@ -15,7 +17,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any, Self
 from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.parse import unquote, urlparse
+from urllib.request import Request, urlopen
 
 DESKTOP_HOST = "127.0.0.1"
 DESKTOP_PORT = 8000
@@ -116,16 +119,187 @@ def installed_uninstaller_path() -> Path | None:
     return candidate if candidate.is_file() else None
 
 
+class DesktopUpdater:
+    """Download and verify a trusted WinAssist installer outside the AI agent."""
+
+    _VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
+    _SHA256_PATTERN = re.compile(r"^[a-fA-F0-9]{64}$")
+    _RELEASE_PATH = "/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/"
+    _MAX_INSTALLER_BYTES = 512 * 1024 * 1024
+
+    def __init__(self, *, runtime_root: Path | None = None, available: bool | None = None) -> None:
+        self.runtime_root = runtime_root or (
+            Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            / "WinAssist Local"
+        )
+        self.available = bool(getattr(sys, "frozen", False)) if available is None else available
+        self._lock = threading.Lock()
+        self._cancel = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._installer: Path | None = None
+        self._expected_sha256: str | None = None
+        self._state: dict[str, object] = {
+            "state": "idle",
+            "downloaded_bytes": 0,
+            "total_bytes": 0,
+            "percent": 0,
+            "message": "Sẵn sàng kiểm tra cập nhật.",
+        }
+
+    def status(self) -> dict[str, object]:
+        with self._lock:
+            return {"available": self.available, **self._state}
+
+    def start(self, url: str, version: str, sha256: str) -> dict[str, object]:
+        if not self.available:
+            return {"success": False, "message": "Chỉ có thể cập nhật trong bản WinAssist đã cài."}
+        try:
+            self._validate_release(url, version, sha256)
+        except ValueError as exc:
+            return {"success": False, "message": str(exc)}
+        with self._lock:
+            if self._state["state"] in {"downloading", "installing"}:
+                return {"success": False, "message": "Một bản cập nhật đang được xử lý."}
+            update_dir = (self.runtime_root / "updates").resolve()
+            update_dir.mkdir(parents=True, exist_ok=True)
+            self._installer = update_dir / f"WinAssist-{version}-Setup.exe"
+            self._expected_sha256 = sha256.lower()
+            self._cancel.clear()
+            self._state = {
+                "state": "downloading",
+                "version": version,
+                "downloaded_bytes": 0,
+                "total_bytes": 0,
+                "percent": 0,
+                "message": "Đang tải bản cập nhật…",
+            }
+            self._thread = threading.Thread(
+                target=self._download,
+                args=(url,),
+                name="winassist-updater",
+                daemon=True,
+            )
+            self._thread.start()
+        return {"success": True, "message": "Đã bắt đầu tải bản cập nhật."}
+
+    def cancel(self) -> dict[str, object]:
+        with self._lock:
+            if self._state["state"] != "downloading":
+                return {"success": False, "message": "Không có bản cập nhật đang tải."}
+            self._state["message"] = "Đang hủy tải xuống…"
+        self._cancel.set()
+        return {"success": True, "message": "Đang hủy tải xuống…"}
+
+    def install(self) -> dict[str, object]:
+        with self._lock:
+            installer = self._installer
+            expected = self._expected_sha256
+            if self._state["state"] != "ready" or installer is None or expected is None:
+                return {"success": False, "message": "Bản cập nhật chưa tải xong."}
+        if not installer.is_file() or self._file_sha256(installer) != expected:
+            self._set_state("failed", "File cập nhật không còn hợp lệ. Hãy tải lại.")
+            return {"success": False, "message": "File cập nhật không còn hợp lệ. Hãy tải lại."}
+        try:
+            subprocess.Popen(  # noqa: S603 - verified installer from the official release
+                [
+                    str(installer),
+                    "/SILENT",
+                    "/SUPPRESSMSGBOXES",
+                    "/NORESTART",
+                    "/CLOSEAPPLICATIONS",
+                    "/UPDATE=1",
+                ],
+                shell=False,
+                close_fds=True,
+            )
+        except OSError:
+            self._set_state("failed", "Không thể mở trình cập nhật.")
+            return {"success": False, "message": "Không thể mở trình cập nhật."}
+        self._set_state("installing", "Đang đóng WinAssist để hoàn tất cập nhật…")
+        return {"success": True, "message": "Đang cài bản cập nhật và mở lại WinAssist."}
+
+    def _download(self, url: str) -> None:
+        installer = self._installer
+        expected = self._expected_sha256
+        if installer is None or expected is None:
+            return
+        temporary = installer.with_suffix(installer.suffix + ".part")
+        try:
+            request = Request(url, headers={"User-Agent": "WinAssist-Updater"})
+            with urlopen(request, timeout=30) as response, temporary.open("wb") as stream:
+                total = int(response.headers.get("Content-Length") or 0)
+                if total > self._MAX_INSTALLER_BYTES:
+                    raise ValueError("Gói cập nhật lớn bất thường")
+                digest = hashlib.sha256()
+                downloaded = 0
+                while True:
+                    if self._cancel.is_set():
+                        raise InterruptedError
+                    chunk = response.read(128 * 1024)
+                    if not chunk:
+                        break
+                    stream.write(chunk)
+                    digest.update(chunk)
+                    downloaded += len(chunk)
+                    if downloaded > self._MAX_INSTALLER_BYTES:
+                        raise ValueError("Gói cập nhật lớn bất thường")
+                    percent = round(downloaded * 100 / total) if total else 0
+                    with self._lock:
+                        self._state.update(
+                            downloaded_bytes=downloaded,
+                            total_bytes=total,
+                            percent=min(percent, 100),
+                        )
+            if digest.hexdigest().lower() != expected:
+                raise ValueError("SHA-256 không khớp")
+            os.replace(temporary, installer)
+            self._set_state("ready", "Đã tải và kiểm tra an toàn. Sẵn sàng cập nhật.", percent=100)
+        except InterruptedError:
+            temporary.unlink(missing_ok=True)
+            self._set_state("cancelled", "Đã hủy tải bản cập nhật.")
+        except (OSError, URLError, TimeoutError, ValueError) as exc:
+            temporary.unlink(missing_ok=True)
+            self._set_state("failed", f"Không thể tải bản cập nhật: {exc}")
+
+    def _validate_release(self, url: str, version: str, sha256: str) -> None:
+        parsed = urlparse(url)
+        filename = Path(unquote(parsed.path)).name
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname != "github.com"
+            or self._RELEASE_PATH not in parsed.path
+            or not filename.casefold().endswith("-setup.exe")
+        ):
+            raise ValueError("Link cập nhật không thuộc GitHub chính thức của WinAssist.")
+        if not self._VERSION_PATTERN.fullmatch(version):
+            raise ValueError("Phiên bản cập nhật không hợp lệ.")
+        if not self._SHA256_PATTERN.fullmatch(sha256):
+            raise ValueError("Bản cập nhật chưa có mã kiểm tra an toàn.")
+
+    def _set_state(self, state: str, message: str, **values: object) -> None:
+        with self._lock:
+            self._state.update(state=state, message=message, **values)
+
+    @staticmethod
+    def _file_sha256(path: Path) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(128 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest().lower()
+
+
 class DesktopController:
     """Coordinates close confirmation, tray hiding and final shutdown."""
 
-    def __init__(self) -> None:
+    def __init__(self, updater: DesktopUpdater | None = None) -> None:
         # Keep native objects private. pywebview inspects public js_api members and
         # recursively walking a Window reaches WinForms Font/Families/SyncRoot.
         self._window: Any | None = None
         self.tray_available = False
         self.exit_requested = False
         self._close_dialog_pending = False
+        self._updater = updater or DesktopUpdater()
 
     def bind(self, window: Any) -> None:
         self._window = window
@@ -212,6 +386,21 @@ class DesktopController:
             "success": True,
             "message": "Đang đóng và gỡ WinAssist khỏi máy.",
         }
+
+    def update_status(self) -> dict[str, object]:
+        return self._updater.status()
+
+    def start_update(self, url: str, version: str, sha256: str) -> dict[str, object]:
+        return self._updater.start(url, version, sha256)
+
+    def cancel_update(self) -> dict[str, object]:
+        return self._updater.cancel()
+
+    def install_update(self) -> dict[str, object]:
+        result = self._updater.install()
+        if result["success"]:
+            self.exit_app()
+        return result
 
 
 class DesktopTray:

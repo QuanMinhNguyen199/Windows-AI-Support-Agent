@@ -1,6 +1,7 @@
 import os
 import socket
 import sys
+import hashlib
 from uuid import uuid4
 
 import pytest
@@ -9,6 +10,7 @@ from fastapi.testclient import TestClient
 from app.desktop import (
     DESKTOP_HOST,
     DesktopController,
+    DesktopUpdater,
     SingleInstance,
     active_monitor_work_area,
     centered_window_geometry,
@@ -57,6 +59,103 @@ def test_embedded_backend_config_works_without_console(monkeypatch) -> None:
 
     assert config.log_config is None
     assert config.access_log is False
+
+
+class FakeDownloadResponse:
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+        self.offset = 0
+        self.headers = {"Content-Length": str(len(body))}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return None
+
+    def read(self, size: int = -1) -> bytes:
+        if self.offset >= len(self.body):
+            return b""
+        end = len(self.body) if size < 0 else min(len(self.body), self.offset + size)
+        chunk = self.body[self.offset:end]
+        self.offset = end
+        return chunk
+
+
+def test_desktop_updater_downloads_and_verifies_official_release(tmp_path, monkeypatch) -> None:
+    body = b"verified installer"
+    expected = hashlib.sha256(body).hexdigest()
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+    monkeypatch.setattr(desktop, "urlopen", lambda *_args, **_kwargs: FakeDownloadResponse(body))
+
+    started = updater.start(
+        "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v1.0.0/WinAssist-1.0.0-Setup.exe",
+        "1.0.0",
+        expected,
+    )
+    updater._thread.join(timeout=2)  # type: ignore[union-attr]
+
+    assert started["success"] is True
+    assert updater.status()["state"] == "ready"
+    assert updater.status()["percent"] == 100
+    assert (tmp_path / "updates" / "WinAssist-1.0.0-Setup.exe").read_bytes() == body
+
+
+def test_desktop_updater_rejects_untrusted_url(tmp_path) -> None:
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+
+    response = updater.start(
+        "https://example.com/WinAssist-1.0.0-Setup.exe",
+        "1.0.0",
+        "a" * 64,
+    )
+
+    assert response["success"] is False
+    assert updater.status()["state"] == "idle"
+
+
+def test_desktop_updater_rejects_checksum_mismatch(tmp_path, monkeypatch) -> None:
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+    monkeypatch.setattr(desktop, "urlopen", lambda *_args, **_kwargs: FakeDownloadResponse(b"bad"))
+
+    updater.start(
+        "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v1.0.0/WinAssist-1.0.0-Setup.exe",
+        "1.0.0",
+        "a" * 64,
+    )
+    updater._thread.join(timeout=2)  # type: ignore[union-attr]
+
+    assert updater.status()["state"] == "failed"
+    assert not (tmp_path / "updates" / "WinAssist-1.0.0-Setup.exe").exists()
+
+
+def test_desktop_controller_installs_verified_update_and_exits(tmp_path, monkeypatch) -> None:
+    body = b"installer"
+    expected = hashlib.sha256(body).hexdigest()
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+    monkeypatch.setattr(desktop, "urlopen", lambda *_args, **_kwargs: FakeDownloadResponse(body))
+    updater.start(
+        "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v1.0.0/WinAssist-1.0.0-Setup.exe",
+        "1.0.0",
+        expected,
+    )
+    updater._thread.join(timeout=2)  # type: ignore[union-attr]
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        desktop.subprocess,
+        "Popen",
+        lambda arguments, **_kwargs: calls.append(arguments) or object(),
+    )
+    window = FakeWindow()
+    controller = DesktopController(updater=updater)
+    controller.bind(window)
+
+    response = controller.install_update()
+
+    assert response["success"] is True
+    assert calls[0][-1] == "/UPDATE=1"
+    assert controller.exit_requested is True
+    assert window.destroyed is True
 
 
 def test_loopback_port_check_detects_collision() -> None:

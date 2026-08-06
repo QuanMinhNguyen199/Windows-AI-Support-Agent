@@ -18,6 +18,7 @@ let patchNotesLoaded = false;
 let systemSpecsLoaded = false;
 let systemSpecsLoading = false;
 let updateCheckStarted = false;
+let updateProgressTimer = null;
 
 const byId = (id) => document.getElementById(id);
 
@@ -454,11 +455,18 @@ async function checkForUpdates(showLoading = true) {
     );
     root.replaceChildren(text);
     if (status.update_available && status.installer_available) {
-      const download = element("a", "primary update-download", "Tải và cập nhật");
-      download.href = status.installer_url;
-      download.target = "_blank";
-      download.rel = "noopener noreferrer";
-      root.append(download);
+      const bridge = window.pywebview?.api;
+      if (bridge && status.installer_sha256) {
+        const update = element("button", "primary update-download", "Cập nhật ngay");
+        update.addEventListener("click", () => startInAppUpdate(status, root));
+        root.append(update);
+      } else {
+        const download = element("a", "primary update-download", "Tải bộ cài");
+        download.href = status.installer_url;
+        download.target = "_blank";
+        download.rel = "noopener noreferrer";
+        root.append(download);
+      }
     } else {
       const retry = element("button", "secondary", "Kiểm tra lại");
       retry.addEventListener("click", () => checkForUpdates(true));
@@ -469,6 +477,66 @@ async function checkForUpdates(showLoading = true) {
   } finally {
     button.disabled = false;
     button.textContent = "Kiểm tra ngay";
+  }
+}
+
+function updateProgressView(root, progress) {
+  const box = element("div", "self-update-progress");
+  const row = element("div", "self-update-row");
+  row.append(
+    element("strong", "", progress.state === "ready" ? "Đã tải xong" : "Đang cập nhật WinAssist"),
+    element("span", "", progress.total_bytes ? `${progress.percent}%` : "Đang tải…"),
+  );
+  const track = element("div", "self-update-track");
+  const fill = element("span", progress.total_bytes ? "" : "indeterminate");
+  if (progress.total_bytes) fill.style.width = `${progress.percent}%`;
+  track.append(fill);
+  box.append(row, track, element("p", "muted", progress.message));
+  if (progress.state === "downloading") {
+    const cancel = element("button", "secondary self-update-cancel", "Hủy tải");
+    cancel.addEventListener("click", async () => {
+      cancel.disabled = true;
+      await window.pywebview.api.cancel_update();
+    });
+    box.append(cancel);
+  }
+  root.replaceChildren(box);
+}
+
+async function startInAppUpdate(status, root) {
+  const bridge = window.pywebview?.api;
+  if (!bridge) return;
+  root.replaceChildren(element("div", "inventory-loading"));
+  root.firstElementChild.append(element("div", "loader"), element("p", "", "Đang chuẩn bị tải an toàn…"));
+  try {
+    const started = await bridge.start_update(status.installer_url, status.latest_version, status.installer_sha256);
+    if (!started.success) throw new Error(started.message);
+    clearInterval(updateProgressTimer);
+    updateProgressTimer = setInterval(async () => {
+      try {
+        const progress = await bridge.update_status();
+        updateProgressView(root, progress);
+        if (progress.state === "ready") {
+          clearInterval(updateProgressTimer);
+          updateProgressTimer = null;
+          root.querySelector("p").textContent = "Đã kiểm tra an toàn. WinAssist sẽ đóng và tự mở lại sau khi cập nhật.";
+          const installed = await bridge.install_update();
+          if (!installed.success) throw new Error(installed.message);
+        } else if (["failed", "cancelled"].includes(progress.state)) {
+          clearInterval(updateProgressTimer);
+          updateProgressTimer = null;
+          const retry = element("button", "secondary", "Thử lại");
+          retry.addEventListener("click", () => checkForUpdates(true));
+          root.append(retry);
+        }
+      } catch (error) {
+        clearInterval(updateProgressTimer);
+        updateProgressTimer = null;
+        root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`));
+      }
+    }, 500);
+  } catch (error) {
+    root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`));
   }
 }
 

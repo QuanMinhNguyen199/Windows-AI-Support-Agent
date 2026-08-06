@@ -28,6 +28,7 @@ def test_update_service_finds_new_windows_installer() -> None:
             {
                 "name": "WinAssist-1.0.0-Setup.exe",
                 "browser_download_url": "https://github.com/example/setup.exe",
+                "digest": "sha256:" + "a" * 64,
             }
         ],
     }
@@ -38,6 +39,7 @@ def test_update_service_finds_new_windows_installer() -> None:
     assert status.installer_available is True
     assert status.latest_version == "1.0.0"
     assert status.installer_url == "https://github.com/example/setup.exe"
+    assert status.installer_sha256 == "a" * 64
 
 
 def test_update_service_explains_missing_release() -> None:

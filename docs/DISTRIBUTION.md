@@ -16,7 +16,18 @@
 2. Bấm **Tải cho Windows** để nhận `WinAssist-Setup.exe`.
 3. Bộ cài tự cài theo tài khoản hiện tại, tạo shortcut và chuẩn bị WebView2.
 4. WinAssist tự mở; không cần Python, PowerShell hoặc terminal.
-5. Các phiên bản sau được phát hiện trong tab Cập nhật WinAssist.
+5. Từ bản `0.10.0`, các phiên bản sau được tải, xác minh và cài ngay trong tab
+   **Cập nhật WinAssist**; người dùng không phải tự mở file Setup.
+
+## Cập nhật ngay trong ứng dụng
+
+- Bản `0.9.9` và cũ hơn cần cài `0.10.0` thủ công một lần để nhận updater.
+- App chỉ chấp nhận URL HTTPS thuộc GitHub Release chính thức của repository.
+- SHA-256 lấy từ metadata GitHub phải khớp trước khi installer được đổi tên và chạy.
+- File đang tải dùng đuôi `.part` trong `%LOCALAPPDATA%\WinAssist Local\updates`.
+- Người dùng có thể hủy khi tải; file tạm được xóa và app hiện đúng trạng thái.
+- Sau khi xác minh, installer chạy với `/UPDATE=1`; WinAssist đóng rồi tự mở lại.
+- Không tự nâng cấp nếu thiếu checksum, URL sai nguồn hoặc file bị thay đổi.
 
 URL tải cố định:
 
@@ -43,19 +54,19 @@ https://quanminhnguyen199.github.io/Windows-AI-Support-Agent/
 
 ## Tạo bản phát hành
 
-Community Beta đầu tiên đã được phát hành bằng tag:
+Mỗi phiên bản được phát hành bằng tag tương ứng, ví dụ:
 
 ```powershell
-git tag v0.9.7
-git push origin v0.9.7
+git tag v0.10.0
+git push origin v0.10.0
 ```
 
-Bản 0.9.7 chưa ký số, được ghi rõ là Community Beta trên landing page và release
-notes. Các bản stable chỉ phát hành sau khi executable và installer đã ký số.
+Bản Beta chưa ký số được ghi rõ trên landing page và release notes. Các bản
+stable chỉ phát hành sau khi executable và installer đã ký số.
 
 Workflow `windows-release` sẽ chạy test, build bộ cài, tạo checksum và xuất cả:
 
-- `WinAssist-0.9.7-Setup.exe` để lưu lịch sử phiên bản.
+- `WinAssist-<version>-Setup.exe` để lưu lịch sử phiên bản.
 - `WinAssist-Setup.exe` làm URL tải ổn định cho website.
 - Hai file `.sha256` tương ứng.
 

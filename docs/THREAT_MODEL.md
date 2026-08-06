@@ -27,6 +27,9 @@
 | Lệnh treo/output lớn | Timeout, output limit và subprocess `shell=False` |
 | Clickjacking/MIME sniffing | `X-Frame-Options`, CSP và `nosniff` |
 | Dependency compromise | Pin major range, CI `pip-audit`, review lock/version khi release |
+| Updater tải file giả | Chỉ cho phép GitHub Release chính thức; bắt buộc SHA-256 từ metadata release |
+| File cập nhật bị đổi sau tải | Kiểm tra lại SHA-256 ngay trước khi chạy installer |
+| Path traversal qua version/URL | Version theo mẫu số cố định; tên file và thư mục update do app tự tạo |
 
 ## Không tự động thực hiện
 

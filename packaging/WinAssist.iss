@@ -1,5 +1,5 @@
 #define MyAppName "WinAssist"
-#define MyAppVersion "0.9.9"
+#define MyAppVersion "0.10.0"
 #define MyAppPublisher "WinAssist Local"
 #define MyAppExeName "WinAssist.exe"
 
@@ -41,7 +41,7 @@ Name: "desktopicon"; Description: "Tạo biểu tượng ngoài Desktop"; GroupD
 
 [Run]
 Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; StatusMsg: "Đang chuẩn bị giao diện Windows..."; Flags: waituntilterminated
-Filename: "{app}\{#MyAppExeName}"; Description: "Mở WinAssist"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Mở WinAssist"; Flags: nowait postinstall; Check: ShouldLaunchWinAssist
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{localappdata}\WinAssist Local"; Check: PurgeWinAssistData
@@ -50,4 +50,10 @@ Type: filesandordirs; Name: "{localappdata}\WinAssist Local"; Check: PurgeWinAss
 function PurgeWinAssistData(): Boolean;
 begin
   Result := CompareText(ExpandConstant('{param:PURGEDATA|0}'), '1') = 0;
+end;
+
+function ShouldLaunchWinAssist(): Boolean;
+begin
+  Result := (not WizardSilent) or
+    (CompareText(ExpandConstant('{param:UPDATE|0}'), '1') = 0);
 end;

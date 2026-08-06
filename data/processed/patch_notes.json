@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "0.10.0",
+      "released_at": "2026-08-06",
+      "title": "Cập nhật ngay trong WinAssist",
+      "summary": "Từ phiên bản này, các bản mới có thể được tải và cài ngay trong ứng dụng.",
+      "highlights": [
+        "Xem tiến trình tải bản cập nhật theo thời gian thực.",
+        "Có thể hủy khi bản cập nhật đang tải.",
+        "WinAssist tự đóng và mở lại sau khi cập nhật."
+      ],
+      "fixes": [
+        "Không còn phải tự mở file Setup cho các lần cập nhật tiếp theo."
+      ],
+      "security": [
+        "Chỉ nhận installer từ GitHub chính thức và kiểm tra SHA-256 trước khi cài."
+      ]
+    },
+    {
       "version": "0.9.9",
       "released_at": "2026-08-05",
       "title": "Hotfix giao diện",

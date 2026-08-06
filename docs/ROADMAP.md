@@ -277,6 +277,9 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
 
 ### 10. Release 1.0
 
+- [x] Self-updater tải nền ngay trong app, hiển thị progress thật, cho phép hủy,
+  bắt buộc xác minh SHA-256 và tự mở lại WinAssist sau khi cài.
+
 - [x] Rút gọn README thành trang giới thiệu sản phẩm dễ đọc; chuyển hướng dẫn
   kỹ thuật chi tiết sang thư mục `docs/`.
 - [x] Trợ lý hiển thị danh sách ứng dụng cơ bản khi yêu cầu cài đặt còn chung
@@ -286,6 +289,8 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
 - [x] Chuẩn hóa scrollbar và khoảng cách vùng cuộn trên mọi tab desktop.
 - [x] Phát hành `0.9.9 Hotfix` cho scrollbar và khoảng cách giao diện.
 - [x] Hiển thị tổng lượt tải installer thật từ GitHub Release trên website.
+- [x] Tạo backlog `FUTURE_APP_CATALOG.md` cho tiện ích phổ thông và chuyên sâu
+  theo nghề; mỗi app phải qua kiểm tra nguồn, publisher và hành vi installer.
 
 - Cài Windows Update trực tiếp trong WinAssist qua API hệ thống được hỗ trợ, có
   yêu cầu quyền Administrator rõ ràng, progress thật, xác nhận trước khi cài,
