@@ -21,12 +21,21 @@ async function updateRelease() {
       download.querySelector("span").textContent = `Tải WinAssist ${release.tag_name}`;
       download.href = stableDownload;
     }
+    title.textContent = release.name || `WinAssist ${release.tag_name}`;
+    if (release.published_at) {
+      const published = new Intl.DateTimeFormat("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(new Date(release.published_at));
+      date.textContent = `Phát hành ngày ${published}`;
+    }
     if (totalDownloads > 0) {
       count.lastChild.textContent = ` ${new Intl.NumberFormat("vi-VN").format(totalDownloads)} lượt tải WinAssist`;
     }
   } catch (_error) {
     title.textContent = "WinAssist 0.11.1";
-    date.textContent = "Bản thay đổi lớn gần nhất";
+    date.textContent = "Phát hành ngày 06/08/2026";
   }
 }
 

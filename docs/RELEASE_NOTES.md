@@ -44,6 +44,8 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
   nhầm con số.
 - Thanh điều hướng, thanh cuộn, form Hỗ trợ và trạng thái tải đã được căn gọn hơn.
 - Website giới thiệu sản phẩm theo đúng trình tự sử dụng và dùng câu dễ hiểu hơn.
+- Website hiển thị đúng nội dung **Có gì mới?** và ngày phát hành của `0.11.1`,
+  không còn giữ ba dòng mô tả từ phiên bản trước.
 
 ### An toàn và dữ liệu
 

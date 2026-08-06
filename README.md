@@ -75,6 +75,8 @@ ghi các thao tác thành công và không lưu mật khẩu, token hay command 
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản theo luồng dễ hiểu; người dùng phổ thông không cần mở GitHub.
+Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.1` và lấy ngày phát hành
+thật từ GitHub Release.
 Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu
 ước tính hoặc social proof giả.
 

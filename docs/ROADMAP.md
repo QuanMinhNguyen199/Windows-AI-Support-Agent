@@ -29,6 +29,7 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
   khóa cho tới khi cài xong bản chính thức mới nhất.
 - [x] Bản `0.11.1` hoàn thiện đợt đầu Giai đoạn 10: dọn file tạm an toàn, mở
   rộng Tiện ích, cải thiện Hoạt động, nhật ký lỗi và trải nghiệm cập nhật.
+- [x] Website đồng bộ thẻ **Có gì mới?** và ngày phát hành với bản `0.11.1`.
 
 ## Hiện trạng
 
