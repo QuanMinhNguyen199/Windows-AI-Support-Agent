@@ -4,7 +4,7 @@
 Không tạo mục mới cho sửa lỗi nhỏ, chỉnh chữ hoặc tinh chỉnh giao diện. Những
 thay đổi nhỏ được gom vào bản lớn tiếp theo.
 
-## 0.11.0 — Chuẩn bị phát hành
+## 0.11.0 — Đã phát hành ngày 06/08/2026
 
 ### Mục tiêu
 
@@ -29,14 +29,14 @@ thay đổi nhỏ được gom vào bản lớn tiếp theo.
 
 ### Điều kiện phát hành
 
-- [ ] Thay đổi đủ lớn và có ích rõ ràng cho người dùng.
-- [ ] Nội dung bên trên ngắn gọn, không dùng thuật ngữ kỹ thuật khó hiểu.
+- [x] Thay đổi đủ lớn và có ích rõ ràng cho người dùng.
+- [x] Nội dung bên trên ngắn gọn, không dùng thuật ngữ kỹ thuật khó hiểu.
 - [x] Unit test và integration test đều đạt.
-- [ ] Bộ cài Windows được kiểm thử cài/gỡ trên Windows runner sạch trước khi publish.
+- [x] Bộ cài Windows đã cài/gỡ sạch trên Windows runner trước khi publish.
 - [x] README và ROADMAP đã cập nhật.
 - [x] Yêu cầu triển khai đã được xác nhận trong cuộc trao đổi sản phẩm.
 
-## Đã phát hành
+## Các bản trước
 
 ### 0.10.0 — Cập nhật ngay trong WinAssist
 
