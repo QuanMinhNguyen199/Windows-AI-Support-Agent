@@ -19,6 +19,7 @@ class UpdateStatus(BaseModel):
     current_version: str
     latest_version: str | None = None
     update_available: bool = False
+    update_required: bool = False
     installer_available: bool = False
     installer_url: str | None = None
     installer_sha256: str | None = Field(default=None, pattern=r"^[a-fA-F0-9]{64}$")

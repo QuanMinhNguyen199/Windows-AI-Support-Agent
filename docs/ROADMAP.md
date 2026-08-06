@@ -25,6 +25,10 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
 - Bản vá nhỏ được gom vào bản phát hành lớn kế tiếp; không tạo tag, release hoặc
   Patch Note riêng. Mọi bản phát hành đáng kể phải soạn và duyệt
   `docs/RELEASE_NOTES.md` trước khi tạo tag.
+- Bản WinAssist cũ phải hiển thị cập nhật bắt buộc khi bản mới đã có installer
+  chính thức; mất mạng hoặc lỗi máy chủ không được khóa nhầm ứng dụng.
+- [x] Bản `0.11.0` thêm cửa sổ cập nhật bắt buộc; từ mốc này, phiên bản cũ bị
+  khóa cho tới khi cài xong bản chính thức mới nhất.
 
 ## Hiện trạng
 

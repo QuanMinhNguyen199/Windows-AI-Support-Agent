@@ -448,6 +448,7 @@ async function checkForUpdates(showLoading = true) {
   }
   try {
     const status = await api.updateStatus();
+    if (status.update_required) showRequiredUpdate(status);
     const text = element("div");
     text.append(
       element("strong", "", status.update_available ? `Có WinAssist ${status.latest_version}` : "Trạng thái cập nhật"),
@@ -480,7 +481,7 @@ async function checkForUpdates(showLoading = true) {
   }
 }
 
-function updateProgressView(root, progress) {
+function updateProgressView(root, progress, allowCancel = true) {
   const box = element("div", "self-update-progress");
   const row = element("div", "self-update-row");
   row.append(
@@ -492,7 +493,7 @@ function updateProgressView(root, progress) {
   if (progress.total_bytes) fill.style.width = `${progress.percent}%`;
   track.append(fill);
   box.append(row, track, element("p", "muted", progress.message));
-  if (progress.state === "downloading") {
+  if (progress.state === "downloading" && allowCancel) {
     const cancel = element("button", "secondary self-update-cancel", "Hủy tải");
     cancel.addEventListener("click", async () => {
       cancel.disabled = true;
@@ -503,7 +504,7 @@ function updateProgressView(root, progress) {
   root.replaceChildren(box);
 }
 
-async function startInAppUpdate(status, root) {
+async function startInAppUpdate(status, root, allowCancel = true) {
   const bridge = window.pywebview?.api;
   if (!bridge) return;
   root.replaceChildren(element("div", "inventory-loading"));
@@ -515,7 +516,7 @@ async function startInAppUpdate(status, root) {
     updateProgressTimer = setInterval(async () => {
       try {
         const progress = await bridge.update_status();
-        updateProgressView(root, progress);
+        updateProgressView(root, progress, allowCancel);
         if (progress.state === "ready") {
           clearInterval(updateProgressTimer);
           updateProgressTimer = null;
@@ -536,8 +537,32 @@ async function startInAppUpdate(status, root) {
       }
     }, 500);
   } catch (error) {
-    root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`));
+    const retry = element("button", "secondary", "Thử lại");
+    retry.addEventListener("click", () => checkForUpdates(true));
+    root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`), retry);
   }
+}
+
+function showRequiredUpdate(status) {
+  const dialog = byId("required-update-dialog");
+  const message = byId("required-update-message");
+  const action = byId("required-update-action");
+  const progress = byId("required-update-progress");
+  message.textContent = `Phiên bản ${status.latest_version} là bản bắt buộc. Hãy cập nhật để tiếp tục sử dụng WinAssist.`;
+  progress.replaceChildren();
+  action.disabled = false;
+  action.hidden = false;
+  action.textContent = window.pywebview?.api && status.installer_sha256 ? "Cập nhật ngay" : "Tải bản mới nhất";
+  action.onclick = async () => {
+    if (window.pywebview?.api && status.installer_sha256) {
+      action.hidden = true;
+      await startInAppUpdate(status, progress, false);
+      return;
+    }
+    window.open(status.installer_url, "_blank", "noopener,noreferrer");
+    action.textContent = "Đang chờ bạn cài bản mới";
+  };
+  if (!dialog.open) dialog.showModal();
 }
 
 async function scanGraphicsDriver() {
@@ -1026,6 +1051,7 @@ byId("scan-graphics-driver").addEventListener("click", scanGraphicsDriver);
 byId("scan-windows-update").addEventListener("click", scanWindowsUpdate);
 byId("open-windows-update").addEventListener("click", openWindowsUpdate);
 byId("check-update").addEventListener("click", () => checkForUpdates(true));
+byId("required-update-dialog").addEventListener("cancel", (event) => event.preventDefault());
 byId("refresh-software").addEventListener("click", () => loadSoftware(true, true));
 document.querySelectorAll(".audience-tab").forEach((button) => {
   button.addEventListener("click", () => {

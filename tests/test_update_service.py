@@ -36,6 +36,7 @@ def test_update_service_finds_new_windows_installer() -> None:
         status = UpdateService("0.9.7").check()
 
     assert status.update_available is True
+    assert status.update_required is True
     assert status.installer_available is True
     assert status.latest_version == "1.0.0"
     assert status.installer_url == "https://github.com/example/setup.exe"
@@ -48,5 +49,20 @@ def test_update_service_explains_missing_release() -> None:
         status = UpdateService("0.9.7").check()
 
     assert status.update_available is False
+    assert status.update_required is False
     assert status.latest_version is None
     assert "Chưa có bản phát hành" in status.message
+
+
+def test_update_is_not_required_until_installer_is_available() -> None:
+    payload = {
+        "tag_name": "v1.0.0",
+        "html_url": "https://github.com/example/releases/tag/v1.0.0",
+        "assets": [],
+    }
+    with patch("app.services.update_service.urlopen", return_value=FakeResponse(payload)):
+        status = UpdateService("0.9.7").check()
+
+    assert status.update_available is True
+    assert status.update_required is False
+    assert status.installer_available is False

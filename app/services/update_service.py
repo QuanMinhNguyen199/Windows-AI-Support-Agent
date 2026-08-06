@@ -74,6 +74,7 @@ class UpdateService:
             current_version=self.current_version,
             latest_version=latest,
             update_available=update_available,
+            update_required=update_available and bool(installer_url),
             installer_available=bool(installer_url),
             installer_url=installer_url,
             installer_sha256=installer_sha256,

@@ -30,6 +30,22 @@ jobs:
         run: choco install innosetup --no-progress -y
       - name: Build installer
         run: iscc packaging/WinAssist.iss
+      - name: Smoke test installer and uninstaller
+        shell: pwsh
+        run: |
+          $smokeDir = Join-Path $env:RUNNER_TEMP "WinAssist-release-smoke"
+          $installer = Get-ChildItem dist/installer/WinAssist-*-Setup.exe | Select-Object -First 1
+          & $installer.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="$smokeDir"
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $smokeDir "WinAssist.exe"))) {
+            throw "Installer smoke test failed."
+          }
+          $uninstaller = Join-Path $smokeDir "unins000.exe"
+          & $uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /PURGEDATA=1
+          if ($LASTEXITCODE -ne 0) { throw "Uninstaller smoke test failed." }
+          for ($attempt = 0; $attempt -lt 20 -and (Test-Path $smokeDir); $attempt++) {
+            Start-Sleep -Milliseconds 250
+          }
+          if (Test-Path $smokeDir) { throw "Uninstaller left installation files behind." }
       - name: Create SHA-256 checksum
         shell: pwsh
         run: |

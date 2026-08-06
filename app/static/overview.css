@@ -763,6 +763,25 @@ svg {
 .self-update-track span { display: block; height: 100%; border-radius: inherit; background: #4f8cff; transition: width .25s ease; }
 .self-update-track .indeterminate { width: 34%; animation: slide 1.2s ease-in-out infinite; }
 .self-update-progress p { margin: 9px 0 0; }
+
+.required-update-dialog {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.required-update-dialog::backdrop { background: rgba(5, 12, 20, 0.82); backdrop-filter: blur(5px); }
+.required-update-card {
+  width: min(560px, calc(100vw - 32px));
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+}
+.required-update-card .dialog-actions { margin-top: 22px; }
+.required-update-card .dialog-actions button { min-width: 180px; }
 .self-update-cancel { margin-top: 10px; }
 .patch-grid {
   display: grid;

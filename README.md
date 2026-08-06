@@ -27,7 +27,8 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-**WinAssist 0.10.1 Community Beta** bổ sung cập nhật ngay trong ứng dụng với
+**WinAssist 0.11.0 Community Beta** bổ sung cập nhật bắt buộc cho phiên bản cũ và
+giữ cơ chế tải bản mới ngay trong ứng dụng với
 tiến trình tải, hủy và kiểm tra SHA-256 trước khi cài.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
@@ -51,6 +52,8 @@ Hotfix `0.10.1` cũng sửa luồng gỡ cài đặt để không còn sót file
 Các bản vá nhỏ được gom vào chu kỳ phát triển hiện tại, không tạo Patch Note và
 không tăng phiên bản riêng. Chỉ bản có thay đổi đáng kể mới được lập nội dung tại
 [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md), duyệt xong rồi mới phát hành.
+Khi đã có bản phát hành chính thức mới, phiên bản cũ sẽ yêu cầu cập nhật trước
+khi người dùng tiếp tục sử dụng các chức năng khác.
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản ngay trên trang; người dùng phổ thông không cần mở GitHub.
