@@ -17,7 +17,7 @@ class CommandDefinition(BaseModel):
     arguments: tuple[str, ...] = ()
     risk_level: RiskLevel
     requires_admin: bool = False
-    timeout_seconds: int = Field(default=20, ge=1, le=120)
+    timeout_seconds: int = Field(default=20, ge=1, le=3600)
     description: str = Field(min_length=1)
 
     @property

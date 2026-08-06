@@ -7,6 +7,7 @@ from app.models.actions import PendingAction
 
 
 class SoftwareCategory(StrEnum):
+    STUDENT = "student"
     BROWSERS = "browsers"
     OFFICE_PDF = "office_pdf"
     UTILITIES = "utilities"
@@ -41,6 +42,8 @@ class SoftwareEntry(BaseModel):
     check_commands: tuple[tuple[str, ...], ...] = Field(min_length=1)
     verification_commands: tuple[tuple[str, ...], ...] = ()
     uninstall_command: tuple[str, ...] | None = None
+    cleanup_paths: tuple[str, ...] = ()
+    cleanup_registry_keys: tuple[str, ...] = ()
     provenance: str = Field(pattern=r"^https://github\.com/microsoft/winget-pkgs/")
     license_note: str = Field(min_length=1)
 
@@ -64,8 +67,26 @@ class SoftwareEntry(BaseModel):
             raise ValueError("uninstall_command không hợp lệ")
         return command
 
+    @field_validator("cleanup_paths")
+    @classmethod
+    def validate_cleanup_paths(cls, paths: tuple[str, ...]) -> tuple[str, ...]:
+        allowed = ("%APPDATA%\\", "%LOCALAPPDATA%\\")
+        for path in paths:
+            normalized = path.upper()
+            if not normalized.startswith(allowed) or len(path.split("\\")) < 3:
+                raise ValueError("cleanup_paths chỉ được nằm trong AppData của ứng dụng")
+        return paths
+
+    @field_validator("cleanup_registry_keys")
+    @classmethod
+    def validate_cleanup_registry_keys(cls, keys: tuple[str, ...]) -> tuple[str, ...]:
+        if any(not key.casefold().startswith("hkcu:\\software\\") for key in keys):
+            raise ValueError("cleanup_registry_keys chỉ được nằm trong HKCU\\Software")
+        return keys
+
 
 class SoftwareCatalogFile(BaseModel):
+    catalog_version: str = Field(pattern=r"^\d{4}\.\d{2}\.\d+$")
     software: dict[str, SoftwareEntry]
 
     @field_validator("software")
@@ -93,6 +114,7 @@ class SoftwareSummary(BaseModel):
     display_rank: int = Field(default=1000, ge=1, le=1000)
     winget_id: str
     license_note: str
+    cleanup_available: bool = False
 
 
 class SoftwareCheckResponse(BaseModel):

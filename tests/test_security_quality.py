@@ -27,11 +27,30 @@ def test_frontend_does_not_render_untrusted_html() -> None:
     assert "document.write" not in source
 
 
-def test_request_log_does_not_store_query_string() -> None:
+def test_api_client_drives_global_loading_without_fake_percentage() -> None:
+    html = Path("app/static/index.html").read_text(encoding="utf-8")
+    source = Path("app/static/api-client.js").read_text(encoding="utf-8")
+
+    assert 'id="global-loading"' in html
+    assert "beginLoading();" in source
+    assert "endLoading();" in source
+    assert "percent" not in source.casefold()
+
+
+def test_sidebar_labels_stay_on_one_line_and_scrollbar_reaches_edge() -> None:
+    css = Path("app/static/overview.css").read_text(encoding="utf-8")
+
+    assert "grid-template-columns: 260px minmax(0, 1fr)" in css
+    assert "white-space: nowrap" in css
+    assert "padding: 28px 0 18px 18px" in css
+
+
+def test_successful_request_is_not_stored_in_debug_log() -> None:
     marker = "SHOULD_NOT_APPEAR_IN_LOG"
     with TestClient(app) as client:
         response = client.get(f"/?token={marker}")
 
     assert response.status_code == 200
-    log_text = Path("data/logs/winassist.jsonl").read_text(encoding="utf-8")
+    log_text = Path("data/logs/debug-errors.jsonl").read_text(encoding="utf-8")
     assert marker not in log_text
+    assert '"status_code": 200' not in log_text

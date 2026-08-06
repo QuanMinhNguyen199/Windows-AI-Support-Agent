@@ -144,6 +144,31 @@ def delayed_uninstall_command(uninstaller: Path, process_id: int) -> list[str]:
     ]
 
 
+def delayed_update_command(installer: Path, process_id: int) -> list[str]:
+    """Run a verified Inno update silently after the current app has exited."""
+    system_root = Path(os.environ.get("SystemRoot", r"C:\Windows"))
+    powershell = system_root / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    escaped_installer = str(installer).replace("'", "''")
+    script = (
+        "$ErrorActionPreference='Stop';"
+        f"Wait-Process -Id {process_id} -ErrorAction SilentlyContinue;"
+        f"$setup=Start-Process -FilePath '{escaped_installer}' "
+        "-ArgumentList @('/VERYSILENT','/SP-','/SUPPRESSMSGBOXES','/NORESTART',"
+        "'/CLOSEAPPLICATIONS','/UPDATE=1') -Wait -PassThru;"
+        "if($setup.ExitCode -ne 0){exit $setup.ExitCode}"
+    )
+    encoded_script = base64.b64encode(script.encode("utf-16-le")).decode("ascii")
+    return [
+        str(powershell),
+        "-NoProfile",
+        "-NonInteractive",
+        "-WindowStyle",
+        "Hidden",
+        "-EncodedCommand",
+        encoded_script,
+    ]
+
+
 class DesktopUpdater:
     """Download and verify a trusted WinAssist installer outside the AI agent."""
 
@@ -226,22 +251,16 @@ class DesktopUpdater:
             return {"success": False, "message": "File cập nhật không còn hợp lệ. Hãy tải lại."}
         try:
             subprocess.Popen(  # noqa: S603 - verified installer from the official release
-                [
-                    str(installer),
-                    "/SILENT",
-                    "/SUPPRESSMSGBOXES",
-                    "/NORESTART",
-                    "/CLOSEAPPLICATIONS",
-                    "/UPDATE=1",
-                ],
+                delayed_update_command(installer, os.getpid()),
                 shell=False,
                 close_fds=True,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except OSError:
             self._set_state("failed", "Không thể mở trình cập nhật.")
             return {"success": False, "message": "Không thể mở trình cập nhật."}
-        self._set_state("installing", "Đang đóng WinAssist để hoàn tất cập nhật…")
-        return {"success": True, "message": "Đang cài bản cập nhật và mở lại WinAssist."}
+        self._set_state("installing", "WinAssist sẽ tự khởi động lại để hoàn tất cập nhật…")
+        return {"success": True, "message": "WinAssist đang tự cập nhật và sẽ mở lại."}
 
     def _download(self, url: str) -> None:
         installer = self._installer
@@ -517,7 +536,7 @@ def configure_runtime_paths() -> Path:
     log_dir = data_dir / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     os.environ["WINASSIST_DATABASE_PATH"] = str(data_dir / "winassist.db")
-    os.environ["WINASSIST_LOG_PATH"] = str(log_dir / "winassist.jsonl")
+    os.environ["WINASSIST_LOG_PATH"] = str(log_dir / "debug-errors.jsonl")
     return runtime_root
 
 

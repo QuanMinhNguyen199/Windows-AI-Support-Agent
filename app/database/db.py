@@ -1,4 +1,6 @@
 import sqlite3
+import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -51,7 +53,13 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE INDEX IF NOT EXISTS idx_messages_session
 ON messages(session_id, id);
+
+CREATE TABLE IF NOT EXISTS app_metadata (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
+logger = logging.getLogger("winassist")
 
 
 class Database:
@@ -67,6 +75,24 @@ class Database:
 
     def initialize(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self._initialize_database()
+        except sqlite3.DatabaseError as exc:
+            logger.error(
+                "database_recovered",
+                extra={"exception_type": type(exc).__name__},
+            )
+            self._preserve_corrupt_database()
+            self._initialize_database()
+
+    def _initialize_database(self) -> None:
+        check_connection = self.connect()
+        try:
+            integrity = check_connection.execute("PRAGMA quick_check").fetchone()[0]
+            if integrity != "ok":
+                raise sqlite3.DatabaseError(f"SQLite quick_check failed: {integrity}")
+        finally:
+            check_connection.close()
         with self.connect() as connection:
             connection.execute("PRAGMA journal_mode = WAL")
             connection.executescript(SCHEMA)
@@ -101,3 +127,26 @@ class Database:
                 WHERE resource_id IS NULL OR resource_id = ''
                 """
             )
+            connection.execute(
+                """
+                INSERT INTO app_metadata(key, value) VALUES('schema_version', '1')
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                """
+            )
+
+    def _preserve_corrupt_database(self) -> None:
+        if not self.path.exists():
+            return
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = self.path.with_name(f"{self.path.name}.corrupt-{timestamp}")
+        counter = 1
+        while backup.exists():
+            backup = self.path.with_name(
+                f"{self.path.name}.corrupt-{timestamp}-{counter}"
+            )
+            counter += 1
+        self.path.replace(backup)
+        for suffix in ("-wal", "-shm"):
+            sidecar = Path(f"{self.path}{suffix}")
+            if sidecar.exists():
+                sidecar.replace(Path(f"{backup}{suffix}"))

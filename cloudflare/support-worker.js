@@ -8,6 +8,7 @@ const ISSUE_TYPES = new Set([
 ]);
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function response(body, status, origin) {
   return new Response(status === 204 ? null : JSON.stringify(body), {
@@ -56,6 +57,20 @@ export default {
       return response({ error: "Please check the ticket details" }, 400, origin);
     }
     if (payload.website) return response({ error: "Invalid request" }, 400, origin);
+    const contactEmail = String(payload.contact_email || "").trim().toLowerCase();
+    if (contactEmail && (!EMAIL_PATTERN.test(contactEmail) || contactEmail.length > 254 || payload.consent_to_reply !== true)) {
+      return response({ error: "Please check the reply email and consent" }, 400, origin);
+    }
+    const diagnostic = payload.diagnostic && typeof payload.diagnostic === "object" ? payload.diagnostic : null;
+    const safeDiagnostic = diagnostic ? {
+      action_id: String(diagnostic.action_id || "").slice(0, 80),
+      action_kind: String(diagnostic.action_kind || "").slice(0, 40),
+      resource_id: String(diagnostic.resource_id || "").slice(0, 100),
+      command_id: String(diagnostic.command_id || "").slice(0, 120),
+      exit_code: Number.isInteger(diagnostic.exit_code) ? diagnostic.exit_code : null,
+      timed_out: diagnostic.timed_out === true,
+      failure_summary: String(diagnostic.failure_summary || "").slice(0, 300),
+    } : null;
 
     let attachments = [];
     if (payload.attachment) {
@@ -79,7 +94,16 @@ export default {
         from: env.SUPPORT_FROM || "WinAssist Beta <onboarding@resend.dev>",
         to: [env.SUPPORT_EMAIL],
         subject: `[${ticketId}] WinAssist Beta - ${issueType}`,
-        text: `Mã ticket: ${ticketId}\nNhóm lỗi: ${issueType}\n\nMô tả:\n${description}`,
+        text: [
+          `Mã ticket: ${ticketId}`,
+          `Nhóm lỗi: ${issueType}`,
+          `Email phản hồi: ${contactEmail || "Không cung cấp"}`,
+          "",
+          "Mô tả:",
+          description,
+          ...(safeDiagnostic ? ["", "Thông tin lỗi an toàn:", JSON.stringify(safeDiagnostic, null, 2)] : []),
+        ].join("\n"),
+        ...(contactEmail ? { reply_to: contactEmail } : {}),
         attachments,
       }),
     });
@@ -87,6 +111,6 @@ export default {
       console.error("Resend rejected support ticket", emailResponse.status);
       return response({ error: "Ticket could not be delivered" }, 502, origin);
     }
-    return response({ success: true, ticket_id: ticketId }, 201, origin);
+    return response({ success: true, ticket_id: ticketId, status: "received", reply_available: Boolean(contactEmail) }, 201, origin);
   },
 };

@@ -113,6 +113,18 @@ def test_installed_software_does_not_create_action(tmp_path) -> None:
     assert not any(command_id.startswith("software.install.") for command_id, _ in runner.calls)
 
 
+def test_adobe_reader_purge_request_is_pending_and_explicit(tmp_path) -> None:
+    service, _, runner, _ = make_service(tmp_path, installed=True)
+
+    response = asyncio.run(service.request_purge("adobe-reader"))
+
+    assert response.pending_action is not None
+    assert response.pending_action.kind == "software_purge"
+    assert response.pending_action.state == "pending"
+    assert "vẫn được giữ" in response.pending_action.warning.casefold()
+    assert not any(command_id.startswith("software.purge.") for command_id, _ in runner.calls)
+
+
 def test_inventory_scan_returns_status_for_every_catalog_item(tmp_path) -> None:
     service, _, _, _ = make_service(tmp_path, installed=True)
 

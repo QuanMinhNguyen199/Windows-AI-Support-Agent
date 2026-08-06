@@ -18,17 +18,17 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
 ## Quy ước duy trì tài liệu
 
 - README và ROADMAP được cập nhật cùng mọi thay đổi code.
-- Patch Note chỉ ghi nhận tính năng lớn, thay đổi hành vi đáng kể, breaking
-  change hoặc bản phát hành mới.
-- Các tinh chỉnh UI nhỏ được ghi ngắn trong README/ROADMAP, không tăng phiên bản
-  và không thêm release note riêng.
-- Bản vá nhỏ được gom vào bản phát hành lớn kế tiếp; không tạo tag, release hoặc
-  Patch Note riêng. Mọi bản phát hành đáng kể phải soạn và duyệt
-  `docs/RELEASE_NOTES.md` trước khi tạo tag.
+- Mọi thay đổi đều phải được ghi vào mục nháp của `docs/RELEASE_NOTES.md` trước.
+- Không tự build release, tạo tag hoặc public bản mới sau khi sửa code/test xong.
+- Chỉ triển khai khi chủ dự án đã kiểm tra đủ và ra lệnh triển khai rõ ràng.
+- Version tăng `0.10.1` → `0.10.2` ... → `0.10.9`, sau đó mới sang `0.11.0`;
+  thành phần cuối không vượt quá `9`.
 - Bản WinAssist cũ phải hiển thị cập nhật bắt buộc khi bản mới đã có installer
   chính thức; mất mạng hoặc lỗi máy chủ không được khóa nhầm ứng dụng.
 - [x] Bản `0.11.0` thêm cửa sổ cập nhật bắt buộc; từ mốc này, phiên bản cũ bị
   khóa cho tới khi cài xong bản chính thức mới nhất.
+- [x] Bản `0.11.1` hoàn thiện đợt đầu Giai đoạn 10: dọn file tạm an toàn, mở
+  rộng Tiện ích, cải thiện Hoạt động, nhật ký lỗi và trải nghiệm cập nhật.
 
 ## Hiện trạng
 
@@ -313,21 +313,41 @@ dụng Windows, không cần tự chạy PowerShell hoặc mở URL localhost.
   tiếp tục, thử lại và xác minh model trước khi báo hoàn tất.
 - Có phần quản lý AI local để bật sau, đổi model hoặc gỡ model/Ollama có xác nhận.
 - Rule-based router luôn hoạt động khi người dùng bỏ qua AI hoặc cài đặt thất bại.
-- Thêm mục **Dọn dẹp máy** theo hai bước: quét read-only và hiển thị dung lượng
+- [x] Thêm mục **Dọn dẹp máy** theo hai bước: quét read-only và hiển thị dung lượng
   trước; sau đó cho tick từng nhóm file tạm an toàn và xác nhận mới xóa. MVP ưu
-  tiên file tạm người dùng, thumbnail cache, crash dump cũ và mở Storage Sense.
-- Không chọn sẵn Thùng rác; không đụng Downloads, Documents, Desktop, Windows
+  tiên file tạm người dùng, thumbnail cache và crash dump cũ.
+- [x] Không chọn sẵn Thùng rác; không đụng Downloads, Documents, Desktop, Windows
   Installer cache, restore point, driver package hoặc file đang được sử dụng.
-- Mọi thao tác dọn dẹp phải đi qua `command_registry`, `command_runner` và
+- [x] Mọi thao tác dọn dẹp đi qua `command_registry`, `command_runner` và
   `risk_policy`, ghi dung lượng thực tế đã xóa; AssistantAgent chỉ điều phối.
-- Ổn định API và database migration.
-- Recovery khi database hỏng hoặc thiếu model.
+- [x] Không biến lỗi PowerShell thành kết quả `0`; giao diện yêu cầu thử lại nếu
+  Windows không thể đọc file tạm.
+- [x] Tab Hoạt động dùng tên và kết quả dễ hiểu; command, mã hành động và mã lỗi
+  chỉ xuất hiện trong phần kỹ thuật có thể mở khi cần hỗ trợ.
+- [x] Debug local chỉ ghi lỗi API, JavaScript, database và action thất bại; bỏ
+  qua thao tác thành công, che dữ liệu nhạy cảm và tự xoay vòng file log.
+- [x] Form Hỗ trợ dùng bố cục gọn trong một màn hình desktop; tự chuyển về một
+  cột trên cửa sổ hẹp.
+- [x] Dùng thanh tiến trình chung cho thao tác tải/đợi và thanh theo trạng thái
+  cho action dài; không dựng phần trăm giả khi hệ thống không cung cấp dữ liệu.
+- [x] Sidebar giữ nhãn trên một dòng, căn đều icon/chữ và đặt scrollbar sát mép.
+- [x] Website giới thiệu sản phẩm theo quy trình sử dụng thực tế, dùng câu cụ
+  thể và không quảng cáo tính năng local chưa phát hành.
+- [x] Ổn định database migration, ghi schema version và giữ bản sao database
+  lỗi trước khi WinAssist tự tạo database mới.
+- [x] Recovery khi database hỏng; recovery khi thiếu model AI vẫn chờ phần quản
+  lý AI local.
 - Catalog/troubleshooting rules có version và quy trình review.
 - Security review, tài liệu người dùng và release process hoàn chỉnh.
 
 Trước khi bắt đầu Giai đoạn 10, tiếp tục mở rộng catalog **Tiện ích**, kiểm tra
 package ID/publisher và tinh chỉnh UI/UX của bản Beta. Các thay đổi này không yêu
 cầu đổi backend AI hiện tại.
+
+- [x] Thêm nhóm **Học tập cho sinh viên** gồm Anki, Zotero, GeoGebra, draw.io
+  và Calibre; package ID và publisher đã được kiểm tra qua WinGet.
+- [x] Thêm Microsoft 365 vào nhóm Văn phòng chuyên sâu với cảnh báo tài khoản
+  bản quyền; không tự đăng nhập hoặc kích hoạt license.
 
 - [x] Thêm nhóm Game & giải trí với package Winget đã xác minh: Steam, Epic,
   GOG, Discord, EA, Ubisoft, League of Legends VN2 và VALORANT AP; cài trực tiếp
@@ -337,7 +357,8 @@ cầu đổi backend AI hiện tại.
 - [x] Bỏ tên máy chủ Riot khỏi giao diện và xác minh trạng thái từ
   `RiotClientInstalls.json` cùng executable thực tế, tránh báo chưa cài khi game
   nằm ở ổ khác hoặc Riot đã tự chuyển vùng tài khoản.
-- [x] Mở rộng catalog lên 57 ứng dụng: thêm nhóm liên lạc, lưu trữ đám mây, sáng
+- [x] Mở rộng catalog lên 79 ứng dụng: thêm nhóm liên lạc, gõ tiếng Việt, trình
+  duyệt Việt Nam, lưu trữ đám mây, sáng
   tạo nội dung và các công cụ Docker/database/SSH/phân tích mạng phổ biến; chỉ
   nhận package Winget đã xác minh được ID và publisher.
 - [x] Bổ sung Brave, Opera, Vivaldi và LibreWolf cho người dùng muốn trình duyệt

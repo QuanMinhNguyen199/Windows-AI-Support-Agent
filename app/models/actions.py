@@ -19,7 +19,10 @@ class ActionState(StrEnum):
 class ActionKind(StrEnum):
     SOFTWARE_INSTALL = "software_install"
     SOFTWARE_UNINSTALL = "software_uninstall"
+    SOFTWARE_PURGE = "software_purge"
     NETWORK_REPAIR = "network_repair"
+    WINDOWS_UPDATE = "windows_update"
+    SYSTEM_CLEANUP = "system_cleanup"
 
 
 class ActionStage(StrEnum):
@@ -59,6 +62,8 @@ class ActionStatusResponse(BaseModel):
     result: CommandResult | None = None
     message: str
     indeterminate: bool = False
+    failure_summary: str | None = None
+    failure_suggestions: list[str] = []
 
 
 class ActionExecutionResponse(ActionStatusResponse):

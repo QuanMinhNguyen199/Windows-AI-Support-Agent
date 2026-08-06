@@ -11,13 +11,13 @@ BASE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     app_name: str = "WinAssist Local"
-    app_version: str = "0.11.0"
+    app_version: str = "0.11.1"
     environment: str = "development"
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "auto"
     ollama_timeout_seconds: float = 3
     database_path: Path = BASE_DIR.parent / "data" / "winassist.db"
-    log_path: Path = BASE_DIR.parent / "data" / "logs" / "winassist.jsonl"
+    log_path: Path = BASE_DIR.parent / "data" / "logs" / "debug-errors.jsonl"
     desktop_api_token: str = ""
 
     model_config = SettingsConfigDict(

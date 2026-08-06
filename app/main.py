@@ -11,7 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from app.api.actions import action_task_manager
 from app.api.actions import router as actions_router
 from app.api.chat import router as chat_router
+from app.api.cleanup import router as cleanup_router
 from app.api.diagnostics import router as diagnostics_router
+from app.api.debug import router as debug_router
 from app.api.health import router as health_router
 from app.api.patches import router as patches_router
 from app.api.repairs import router as repairs_router
@@ -59,6 +61,7 @@ async def security_and_logging_middleware(request: Request, call_next):
     request_id = str(uuid4())
     started = time.perf_counter()
     status_code = 500
+    caught_error: Exception | None = None
     try:
         desktop_token = settings.desktop_api_token
         supplied_token = request.query_params.get("desktop_token", "")
@@ -98,6 +101,9 @@ async def security_and_logging_middleware(request: Request, call_next):
             response = await call_next(request)
         status_code = response.status_code
         return response
+    except Exception as exc:
+        caught_error = exc
+        raise
     finally:
         duration_ms = round((time.perf_counter() - started) * 1000)
         if "response" in locals():
@@ -118,21 +124,25 @@ async def security_and_logging_middleware(request: Request, call_next):
                 response.headers["Cache-Control"] = "no-store"
             elif request.url.path == "/":
                 response.headers["Cache-Control"] = "no-cache"
-        request_logger.info(
-            "http_request",
-            extra={
-                "request_id": request_id,
-                "method": request.method,
-                "path": request.url.path,
-                "status_code": status_code,
-                "duration_ms": duration_ms,
-            },
-        )
+        if status_code >= 400 or caught_error is not None:
+            request_logger.error(
+                "http_error",
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": status_code,
+                    "duration_ms": duration_ms,
+                    "exception_type": type(caught_error).__name__ if caught_error else None,
+                },
+            )
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(diagnostics_router)
+app.include_router(debug_router)
 app.include_router(software_router)
 app.include_router(actions_router)
+app.include_router(cleanup_router)
 app.include_router(repairs_router)
 app.include_router(system_router)
 app.include_router(windows_router)

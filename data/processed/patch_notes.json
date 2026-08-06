@@ -1,34 +1,53 @@
 {
   "releases": [
     {
+      "version": "0.11.1",
+      "released_at": "2026-08-06",
+      "title": "Dọn máy và sử dụng WinAssist dễ hơn",
+      "summary": "Bạn có thêm công cụ dọn file tạm, nhiều tiện ích hơn và các thông báo dễ hiểu hơn.",
+      "highlights": [
+        "Quét dung lượng file tạm rồi tự chọn mục muốn dọn.",
+        "Có thêm nhóm ứng dụng học tập cho sinh viên và công cụ thường dùng tại Việt Nam.",
+        "Cập nhật Windows và WinAssist ngay trong ứng dụng với các bước rõ ràng."
+      ],
+      "fixes": [
+        "Tab Hoạt động không còn hiện các lệnh kỹ thuật dài.",
+        "Kết quả mạng, lỗi cài ứng dụng và trạng thái tải dễ hiểu hơn.",
+        "Giao diện thanh điều hướng, Hỗ trợ và website đã được căn chỉnh lại."
+      ],
+      "security": [
+        "Mọi thay đổi vẫn cần xác nhận; dọn dẹp không đụng file cá nhân và nhật ký lỗi tự che thông tin nhạy cảm."
+      ]
+    },
+    {
       "version": "0.11.0",
       "released_at": "2026-08-06",
-      "title": "Luôn dùng WinAssist phiên bản an toàn",
-      "summary": "WinAssist sẽ yêu cầu cập nhật khi phiên bản đang dùng đã cũ.",
+      "title": "Luôn dùng WinAssist bản mới nhất",
+      "summary": "Khi có bản mới, WinAssist sẽ báo và hướng dẫn bạn cập nhật.",
       "highlights": [
-        "Thông báo cập nhật bắt buộc hiện ngay khi mở ứng dụng.",
-        "Có thể tải và cài bản mới trực tiếp trong WinAssist."
+        "WinAssist báo ngay khi phiên bản đang dùng cần được cập nhật.",
+        "Bạn có thể cập nhật ngay trong WinAssist mà không cần tìm file tải."
       ],
       "fixes": [],
       "security": [
-        "Chỉ khóa ứng dụng khi bộ cài chính thức đã sẵn sàng; mất mạng không làm khóa nhầm."
+        "Chỉ yêu cầu cập nhật khi bản cài mới đã sẵn sàng. Nếu mất mạng, ứng dụng không bị khóa nhầm."
       ]
     },
     {
       "version": "0.10.0",
       "released_at": "2026-08-06",
       "title": "Cập nhật ngay trong WinAssist",
-      "summary": "Từ phiên bản này, các bản mới có thể được tải và cài ngay trong ứng dụng.",
+      "summary": "Bạn không còn phải vào trang web để tải lại WinAssist mỗi khi có bản mới.",
       "highlights": [
-        "Xem tiến trình tải bản cập nhật theo thời gian thực.",
-        "Có thể hủy khi bản cập nhật đang tải.",
-        "WinAssist tự đóng và mở lại sau khi cập nhật."
+        "Xem được bản cập nhật đang tải đến đâu.",
+        "Có thể dừng nếu chưa muốn cập nhật.",
+        "WinAssist tự mở lại sau khi cập nhật xong."
       ],
       "fixes": [
         "Không còn phải tự mở file Setup cho các lần cập nhật tiếp theo."
       ],
       "security": [
-        "Chỉ nhận installer từ GitHub chính thức và kiểm tra SHA-256 trước khi cài."
+        "WinAssist kiểm tra file cài đặt chính thức trước khi sử dụng."
       ]
     },
     {
@@ -60,7 +79,7 @@
       "fixes": [
         "Sửa lỗi WinAssist không mở được sau khi cài đặt.",
         "Sửa thông báo thất bại giả sau khi ticket đã gửi thành công.",
-        "Ghi lại chi tiết lỗi khởi động để hỗ trợ dễ hơn."
+        "Lưu thông tin cần thiết để đội hỗ trợ tìm lỗi khởi động nhanh hơn."
       ],
       "security": [
         "Ticket chỉ được gửi đến dịch vụ hỗ trợ chính thức của WinAssist.",
@@ -71,7 +90,7 @@
       "version": "0.9.7",
       "released_at": "2026-08-03",
       "title": "WinAssist đã có phiên bản ứng dụng Windows",
-      "summary": "Bạn có thể mở WinAssist như một ứng dụng bình thường mà không cần tự khởi động backend hoặc mở trình duyệt.",
+      "summary": "Bạn có thể mở WinAssist như ứng dụng Windows bình thường, không cần mở cửa sổ lệnh hoặc trình duyệt.",
       "highlights": [
         "WinAssist giờ hoạt động như một ứng dụng Windows bình thường.",
         "Có thêm mục kiểm tra card màn hình và cập nhật Windows.",
@@ -94,7 +113,7 @@
       "version": "0.8.3",
       "released_at": "2026-07-31",
       "title": "Theo dõi tiện ích theo thời gian thực",
-      "summary": "WinAssist phản hồi nhanh hơn, tự nhận biết thay đổi ứng dụng từ Windows và có giao diện Fluent nhất quán.",
+      "summary": "WinAssist phản hồi nhanh hơn, tự nhận biết ứng dụng được cài hoặc gỡ và có giao diện đồng bộ hơn.",
       "highlights": [
         "Tự phát hiện ứng dụng được cài hoặc gỡ từ bên ngoài WinAssist.",
         "Tab Tiện ích cập nhật nhanh hơn và không quét lại liên tục.",

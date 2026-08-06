@@ -40,6 +40,11 @@ def registry_from_catalog(catalog: SoftwareCatalog) -> CommandRegistry:
             for software_id, entry in entries.items()
             if entry.uninstall_command is not None
         },
+        software_cleanup_targets={
+            software_id: (entry.cleanup_paths, entry.cleanup_registry_keys)
+            for software_id, entry in entries.items()
+            if entry.cleanup_paths or entry.cleanup_registry_keys
+        },
     )
 
 
@@ -211,6 +216,34 @@ class SoftwareService:
             software=summary,
             already_installed=True,
             message="Đã tạo yêu cầu gỡ; chưa có command nào được chạy.",
+            check=check,
+            pending_action=self.repository.public(record),
+        )
+
+    async def request_purge(self, software_id: str) -> SoftwareInstallResponse:
+        normalized = software_id.strip().casefold()
+        summary = self.catalog.summary(normalized)
+        check = await self.check(normalized)
+        if not check.installed:
+            return SoftwareInstallResponse(
+                software=summary,
+                already_installed=False,
+                message=f"Không phát hiện {summary.display_name}; không thực hiện xóa dữ liệu.",
+                check=check,
+            )
+        record = self.repository.create(
+            resource_id=normalized,
+            kind=ActionKind.SOFTWARE_PURGE,
+            definition=self.registry.software_purge(normalized),
+            warning=(
+                f"{summary.display_name} sẽ được gỡ cùng file cài đặt còn sót và cache an toàn đã kiểm duyệt. "
+                "Tài khoản, thiết lập, project, bookmark, game, model AI và file do bạn tạo vẫn được giữ."
+            ),
+        )
+        return SoftwareInstallResponse(
+            software=summary,
+            already_installed=True,
+            message="Đã chuẩn bị gỡ và xóa dữ liệu; chưa có thay đổi trước khi xác nhận.",
             check=check,
             pending_action=self.repository.public(record),
         )

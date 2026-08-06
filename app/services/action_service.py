@@ -1,4 +1,6 @@
 import asyncio
+import json
+import logging
 from collections.abc import Awaitable, Callable
 
 from app.core.command_registry import CommandRegistry
@@ -11,9 +13,11 @@ from app.models.actions import (
     CancelActionResponse,
     PendingActionRecord,
 )
+from app.services.action_explanations import explain_command_failure
 
 
 Verifier = Callable[[PendingActionRecord], Awaitable[bool]]
+logger = logging.getLogger("winassist")
 
 
 class ActionTaskManager:
@@ -116,8 +120,16 @@ class ActionService:
                     if record.kind is ActionKind.SOFTWARE_INSTALL
                     else (
                         "Đang gỡ phần mềm."
-                        if record.kind is ActionKind.SOFTWARE_UNINSTALL
-                        else "Đang áp dụng sửa chữa mạng."
+                        if record.kind in {ActionKind.SOFTWARE_UNINSTALL, ActionKind.SOFTWARE_PURGE}
+                        else (
+                            "Windows đang tải và cài các bản cập nhật."
+                            if record.kind is ActionKind.WINDOWS_UPDATE
+                            else (
+                                "Đang dọn các nhóm file tạm bạn đã chọn."
+                                if record.kind is ActionKind.SYSTEM_CLEANUP
+                                else "Đang áp dụng sửa chữa mạng."
+                            )
+                        )
                     )
                 ),
             )
@@ -138,7 +150,30 @@ class ActionService:
                             ).strip(),
                         }
                     )
-            self.repository.finish(record.id, result)
+            if not result.success:
+                logger.error(
+                    "action_failed",
+                    extra={
+                        "action_id": record.id,
+                        "action_kind": record.kind.value,
+                        "command_id": record.command_id,
+                        "exit_code": result.exit_code,
+                        "timed_out": result.timed_out,
+                        "error_detail": result.stderr[:1000],
+                    },
+                )
+            success_message = None
+            if result.success and record.kind is ActionKind.SYSTEM_CLEANUP:
+                try:
+                    cleanup = json.loads(result.stdout)
+                    files = int(cleanup.get("files_deleted") or 0)
+                    size_mb = int(cleanup.get("bytes_deleted") or 0) / (1024 * 1024)
+                    success_message = (
+                        f"Đã dọn {files} file tạm, giải phóng khoảng {size_mb:.1f} MB."
+                    )
+                except (json.JSONDecodeError, TypeError, ValueError, AttributeError):
+                    success_message = "Đã dọn xong các nhóm file tạm bạn chọn."
+            self.repository.finish(record.id, result, success_message=success_message)
         except asyncio.CancelledError:
             if self.repository.get(record.id).state is ActionState.CANCELLING:
                 self.repository.finish_execution_cancel(record.id)
@@ -158,12 +193,22 @@ class ActionService:
                 timed_out=False,
                 success=False,
             )
+            logger.error(
+                "action_exception",
+                extra={
+                    "action_id": record.id,
+                    "action_kind": record.kind.value,
+                    "command_id": record.command_id,
+                    "exception_type": type(exc).__name__,
+                },
+            )
             try:
                 self.repository.finish(record.id, result)
             except Exception:
                 pass
 
     def _response(self, record: PendingActionRecord) -> ActionStatusResponse:
+        failure_summary, failure_suggestions = explain_command_failure(record.result)
         return ActionStatusResponse(
             action=self.repository.public(record),
             result=record.result,
@@ -172,4 +217,6 @@ class ActionService:
                 ActionState.EXECUTING,
                 ActionState.CANCELLING,
             },
+            failure_summary=failure_summary,
+            failure_suggestions=failure_suggestions,
         )

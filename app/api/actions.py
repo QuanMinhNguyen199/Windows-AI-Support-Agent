@@ -27,7 +27,7 @@ def get_action_service(
     async def verify(record: PendingActionRecord) -> bool:
         if record.kind is ActionKind.SOFTWARE_INSTALL:
             return (await software.check(record.resource_id)).installed
-        if record.kind is ActionKind.SOFTWARE_UNINSTALL:
+        if record.kind in {ActionKind.SOFTWARE_UNINSTALL, ActionKind.SOFTWARE_PURGE}:
             return not (await software.check(record.resource_id)).installed
         return True
 

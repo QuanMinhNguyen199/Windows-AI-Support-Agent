@@ -2,6 +2,7 @@ import os
 import socket
 import sys
 import hashlib
+import base64
 from uuid import uuid4
 
 import pytest
@@ -16,6 +17,7 @@ from app.desktop import (
     centered_window_geometry,
     configure_runtime_paths,
     desktop_icon_path,
+    delayed_update_command,
     loopback_port_is_available,
 )
 from app import desktop
@@ -36,7 +38,7 @@ def test_runtime_data_is_stored_under_local_app_data(tmp_path, monkeypatch) -> N
         root / "data" / "winassist.db"
     )
     assert os.environ["WINASSIST_LOG_PATH"] == str(
-        root / "data" / "logs" / "winassist.jsonl"
+        root / "data" / "logs" / "debug-errors.jsonl"
     )
 
 
@@ -153,9 +155,25 @@ def test_desktop_controller_installs_verified_update_and_exits(tmp_path, monkeyp
     response = controller.install_update()
 
     assert response["success"] is True
-    assert calls[0][-1] == "/UPDATE=1"
+    update_script = base64.b64decode(calls[0][-1]).decode("utf-16-le")
+    assert "/VERYSILENT" in update_script
+    assert "/UPDATE=1" in update_script
+    assert "Wait-Process" in update_script
     assert controller.exit_requested is True
     assert window.destroyed is True
+
+
+def test_delayed_update_runs_hidden_without_setup_wizard(tmp_path) -> None:
+    installer = tmp_path / "WinAssist-1.2.3-Setup.exe"
+
+    command = delayed_update_command(installer, 1234)
+    script = base64.b64decode(command[-1]).decode("utf-16-le")
+
+    assert command[3:5] == ["-WindowStyle", "Hidden"]
+    assert "Wait-Process -Id 1234" in script
+    assert "/VERYSILENT" in script
+    assert "/SP-" in script
+    assert "/NORESTART" in script
 
 
 def test_loopback_port_check_detects_collision() -> None:

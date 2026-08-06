@@ -1,8 +1,49 @@
+import base64
 from ipaddress import ip_address
 from types import MappingProxyType
 from typing import Mapping
 
 from app.models.command import CommandDefinition, RiskLevel
+
+
+_WINDOWS_UPDATE_INSTALL_SCRIPT = r"""
+$ErrorActionPreference='Stop'
+$resultPath=Join-Path $env:TEMP 'WinAssistWindowsUpdateResult.json'
+try {
+  $session=New-Object -ComObject Microsoft.Update.Session
+  $session.ClientApplicationID='WinAssist'
+  $searcher=$session.CreateUpdateSearcher()
+  $search=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Software'")
+  $updates=New-Object -ComObject Microsoft.Update.UpdateColl
+  $titles=@()
+  for($i=0;$i-lt $search.Updates.Count;$i++) {
+    $update=$search.Updates.Item($i)
+    if(-not $update.EulaAccepted){$update.AcceptEula()}
+    [void]$updates.Add($update)
+    $titles+=@($update.Title)
+  }
+  if($updates.Count -eq 0) {
+    [pscustomobject]@{success=$true;installed_count=0;reboot_required=$false;titles=@();message='Không có bản cập nhật mới.'}|ConvertTo-Json -Depth 5 -Compress|Set-Content -LiteralPath $resultPath -Encoding UTF8
+    exit 0
+  }
+  $downloader=$session.CreateUpdateDownloader()
+  $downloader.Updates=$updates
+  $download=$downloader.Download()
+  if(@(2,3) -notcontains [int]$download.ResultCode){throw "Không tải được bản cập nhật (mã $($download.ResultCode))."}
+  $installer=$session.CreateUpdateInstaller()
+  $installer.Updates=$updates
+  $installation=$installer.Install()
+  $ok=@(2,3) -contains [int]$installation.ResultCode
+  [pscustomobject]@{success=$ok;installed_count=$updates.Count;reboot_required=[bool]$installation.RebootRequired;titles=$titles;result_code=[int]$installation.ResultCode;message=if($ok){'Đã cài các bản cập nhật Windows.'}else{'Một số bản cập nhật chưa cài được.'}}|ConvertTo-Json -Depth 5 -Compress|Set-Content -LiteralPath $resultPath -Encoding UTF8
+  if(-not $ok){exit 1}
+} catch {
+  [pscustomobject]@{success=$false;installed_count=0;reboot_required=$false;titles=@();message=$_.Exception.Message}|ConvertTo-Json -Depth 5 -Compress|Set-Content -LiteralPath $resultPath -Encoding UTF8
+  exit 1
+}
+"""
+_WINDOWS_UPDATE_INSTALL_ENCODED = base64.b64encode(
+    _WINDOWS_UPDATE_INSTALL_SCRIPT.encode("utf-16le")
+).decode("ascii")
 
 
 class CommandRegistryError(ValueError):
@@ -144,6 +185,33 @@ _COMMANDS = {
         "powershell",
         ("-NoProfile", "-Command", "Start-Process 'ms-settings:windowsupdate'"),
         "Mở trang Windows Update trong Settings.",
+        risk_level=RiskLevel.LOW_RISK,
+    ),
+    "windows.install_updates": _definition(
+        "windows.install_updates",
+        "powershell",
+        (
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            (
+                "$resultPath=Join-Path $env:TEMP 'WinAssistWindowsUpdateResult.json';"
+                "Remove-Item -LiteralPath $resultPath -Force -ErrorAction SilentlyContinue;"
+                "$args=@('-NoProfile','-NonInteractive','-WindowStyle','Hidden','-ExecutionPolicy','Bypass',"
+                f"'-EncodedCommand','{_WINDOWS_UPDATE_INSTALL_ENCODED}');"
+                "try{$process=Start-Process -FilePath 'powershell.exe' -Verb RunAs "
+                "-WindowStyle Hidden -ArgumentList $args -Wait -PassThru -ErrorAction Stop}catch{"
+                "Write-Error 'Bạn chưa cho phép quyền quản trị nên Windows chưa được cập nhật.';exit 1};"
+                "if(!(Test-Path -LiteralPath $resultPath)){"
+                "Write-Error 'Windows không trả về kết quả cập nhật.';exit 1};"
+                "$json=Get-Content -LiteralPath $resultPath -Raw;Write-Output $json;"
+                "$payload=$json|ConvertFrom-Json;"
+                "Remove-Item -LiteralPath $resultPath -Force -ErrorAction SilentlyContinue;"
+                "if(-not $payload.success){exit 1}"
+            ),
+        ),
+        "Tìm, tải và cài các bản cập nhật Windows đang phù hợp với máy.",
+        timeout_seconds=3600,
         risk_level=RiskLevel.LOW_RISK,
     ),
     "windows.datetime": _definition(
@@ -419,22 +487,29 @@ class CommandRegistry:
             str, tuple[tuple[str, ...], ...]
         ] | None = None,
         software_uninstall_commands: Mapping[str, tuple[str, ...]] | None = None,
+        software_cleanup_targets: Mapping[
+            str, tuple[tuple[str, ...], tuple[str, ...]]
+        ] | None = None,
     ) -> None:
         commands = dict(_COMMANDS)
         self._software_check_ids: dict[str, tuple[str, ...]] = {}
         self._software_install_ids: dict[str, str] = {}
         self._software_uninstall_ids: dict[str, str] = {}
         self._software_verification_ids: dict[str, tuple[str, ...]] = {}
+        self._software_purge_ids: dict[str, str] = {}
         packages = software_packages or {}
         checks = software_commands or {}
         verification_commands = software_verification_commands or {}
         uninstall_commands = software_uninstall_commands or {}
+        cleanup_targets = software_cleanup_targets or {}
         if set(packages) != set(checks):
             raise CommandRegistryError("Software package và check command không đồng bộ.")
         if not set(verification_commands).issubset(packages):
             raise CommandRegistryError("Software verification không thuộc catalog.")
         if not set(uninstall_commands).issubset(packages):
             raise CommandRegistryError("Software uninstall override không thuộc catalog.")
+        if not set(cleanup_targets).issubset(packages):
+            raise CommandRegistryError("Software cleanup không thuộc catalog.")
         for software_id, package_id in packages.items():
             check_ids: list[str] = []
             for index, command in enumerate(checks[software_id]):
@@ -457,9 +532,19 @@ class CommandRegistry:
             commands[install_id] = _definition(
                 install_id,
                 "winget",
-                ("install", "--id", package_id, "--exact", "--disable-interactivity"),
+                (
+                    "install",
+                    "--id",
+                    package_id,
+                    "--exact",
+                    "--source",
+                    "winget",
+                    "--accept-package-agreements",
+                    "--accept-source-agreements",
+                    "--disable-interactivity",
+                ),
                 f"Cài package {package_id} từ winget.",
-                timeout_seconds=120,
+                timeout_seconds=600,
                 risk_level=RiskLevel.LOW_RISK,
             )
             self._software_check_ids[software_id] = tuple(check_ids)
@@ -504,10 +589,51 @@ class CommandRegistry:
                 uninstall_executable,
                 uninstall_arguments,
                 f"Gỡ package {package_id} bằng winget.",
-                timeout_seconds=120,
+                timeout_seconds=600,
                 risk_level=RiskLevel.LOW_RISK,
             )
             self._software_uninstall_ids[software_id] = uninstall_id
+            cleanup_paths, cleanup_keys = cleanup_targets.get(
+                software_id, ((), ())
+            )
+            quoted_paths = ",".join(
+                "'" + value.replace("'", "''") + "'" for value in cleanup_paths
+            )
+            quoted_keys = ",".join(
+                "'" + value.replace("'", "''") + "'" for value in cleanup_keys
+            )
+            purge_id = f"software.purge.{software_id}"
+            purge_executable = uninstall_executable.replace("'", "''")
+            purge_arguments = tuple(uninstall_arguments)
+            if uninstall_command is None:
+                purge_arguments = (*purge_arguments, "--purge")
+            quoted_uninstall_arguments = ",".join(
+                "'" + value.replace("'", "''") + "'"
+                for value in purge_arguments
+            )
+            commands[purge_id] = _definition(
+                purge_id,
+                "powershell",
+                (
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    (
+                        f"$uninstallArgs=@({quoted_uninstall_arguments});"
+                        f"& '{purge_executable}' @uninstallArgs;"
+                        "if($LASTEXITCODE -ne 0){exit $LASTEXITCODE};"
+                        f"$paths=@({quoted_paths});$keys=@({quoted_keys});"
+                        "foreach($item in $paths){$path=[Environment]::ExpandEnvironmentVariables($item);"
+                        "if(Test-Path -LiteralPath $path){Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop}};"
+                        "foreach($key in $keys){if(Test-Path -LiteralPath $key){"
+                        "Remove-Item -LiteralPath $key -Recurse -Force -ErrorAction Stop}}"
+                    ),
+                ),
+                f"Gỡ package {package_id}, dọn file cài đặt còn sót và cache đã duyệt.",
+                timeout_seconds=600,
+                risk_level=RiskLevel.LOW_RISK,
+            )
+            self._software_purge_ids[software_id] = purge_id
         self._commands: Mapping[str, CommandDefinition] = MappingProxyType(commands)
 
     def list(self) -> tuple[CommandDefinition, ...]:
@@ -554,6 +680,95 @@ class CommandRegistry:
             raise CommandRegistryError(
                 f"Software ID không được đăng ký: {software_id}"
             ) from exc
+
+    def software_purge(self, software_id: str) -> CommandDefinition:
+        try:
+            return self.get(self._software_purge_ids[software_id])
+        except KeyError as exc:
+            raise CommandRegistryError(
+                f"Ứng dụng chưa hỗ trợ xóa dữ liệu an toàn: {software_id}"
+            ) from exc
+
+    def cleanup_scan(self, category_id: str) -> CommandDefinition:
+        scripts = {
+            "user_temp": (
+                "$cutoff=(Get-Date).AddDays(-1);"
+                "$files=@(Get-ChildItem -LiteralPath $env:TEMP -File -Recurse -Force "
+                "-ErrorAction SilentlyContinue|Where-Object {$_.LastWriteTime -lt $cutoff})"
+            ),
+            "thumbnail_cache": (
+                "$root=Join-Path $env:LOCALAPPDATA 'Microsoft\\Windows\\Explorer';"
+                "$files=@(Get-ChildItem -LiteralPath $root -File -Filter 'thumbcache_*.db' "
+                "-Force -ErrorAction SilentlyContinue)"
+            ),
+            "crash_dumps": (
+                "$root=Join-Path $env:LOCALAPPDATA 'CrashDumps';"
+                "$files=@(Get-ChildItem -LiteralPath $root -File -Filter '*.dmp' "
+                "-Force -ErrorAction SilentlyContinue)"
+            ),
+        }
+        try:
+            source = scripts[category_id]
+        except KeyError as exc:
+            raise CommandRegistryError("Nhóm file tạm không được hỗ trợ.") from exc
+        script = (
+            source
+            + ";$sum=($files|Measure-Object -Property Length -Sum).Sum;"
+            + "$totalBytes=if($null -eq $sum){[int64]0}else{[int64]$sum};"
+            + f"[pscustomobject]@{{id='{category_id}';file_count=@($files).Count;"
+            + "bytes=$totalBytes}|"
+            + "ConvertTo-Json -Compress"
+        )
+        return _definition(
+            f"system.cleanup_scan.{category_id}",
+            "powershell",
+            ("-NoProfile", "-NonInteractive", "-Command", script),
+            f"Đếm dung lượng nhóm file tạm {category_id}; không xóa file.",
+            timeout_seconds=120,
+        )
+
+    def cleanup_selected(self, category_ids: tuple[str, ...]) -> CommandDefinition:
+        normalized = tuple(sorted(set(category_ids)))
+        allowed = {"user_temp", "thumbnail_cache", "crash_dumps"}
+        if not normalized or any(item not in allowed for item in normalized):
+            raise CommandRegistryError("Nhóm dọn dẹp không nằm trong danh sách an toàn.")
+        selectors = {
+            "user_temp": (
+                "$cutoff=(Get-Date).AddDays(-1);"
+                "$targets+=@(Get-ChildItem -LiteralPath $env:TEMP -File -Recurse -Force "
+                "-ErrorAction SilentlyContinue|Where-Object {$_.LastWriteTime -lt $cutoff});"
+            ),
+            "thumbnail_cache": (
+                "$root=Join-Path $env:LOCALAPPDATA 'Microsoft\\Windows\\Explorer';"
+                "$targets+=@(Get-ChildItem -LiteralPath $root -File -Filter 'thumbcache_*.db' "
+                "-Force -ErrorAction SilentlyContinue);"
+            ),
+            "crash_dumps": (
+                "$root=Join-Path $env:LOCALAPPDATA 'CrashDumps';"
+                "$targets+=@(Get-ChildItem -LiteralPath $root -File -Filter '*.dmp' "
+                "-Force -ErrorAction SilentlyContinue);"
+            ),
+        }
+        script = "$targets=@();$bytesDeleted=[int64]0;$filesDeleted=0;"
+        script += "".join(selectors[item] for item in normalized)
+        script += (
+            "$unique=@($targets|Where-Object {$_ -and $_.FullName}|"
+            "Sort-Object FullName -Unique);foreach($file in $unique){try{"
+            "$length=[int64]$file.Length;Remove-Item -LiteralPath $file.FullName "
+            "-Force -ErrorAction Stop;if(!(Test-Path -LiteralPath $file.FullName)){"
+            "$bytesDeleted+=$length;$filesDeleted++}}catch{}};"
+            "[pscustomobject]@{success=$true;files_deleted=$filesDeleted;"
+            "bytes_deleted=$bytesDeleted}|ConvertTo-Json -Compress"
+        )
+        command_id = "system.cleanup." + ".".join(normalized)
+        return _definition(
+            command_id,
+            "powershell",
+            ("-NoProfile", "-NonInteractive", "-Command", script),
+            "Xóa đúng các nhóm file tạm an toàn đã được người dùng chọn.",
+            timeout_seconds=300,
+            risk_level=RiskLevel.LOW_RISK,
+        )
 
     def ping_gateway(self, target: str) -> CommandDefinition:
         try:
@@ -605,6 +820,16 @@ class CommandRegistry:
                 raise CommandRegistryError("Process ID không hợp lệ.") from exc
             if definition != self.cancel_process_tree(process_id):
                 raise CommandRegistryError("Lệnh dừng process đã bị thay đổi.")
+            return
+        if definition.id.startswith("system.cleanup_scan."):
+            category_id = definition.id.removeprefix("system.cleanup_scan.")
+            if definition != self.cleanup_scan(category_id):
+                raise CommandRegistryError("Lệnh quét file tạm đã bị thay đổi.")
+            return
+        if definition.id.startswith("system.cleanup."):
+            categories = tuple(definition.id.removeprefix("system.cleanup.").split("."))
+            if definition != self.cleanup_selected(categories):
+                raise CommandRegistryError("Lệnh dọn file tạm đã bị thay đổi.")
             return
         raise CommandRegistryError(
             f"Command definition không thuộc registry: {definition.id}"

@@ -5,9 +5,21 @@ cam kết tất cả ứng dụng sẽ được thêm. Trước khi xuất hiệ
 ứng dụng phải được kiểm tra package ID, nhà phát hành, cách nhận diện cài đặt,
 gỡ cài đặt và hành vi của installer trên Windows 10/11.
 
-Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ ghi các ứng dụng
+Catalog hiện tại đã có 79 ứng dụng. Danh sách dưới đây chỉ ghi các ứng dụng
 **chưa có**, chia thành hai section đúng với giao diện: **Phổ thông** và
 **Chuyên sâu**.
+
+## Ưu tiên cho người dùng Việt Nam
+
+Đợt local hiện tại đã đưa **Zalo, Cốc Cốc và UniKey** vào nhóm Phổ thông, đồng
+thời thêm CapCut, Figma, Foxit Reader, Bitwarden, ShareX, Obsidian, TreeSize và
+CrystalDiskInfo. Đây là các nhu cầu thường gặp khi người Việt mua máy mới hoặc
+cài lại Windows: gõ tiếng Việt, liên lạc, duyệt web, học tập, làm nội dung và
+kiểm tra dung lượng máy.
+
+Các sản phẩm Việt Nam chỉ có bản web như MISA AMIS, KiotViet, phần mềm ngân
+hàng hoặc dịch vụ công sẽ không được giả thành ứng dụng desktop. WinAssist chỉ
+tạo lối tắt/mở trang chính hãng nếu sau này có chức năng web app rõ ràng.
 
 ## Cách đọc danh sách
 
@@ -26,7 +38,6 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 | Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Cách tích hợp dự kiến |
 |---|---|---|---|
 | P1 | WhatsApp | Nhắn tin và gọi điện bằng tài khoản WhatsApp. | Store/WinGet |
-| P1 | Signal | Nhắn tin và gọi điện chú trọng riêng tư. | WinGet |
 | P1 | Slack | Nhắn tin và làm việc theo nhóm. | WinGet |
 | P2 | LINE | Nhắn tin, gọi điện và trao đổi file. | WinGet |
 | P2 | Viber | Nhắn tin và gọi điện qua Internet. | WinGet |
@@ -35,7 +46,6 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 
 | Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | Bitwarden | Lưu và tự điền mật khẩu an toàn. | WinGet |
 | P1 | Proton Pass | Quản lý mật khẩu và thông tin đăng nhập. | WinGet |
 | P2 | KeePassXC | Giữ kho mật khẩu trong file trên máy. | WinGet |
 | P2 | Malwarebytes | Quét thêm phần mềm độc hại khi cần. | WinGet, không tự chạy quét |
@@ -45,34 +55,26 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 
 | Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | ShareX | Chụp màn hình, quay nhanh và chia sẻ ảnh. | WinGet |
-| P1 | Paint.NET | Chỉnh sửa ảnh đơn giản, nhẹ và dễ dùng. | Store/WinGet |
-| P1 | Audacity | Thu âm và cắt ghép âm thanh. | WinGet |
-| P1 | HandBrake | Đổi định dạng và giảm dung lượng video. | WinGet |
 | P2 | GIMP | Chỉnh sửa ảnh miễn phí với nhiều công cụ. | WinGet |
 | P2 | Greenshot | Chụp và ghi chú nhanh lên màn hình. | WinGet |
 | P2 | ImageGlass | Xem ảnh nhanh với nhiều định dạng. | WinGet |
 | P2 | MusicBee | Nghe và quản lý thư viện nhạc trên máy. | WinGet |
 | P2 | Plex | Xem thư viện phim và nhạc cá nhân. | WinGet |
 
-### Học tập, đọc và ghi chú
+### Học tập mở rộng
 
-| Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Cách tích hợp dự kiến |
+Anki, Zotero, GeoGebra, draw.io và Calibre đã được chuyển vào catalog thật dưới
+section **Học tập cho sinh viên**. Danh sách dưới đây chỉ còn ứng dụng chưa có.
+
+| Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Package dự kiến |
 |---|---|---|---|
-| P1 | Obsidian | Ghi chú và liên kết kiến thức cá nhân. | WinGet |
-| P1 | Anki | Học bằng thẻ ghi nhớ và ôn tập lặp lại. | WinGet |
-| P1 | Zotero | Lưu tài liệu và tạo trích dẫn khi học, nghiên cứu. | WinGet |
 | P2 | Microsoft To Do | Tạo danh sách việc cần làm và nhắc lịch. | Store/WinGet |
 | P2 | Thunderbird | Đọc nhiều tài khoản email trong một ứng dụng. | WinGet |
-| P2 | Calibre | Đọc, đổi định dạng và quản lý sách điện tử. | WinGet |
-| P2 | GeoGebra | Học toán, hình học và vẽ đồ thị. | WinGet |
 
 ### Lưu trữ, tìm file và chăm sóc máy
 
 | Ưu tiên | Ứng dụng | Mô tả dễ hiểu | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | TreeSize Free | Xem thư mục nào đang chiếm nhiều dung lượng. | WinGet |
-| P1 | CrystalDiskInfo | Xem sức khỏe cơ bản của ổ cứng và SSD. | WinGet, chỉ đọc |
 | P1 | HWiNFO | Xem chi tiết phần cứng và nhiệt độ máy. | WinGet, chỉ đọc |
 | P1 | Rufus | Tạo USB cài Windows hoặc hệ điều hành. | WinGet, cảnh báo trước |
 | P2 | WinDirStat | Xem dung lượng ổ đĩa bằng bản đồ dễ nhận biết. | WinGet |
@@ -97,8 +99,6 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 
 | Ưu tiên | Ứng dụng | Dành cho ai? | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | Microsoft 365 | Văn phòng cần Word, Excel, PowerPoint chính hãng. | Official hub, cần license |
-| P1 | Foxit PDF Reader | Người thường đọc, ký và ghi chú PDF. | WinGet |
 | P1 | PDFgear | Người cần chỉnh sửa và sắp xếp trang PDF. | Store/WinGet |
 | P1 | Todoist | Cá nhân và nhóm quản lý công việc. | WinGet |
 | P2 | ClickUp | Nhóm quản lý dự án và đầu việc. | WinGet/web |
@@ -110,8 +110,6 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 
 | Ưu tiên | Ứng dụng | Dành cho ai? | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | CapCut | Người làm video ngắn và nội dung mạng xã hội. | WinGet |
-| P1 | Figma | Người thiết kế bài đăng, giao diện và tài liệu hình ảnh. | WinGet |
 | P1 | Microsoft Clipchamp | Người cần dựng video đơn giản trên Windows. | Store |
 | P2 | TikTok LIVE Studio | Người phát trực tiếp trên TikTok. | Nguồn chính hãng |
 | P2 | Meta Business Suite | Người quản lý Facebook và Instagram. | Web app/PWA, không giả cài desktop |
@@ -122,7 +120,6 @@ Catalog hiện tại đã có 57 ứng dụng. Danh sách dưới đây chỉ gh
 
 | Ưu tiên | Ứng dụng | Dành cho ai? | Cách tích hợp dự kiến |
 |---|---|---|---|
-| P1 | Blender | Dựng hình, hoạt hình và thiết kế 3D. | WinGet |
 | P1 | Krita | Vẽ minh họa và tranh kỹ thuật số. | WinGet |
 | P1 | Inkscape | Thiết kế logo và hình vector miễn phí. | WinGet |
 | P1 | DaVinci Resolve | Dựng phim và chỉnh màu chuyên sâu. | WinGet, installer lớn |
@@ -228,12 +225,12 @@ và [winget-pkgs](https://github.com/microsoft/winget-pkgs).
 Đợt tiếp theo chỉ nên thêm khoảng 10–15 app P1, không nhập toàn bộ backlog cùng
 lúc. Nhóm đầu nên cân bằng nhiều nhu cầu:
 
-1. WhatsApp, Signal và Bitwarden.
-2. ShareX, Paint.NET, Audacity và HandBrake.
-3. Obsidian, Anki và Zotero.
-4. TreeSize Free và CrystalDiskInfo.
-5. CapCut, Figma và Blender.
-6. Power BI Desktop và Arduino IDE.
+1. WhatsApp, Viber và LINE.
+2. Microsoft To Do và Thunderbird.
+3. HWiNFO, WinDirStat và LocalSend.
+4. Krita, Inkscape và Kdenlive.
+5. Power BI Desktop, RStudio và Arduino IDE.
+6. MISA chỉ qua nguồn chính hãng, không tự động cấp license.
 
 Sau mỗi đợt cần đo tỷ lệ cài thành công, lỗi hủy, nhận diện app đã có và phản hồi
 người dùng trước khi mở rộng tiếp.

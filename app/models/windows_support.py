@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.models.actions import PendingAction
 from app.models.command import CommandResult
 
 
@@ -33,3 +34,8 @@ class WindowsActionResponse(BaseModel):
     success: bool
     message: str
     result: CommandResult
+
+
+class WindowsUpdateRequestResponse(BaseModel):
+    pending_action: PendingAction
+    message: str

@@ -309,6 +309,7 @@ class PendingActionRepository:
         result: CommandResult,
         *,
         now: datetime | None = None,
+        success_message: str | None = None,
     ) -> PendingActionRecord:
         finished_at = now or utc_now()
         state = ActionState.COMPLETED if result.success else ActionState.FAILED
@@ -328,7 +329,7 @@ class PendingActionRepository:
                         else ActionStage.FAILED.value
                     ),
                     (
-                        "Thao tác đã hoàn tất."
+                        (success_message or "Thao tác đã hoàn tất.")
                         if result.success
                         else "Thao tác không hoàn tất thành công."
                     ),

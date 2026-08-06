@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
-    <link rel="stylesheet" href="/static/styles.css?v=0.11.0">
-    <link rel="stylesheet" href="/static/overview.css?v=0.11.0">
+    <link rel="stylesheet" href="/static/styles.css?v=0.11.1">
+    <link rel="stylesheet" href="/static/overview.css?v=sidebar-alignment">
   </head>
   <body>
+    <div id="global-loading" class="global-loading" role="progressbar" aria-label="WinAssist đang xử lý" aria-hidden="true">
+      <span></span>
+    </div>
     <div class="app-layout">
       <aside class="sidebar">
         <a class="brand" href="#overview" aria-label="WinAssist Local">
@@ -19,6 +22,7 @@
           <button class="nav-item" data-view="chat"><span data-icon="chat"></span> Trợ lý</button>
           <button class="nav-item" data-view="suggestions"><span data-icon="apps"></span> Tiện ích</button>
           <button class="nav-item" data-view="diagnostics"><span data-icon="pulse"></span> Chẩn đoán</button>
+          <button class="nav-item" data-view="cleanup"><span data-icon="cleanup"></span> Dọn dẹp máy</button>
           <button class="nav-item" data-view="graphics"><span data-icon="device"></span> Card màn hình</button>
           <button class="nav-item" data-view="windows-update"><span data-icon="update"></span> Cập nhật Windows</button>
           <button class="nav-item" data-view="activity"><span data-icon="history"></span> Hoạt động</button>
@@ -28,7 +32,7 @@
         </nav>
         <div class="service-status" aria-live="polite">
           <span id="backend-dot" class="status-dot pending"></span>
-          <div><strong id="backend-status">Đang kết nối…</strong><small id="ollama-status">Trợ lý: đang chuẩn bị</small></div>
+          <div><strong id="backend-status">Đang mở WinAssist…</strong><small id="ollama-status">Vui lòng chờ một chút</small></div>
         </div>
       </aside>
 
@@ -119,6 +123,23 @@
           <div id="repair-list" class="diagnostic-grid"></div>
         </section>
 
+        <section id="view-cleanup" class="view">
+          <div class="section-heading">
+            <div><h2>Dọn file tạm an toàn</h2><p>Quét trước, sau đó bạn tự chọn mục muốn xóa.</p></div>
+            <button id="scan-cleanup" class="primary">Quét file tạm</button>
+          </div>
+          <div class="cleanup-safety-note">
+            WinAssist không xóa Downloads, Documents, Desktop, Thùng rác hoặc file đang được sử dụng.
+          </div>
+          <div id="cleanup-result" class="content-stack" aria-live="polite">
+            <div class="driver-notice"><strong>Chưa quét</strong><p class="muted">Nhấn quét để xem file tạm đang chiếm bao nhiêu dung lượng.</p></div>
+          </div>
+          <div class="cleanup-actions">
+            <span id="cleanup-total" class="muted">Chưa chọn mục nào</span>
+            <button id="request-cleanup" class="danger" disabled>Dọn các mục đã chọn</button>
+          </div>
+        </section>
+
         <section id="view-graphics" class="view">
           <div class="section-heading">
             <div><h2>Card màn hình</h2><p>Kiểm tra và cập nhật phần mềm giúp hình ảnh, video và trò chơi hoạt động ổn định.</p></div>
@@ -138,8 +159,8 @@
             <div class="driver-notice"><strong>Chưa kiểm tra</strong><p class="muted">Nhấn kiểm tra để WinAssist giải thích tình trạng cập nhật bằng nội dung dễ hiểu.</p></div>
           </div>
           <div class="update-actions-panel">
-            <div><strong>Tìm và cài bản cập nhật</strong><p class="muted">Hiện tại WinAssist mở trang cập nhật an toàn của Windows để bạn xem và cài. App chưa tự cài trực tiếp.</p></div>
-            <button id="open-windows-update" class="primary">Kiểm tra và cập nhật</button>
+            <div><strong>Cài bản cập nhật ngay trong WinAssist</strong><p class="muted">WinAssist sẽ tìm, tải và cài bản phù hợp sau khi bạn xác nhận. Ứng dụng không tự khởi động lại máy.</p></div>
+            <button id="open-windows-update" class="primary">Xem và cập nhật</button>
           </div>
         </section>
 
@@ -166,25 +187,45 @@
         </section>
 
         <section id="view-support" class="view">
-          <div class="section-heading">
-            <div><h2>Hỗ trợ</h2><p>Gặp lỗi hoặc chưa biết cách sử dụng? Hãy gửi thông tin để được hỗ trợ.</p></div>
+          <div class="support-intro">
+            <p>Gặp lỗi hoặc chưa biết cách sử dụng? Hãy gửi thông tin để được hỗ trợ.</p>
           </div>
           <form id="support-form" class="support-ticket-form">
-            <label for="support-issue-type">Bạn đang gặp lỗi gì?</label>
-            <select id="support-issue-type" required>
-              <option value="">Chọn một mục</option><option value="startup">Không mở được WinAssist</option>
-              <option value="install">Không cài được tiện ích</option><option value="uninstall">Không gỡ được ứng dụng</option>
-              <option value="diagnostics">Kiểm tra máy hoặc mạng bị lỗi</option><option value="updates">Lỗi cập nhật</option>
-              <option value="assistant">Trợ lý trả lời chưa đúng</option><option value="interface">Giao diện hoặc nút bấm bị lỗi</option>
-              <option value="other">Lỗi khác</option>
-            </select>
-            <label for="support-description">Mô tả lỗi</label>
-            <textarea id="support-description" rows="6" minlength="10" maxlength="4000" required placeholder="Bạn đã làm gì và lỗi xuất hiện như thế nào?"></textarea>
-            <label for="support-attachment">Ảnh chụp màn hình <span class="muted">(không bắt buộc, PNG/JPG/WebP, tối đa 5 MB)</span></label>
-            <input id="support-attachment" type="file" accept="image/png,image/jpeg,image/webp">
+            <div class="support-field">
+              <label for="support-issue-type">Bạn đang gặp lỗi gì?</label>
+              <select id="support-issue-type" required>
+                <option value="">Chọn một mục</option><option value="startup">Không mở được WinAssist</option>
+                <option value="install">Không cài được tiện ích</option><option value="uninstall">Không gỡ được ứng dụng</option>
+                <option value="diagnostics">Kiểm tra máy hoặc mạng bị lỗi</option><option value="updates">Lỗi cập nhật</option>
+                <option value="assistant">Trợ lý trả lời chưa đúng</option><option value="interface">Giao diện hoặc nút bấm bị lỗi</option>
+                <option value="other">Lỗi khác</option>
+              </select>
+            </div>
+            <div class="support-field">
+              <label for="support-email">Email nhận phản hồi <span class="muted">(không bắt buộc)</span></label>
+              <input id="support-email" type="email" maxlength="254" autocomplete="email" placeholder="tenban@example.com">
+            </div>
+            <div class="support-field support-field-wide">
+              <label for="support-description">Mô tả lỗi</label>
+              <textarea id="support-description" rows="4" minlength="10" maxlength="4000" required placeholder="Bạn đã làm gì và lỗi xuất hiện như thế nào?"></textarea>
+            </div>
+            <label id="support-reply-consent-row" class="support-consent support-field-wide" hidden>
+              <input id="support-reply-consent" type="checkbox">
+              <span>Tôi đồng ý để WinAssist dùng email này để phản hồi ticket.</span>
+            </label>
+            <div id="support-diagnostic-note" class="support-diagnostic-note support-field-wide" hidden>
+              <strong>Đã kèm thông tin lỗi an toàn</strong>
+              <span>Không bao gồm mật khẩu hoặc dữ liệu tài khoản.</span>
+            </div>
+            <div class="support-field support-field-wide">
+              <label for="support-attachment">Ảnh chụp màn hình <span class="muted">(không bắt buộc, tối đa 5 MB)</span></label>
+              <input id="support-attachment" type="file" accept="image/png,image/jpeg,image/webp">
+            </div>
             <input id="support-website" class="support-honeypot" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <p class="support-privacy muted">Không gửi mật khẩu, mã xác thực hoặc thông tin tài khoản cá nhân.</p>
-            <div class="support-submit-row"><button id="submit-ticket" type="submit" class="primary">Gửi báo cáo</button></div>
+            <div class="support-form-footer support-field-wide">
+              <p class="support-privacy muted">Không gửi mật khẩu, mã xác thực hoặc thông tin tài khoản cá nhân.</p>
+              <button id="submit-ticket" type="submit" class="primary">Gửi báo cáo</button>
+            </div>
           </form>
           <section id="support-ticket-result" class="support-ticket-result" hidden aria-live="polite"></section>
         </section>
@@ -220,6 +261,31 @@
           <p id="command-warning"></p>
         </details>
         <div class="dialog-actions"><button id="cancel-command" class="secondary" value="cancel">Quay lại</button><button id="confirm-command" class="primary" value="default">Tiếp tục</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="uninstall-choice-dialog">
+      <form method="dialog" class="dialog-card close-dialog-card">
+        <p class="eyebrow">Cách gỡ ứng dụng</p>
+        <h2 id="uninstall-choice-title">Bạn muốn gỡ thế nào?</h2>
+        <p class="action-summary">File bạn tự tạo như tài liệu, ảnh và video luôn được giữ nguyên.</p>
+        <fieldset class="close-options">
+          <legend class="sr-only">Chọn cách gỡ ứng dụng</legend>
+          <label class="close-option">
+            <input type="radio" name="uninstall-choice" value="uninstall" checked>
+            <span class="option-check" aria-hidden="true"></span>
+            <span><strong>Chỉ gỡ ứng dụng</strong><small>Giữ lại cài đặt cá nhân để dùng lại sau này.</small></span>
+          </label>
+          <label class="close-option">
+            <input type="radio" name="uninstall-choice" value="purge">
+            <span class="option-check" aria-hidden="true"></span>
+            <span><strong>Gỡ sạch an toàn</strong><small>Dọn thêm file cài đặt còn sót và cache an toàn. Vẫn giữ dữ liệu cá nhân.</small></span>
+          </label>
+        </fieldset>
+        <div class="close-dialog-actions">
+          <button class="secondary" value="cancel">Quay lại</button>
+          <button id="confirm-uninstall-choice" class="danger" value="default">Tiếp tục</button>
+        </div>
       </form>
     </dialog>
 
@@ -274,8 +340,8 @@
     </dialog>
 
     <script src="/static/i18n.js?v=required-update" defer></script>
-    <script src="/static/api-client.js?v=0.11.0" defer></script>
-    <script src="/static/state.js?v=0.11.0" defer></script>
+    <script src="/static/api-client.js?v=loading-progress" defer></script>
+    <script src="/static/state.js?v=0.11.1" defer></script>
     <script src="/static/app.js?v=required-update" defer></script>
   </body>
 </html>

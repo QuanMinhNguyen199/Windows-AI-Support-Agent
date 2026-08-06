@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from app.core.redaction import redact_text
+
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -12,10 +14,14 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname,
             "event": record.getMessage(),
         }
-        for name in ("request_id", "method", "path", "status_code", "duration_ms"):
+        for name in (
+            "request_id", "method", "path", "status_code", "duration_ms",
+            "action_id", "action_kind", "command_id", "exit_code",
+            "timed_out", "exception_type", "error_detail", "source", "line",
+        ):
             value = getattr(record, name, None)
             if value is not None:
-                payload[name] = value
+                payload[name] = redact_text(str(value)) if isinstance(value, str) else value
         return json.dumps(payload, ensure_ascii=False)
 
 
@@ -32,6 +38,7 @@ def configure_local_logging(log_path: Path) -> logging.Logger:
     )
     handler.setFormatter(JsonFormatter())
     logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+    handler.setLevel(logging.ERROR)
+    logger.setLevel(logging.ERROR)
     logger.propagate = False
     return logger

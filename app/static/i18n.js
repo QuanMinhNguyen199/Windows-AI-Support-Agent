@@ -1,10 +1,14 @@
 (() => {
   const STORAGE_KEY = "winassist-language";
   const en = {
-    "Tổng quan máy": "PC overview", "Trợ lý": "Assistant", "Tiện ích": "Apps",
+    "Tổng quan máy": "PC overview", "Trợ lý": "Assistant", "Tiện ích": "Apps", "Học tập cho sinh viên": "Student learning",
     "Chẩn đoán": "Diagnostics", "Card màn hình": "Graphics", "Cập nhật Windows": "Windows Update",
-    "Hoạt động": "Activity", "Cập nhật WinAssist": "Update WinAssist", "Hỗ trợ": "Support",
+    "Hoạt động": "Activity", "Cập nhật WinAssist": "Update WinAssist", "Hỗ trợ": "Support", "Dọn dẹp máy": "PC cleanup",
     "Gỡ WinAssist": "Uninstall WinAssist", "Đang kết nối…": "Connecting…",
+    "Đang mở WinAssist…": "Opening WinAssist…", "Vui lòng chờ một chút": "This will only take a moment",
+    "WinAssist đã sẵn sàng": "WinAssist is ready", "Có thể trò chuyện và hỗ trợ máy": "Ready to chat and help with your PC",
+    "Có thể kiểm tra và cài ứng dụng": "Ready to check your PC and install apps",
+    "WinAssist chưa sẵn sàng": "WinAssist isn't ready yet", "Hãy chờ một chút hoặc mở lại ứng dụng": "Please wait a moment or reopen the app",
     "Trợ lý: đang chuẩn bị": "Assistant: getting ready", "Hỗ trợ máy tính Windows": "Windows computer support",
     "Dữ liệu được giữ trên máy của bạn": "Your data stays on this PC", "Thông tin thiết bị": "Device information",
     "Máy tính của bạn": "Your computer", "Xem nhanh cấu hình và tình trạng cơ bản của máy. WinAssist không thay đổi thiết lập khi đọc thông tin này.": "See your PC specifications and basic status. WinAssist does not change any settings while reading this information.",
@@ -23,11 +27,19 @@
     "Chạy kiểm tra": "Run check", "Đo tốc độ mạng": "Internet speed test", "Download, upload, ping và jitter qua Ookla CLI.": "Download, upload, ping and jitter using Ookla.",
     "Kiểm tra Windows phổ thông": "Common Windows checks", "Pin, ổ đĩa, thiết bị, máy in, ngày giờ và startup.": "Battery, storage, devices, printers, date, time and startup apps.",
     "Quét tất cả": "Scan all", "Sửa chữa nhanh": "Quick fixes", "Kiểm tra và cập nhật phần mềm giúp hình ảnh, video và trò chơi hoạt động ổn định.": "Check software updates that keep images, video and games running smoothly.",
+    "Dọn file tạm an toàn": "Clean temporary files safely", "Quét trước, sau đó bạn tự chọn mục muốn xóa.": "Scan first, then choose what you want to remove.",
+    "Quét file tạm": "Scan temporary files", "Dọn các mục đã chọn": "Clean selected items", "Chưa chọn mục nào": "No items selected",
+    "WinAssist không xóa Downloads, Documents, Desktop, Thùng rác hoặc file đang được sử dụng.": "WinAssist does not remove Downloads, Documents, Desktop, Recycle Bin or files in use.",
     "Kiểm tra cập nhật": "Check for updates", "Chưa kiểm tra": "Not checked", "Nhấn kiểm tra để xem card màn hình có công cụ cập nhật phù hợp hay không.": "Run the check to find the right graphics update tool.",
     "Tìm bản cập nhật mới, xem lần cập nhật gần nhất và yêu cầu khởi động lại.": "Find new updates, see the latest update and check whether a restart is needed.",
     "Kiểm tra máy": "Check PC", "Nhấn kiểm tra để WinAssist giải thích tình trạng cập nhật bằng nội dung dễ hiểu.": "Run the check for a simple explanation of your update status.",
     "Tìm và cài bản cập nhật": "Find and install updates", "Hiện tại WinAssist mở trang cập nhật an toàn của Windows để bạn xem và cài. App chưa tự cài trực tiếp.": "WinAssist opens the official Windows Update page where you can review and install updates.",
     "Kiểm tra và cập nhật": "Check and update", "Hoạt động gần đây": "Recent activity", "Theo dõi yêu cầu đang chờ, đang chạy và đã hoàn tất.": "View pending, running and completed tasks.",
+    "Cài bản cập nhật ngay trong WinAssist": "Install updates in WinAssist",
+    "WinAssist sẽ tìm, tải và cài bản phù hợp sau khi bạn xác nhận. Ứng dụng không tự khởi động lại máy.": "WinAssist finds, downloads and installs suitable updates after you confirm. It will not restart your PC automatically.",
+    "Xem và cập nhật": "Review and update", "Bắt đầu cập nhật": "Start update",
+    "Windows đang cập nhật…": "Windows is updating…",
+    "Bạn có thể tiếp tục dùng WinAssist. Không cần mở hoặc đóng cửa sổ nào khác.": "You can continue using WinAssist. There is no need to open or close another window.",
     "Làm mới": "Refresh", "Tự kiểm tra phiên bản mới và xem những thay đổi trước khi cập nhật.": "Check for a new version and see what changed before updating.",
     "WinAssist sẽ tự kiểm tra khi ứng dụng khởi động.": "WinAssist checks automatically when the app starts.", "Kiểm tra ngay": "Check now",
     "Có gì mới?": "What's new?", "Đang tải thông tin phiên bản…": "Loading version information…",
@@ -41,6 +53,9 @@
     "Chỉ gỡ WinAssist": "Remove WinAssist only", "Các ứng dụng như Chrome, Discord, Steam hoặc VS Code vẫn được giữ nguyên.": "Apps such as Chrome, Discord, Steam and VS Code will remain installed.",
     "Đang kiểm tra bộ gỡ cài đặt…": "Checking the uninstaller…", "Xác nhận": "Confirm", "Xem lại thao tác": "Review action",
     "Cần cập nhật WinAssist": "WinAssist update required", "Có phiên bản mới bắt buộc": "A required update is available",
+    "Email nhận phản hồi": "Reply email", "Tôi đồng ý để WinAssist dùng email này để phản hồi ticket.": "I agree that WinAssist may use this email to reply to my ticket.",
+    "Đã kèm thông tin lỗi an toàn": "Safe error details attached", "Không bao gồm mật khẩu hoặc dữ liệu tài khoản.": "Passwords and account data are not included.",
+    "Xem mã lỗi": "View error code", "Báo lỗi này": "Report this error",
     "Bạn cần cập nhật để tiếp tục sử dụng WinAssist an toàn.": "Update WinAssist to continue using it safely.",
     "Cập nhật ngay": "Update now", "Tải bản mới nhất": "Download latest version", "Đang chờ bạn cài bản mới": "Waiting for the new version to be installed",
     "Luôn dùng WinAssist phiên bản an toàn": "Always use a supported WinAssist version",
@@ -54,6 +69,14 @@
     "Thoát hoàn toàn": "Exit completely", "Đóng WinAssist và dừng các tiến trình nền.": "Close WinAssist and stop background processes.",
     "Xác nhận gỡ ứng dụng": "Confirm uninstall", "Gỡ WinAssist khỏi máy?": "Uninstall WinAssist?", "WinAssist sẽ đóng, xóa thư mục cài đặt cùng dữ liệu riêng như lịch sử và log.": "WinAssist will close and remove its app data, including history and logs.",
     "Các tiện ích bạn đã cài sẽ không bị gỡ.": "Apps installed through WinAssist will not be removed.",
+    "Cách gỡ ứng dụng": "How to uninstall", "Bạn muốn gỡ thế nào?": "How would you like to uninstall it?",
+    "File bạn tự tạo như tài liệu, ảnh và video luôn được giữ nguyên.": "Files you created, such as documents, photos and videos, are always kept.",
+    "Chỉ gỡ ứng dụng": "Uninstall the app only", "Giữ lại cài đặt cá nhân để dùng lại sau này.": "Keep personal settings in case you reinstall it later.",
+    "Gỡ và xóa dữ liệu ứng dụng": "Uninstall and remove app data",
+    "Xóa thêm cache và cài đặt riêng đã được WinAssist kiểm tra. Không thể hoàn tác.": "Also remove reviewed cache and app settings. This cannot be undone.",
+    "Gỡ và xóa dữ liệu": "Uninstall and remove data",
+    "Gỡ sạch an toàn": "Safe clean uninstall",
+    "Dọn thêm file cài đặt còn sót và cache an toàn. Vẫn giữ dữ liệu cá nhân.": "Also clean up leftover installation files and safe caches. Personal data is kept.",
     "Bạn cần hỗ trợ gì trên Windows?": "What do you need help with on Windows?",
     "Điểm mới": "What's new", "Đã sửa": "Fixed", "An toàn": "Safety",
     "Bình thường": "All good", "Đang tải…": "Loading…", "Thử lại": "Try again", "Ngôn ngữ": "Language",
@@ -76,6 +99,10 @@
     "Văn phòng chuyên sâu": "Advanced office", "Quản trị hệ thống": "System administration",
     "Đang đọc…": "Reading…", "Đang quét…": "Scanning…", "Đang kiểm tra…": "Checking…",
     "Đang chạy kiểm tra…": "Running check…", "Đang quét ứng dụng trên máy…": "Scanning apps on this PC…",
+    "Tốc độ tải xuống": "Download speed", "Tốc độ tải lên": "Upload speed",
+    "Độ trễ (Ping)": "Response time (Ping)", "Độ dao động (Jitter)": "Connection variation (Jitter)",
+    "Càng cao càng nhanh": "Higher is faster", "Càng thấp càng phản hồi nhanh": "Lower means a faster response",
+    "Càng thấp càng ổn định": "Lower means a more stable connection",
     "Đang chuẩn bị các mục kiểm tra…": "Preparing checks…", "Đang kết nối lại theo dõi trực tiếp…": "Reconnecting live updates…",
     "Chưa kiểm tra được": "Could not check", "Chưa đọc được phiên bản hiện tại": "Could not read the current version",
     "Không đọc được thông số máy": "Could not read PC specifications", "Không có trên máy": "Not found on this PC",
@@ -165,6 +192,10 @@
       ["Đã gửi ", "Sent "],
       ["Không thể tải thông tin phiên bản: ", "Could not load version information: "],
     ];
+    if (value.startsWith("Phiên bản ") && value.includes(" · ")) {
+      const [version, detail] = value.split(" · ", 2);
+      return `Version ${version.slice("Phiên bản ".length)} · ${en[detail] || detail}`;
+    }
     const match = prefixes.find(([source]) => value.startsWith(source));
     return match ? `${match[1]}${value.slice(match[0].length)}` : value;
   }

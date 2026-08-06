@@ -23,3 +23,8 @@ Không đưa `RESEND_API_KEY` vào source code, screenshot, GitHub hoặc file `
 - Chỉ nhận PNG, JPG hoặc WebP, tối đa 5 MB.
 - Nội dung mô tả từ 10 đến 4.000 ký tự.
 - Email chỉ được đánh dấu gửi thành công khi Resend trả về thành công.
+- Email liên hệ là tùy chọn và chỉ được nhận khi người dùng tick đồng ý phản hồi.
+- Khi có email liên hệ, Worker đặt `reply_to` để nút Reply trong Gmail gửi đúng
+  tới người báo lỗi, không gửi ngược về địa chỉ Resend.
+- Thông tin action đính kèm chỉ gồm ID, loại thao tác, package, exit code,
+  timeout và phần giải thích đã giới hạn; không nhận stdout/stderr thô.

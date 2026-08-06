@@ -15,7 +15,9 @@ class SoftwareCatalogError(ValueError):
 class SoftwareCatalog:
     def __init__(self, path: Path = DEFAULT_CATALOG_PATH) -> None:
         payload = json.loads(path.read_text(encoding="utf-8"))
-        self._entries = SoftwareCatalogFile.model_validate(payload).software
+        catalog = SoftwareCatalogFile.model_validate(payload)
+        self.catalog_version = catalog.catalog_version
+        self._entries = catalog.software
 
     def list(self) -> list[SoftwareSummary]:
         return [
@@ -59,4 +61,5 @@ class SoftwareCatalog:
             display_rank=entry.display_rank,
             winget_id=entry.winget_id,
             license_note=entry.license_note,
+            cleanup_available=True,
         )

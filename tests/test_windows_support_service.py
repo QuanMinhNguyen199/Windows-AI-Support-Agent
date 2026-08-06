@@ -1,7 +1,10 @@
 import asyncio
 import json
+from pathlib import Path
 
 from app.core.command_registry import CommandRegistry
+from app.database.db import Database
+from app.database.repositories import PendingActionRepository
 from app.models.command import CommandResult
 from app.services.windows_support_service import WindowsSupportService
 
@@ -85,6 +88,22 @@ def test_open_windows_update_uses_registered_settings_command() -> None:
     assert response.success is True
     assert response.result.command_id == "windows.open_update_settings"
     assert response.result.executable == "powershell"
+
+
+def test_windows_update_install_requires_confirmation(tmp_path: Path) -> None:
+    database = Database(tmp_path / "winassist.db")
+    database.initialize()
+    service = WindowsSupportService(
+        registry=CommandRegistry(),
+        repository=PendingActionRepository(database),
+    )
+
+    response = service.request_update_install()
+
+    assert response.pending_action.kind == "windows_update"
+    assert response.pending_action.state == "pending"
+    assert response.pending_action.command_id == "windows.install_updates"
+    assert "xác nhận" in response.message
 
 
 def test_windows_update_stopped_manual_service_is_not_a_warning() -> None:

@@ -2,9 +2,10 @@ const api = window.WinAssistApi;
 const state = window.WinAssistState;
 const SUPPORT_ENDPOINT = "https://winassist-support.minhquanpro65.workers.dev/";
 const terminalStates = new Set(["completed", "failed", "cancelled", "expired"]);
-const categoryNames = { browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", entertainment: "Game & giải trí", developer_tools: "Công cụ phát triển" };
+const categoryNames = { student: "Học tập cho sinh viên", browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", entertainment: "Game & giải trí", developer_tools: "Công cụ phát triển" };
 const advancedGroupNames = { developer: "Dành cho lập trình", marketing: "Marketing & sáng tạo", office: "Văn phòng chuyên sâu", system: "Quản trị hệ thống" };
 let selectedAction = null;
+let selectedUninstallItem = null;
 let pollTimer = null;
 let pollInProgress = false;
 let softwareInventory = new Map();
@@ -19,8 +20,31 @@ let systemSpecsLoaded = false;
 let systemSpecsLoading = false;
 let updateCheckStarted = false;
 let updateProgressTimer = null;
+let pendingSupportDiagnostic = null;
 
 const byId = (id) => document.getElementById(id);
+
+function reportClientError(errorType, message, source = null, line = null) {
+  fetch("/api/debug/client-error", {
+    method: "POST",
+    keepalive: true,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      error_type: String(errorType || "JavaScriptError").slice(0, 80),
+      message: String(message || "Lỗi giao diện không xác định").slice(0, 500),
+      source: source ? String(source).split("/").pop().slice(0, 200) : null,
+      line: Number.isInteger(line) && line >= 0 ? line : null,
+    }),
+  }).catch(() => {});
+}
+
+window.addEventListener("error", (event) => {
+  reportClientError(event.error?.name, event.message, event.filename, event.lineno);
+});
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  reportClientError(reason?.name || "UnhandledPromiseRejection", reason?.message || String(reason));
+});
 
 window.WinAssistDesktop = {
   showCloseDialog() {
@@ -51,6 +75,7 @@ const iconPaths = {
   stop: ["M7 7h10v10H7z"],
   patch: ["M6 3h12v18H6z", "M9 8h6", "M9 12h6", "M9 16h4"],
   support: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18", "M9.8 9a2.3 2.3 0 1 1 3.4 2c-.8.5-1.2 1-1.2 2", "M12 17h.01"],
+  cleanup: ["M4 7h16", "M7 7l1 13h8l1-13", "M9 4h6l1 3", "M10 11v5", "M14 11v5"],
 };
 function iconSvg(name, className = "") {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -79,7 +104,7 @@ function elapsed(createdAt) {
 function switchView(name) {
   document.querySelectorAll(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${name}`));
   document.querySelectorAll(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
-  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", graphics: "Card màn hình", "windows-update": "Cập nhật Windows", activity: "Hoạt động", patches: "Cập nhật WinAssist", support: "Hỗ trợ", uninstall: "Gỡ WinAssist" }[name];
+  byId("view-title").textContent = { overview: "Tổng quan máy", chat: "Trợ lý", suggestions: "Tiện ích", diagnostics: "Chẩn đoán", cleanup: "Dọn dẹp máy", graphics: "Card màn hình", "windows-update": "Cập nhật Windows", activity: "Hoạt động", patches: "Cập nhật WinAssist", support: "Hỗ trợ", uninstall: "Gỡ WinAssist" }[name];
   if (name === "overview") loadSystemSpecs();
   if (name === "suggestions" && (!softwareViewLoaded || softwareNeedsRescan || state.activeActions.size)) {
     loadSoftware(!softwareViewLoaded, softwareNeedsRescan);
@@ -89,6 +114,7 @@ function switchView(name) {
     loadWindowsCapabilities();
   }
   if (name === "activity") loadActivity();
+  if (name === "cleanup") updateCleanupSelection();
   if (name === "patches") {
     loadLatestPatch();
     checkForUpdates();
@@ -182,7 +208,7 @@ function addChatSuggestions(suggestions) {
   const bubble = element("div", "bubble suggestion-bubble");
   bubble.append(element("p", "suggestion-title", "Bạn có thể chọn:"));
   const actions = element("div", "chat-suggestions");
-  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "graphics", "windows-update", "activity", "patches", "support"]);
+  const allowedViews = new Set(["overview", "chat", "suggestions", "diagnostics", "cleanup", "graphics", "windows-update", "activity", "patches", "support"]);
   suggestions.forEach((suggestion) => {
     if (!suggestion.message && !allowedViews.has(suggestion.view)) return;
     const button = element("button", "chat-suggestion", suggestion.label);
@@ -221,22 +247,30 @@ function openAction(action, title = "Xem lại thao tác") {
   ]);
   const gameInstallSummary = `WinAssist sẽ tải và chạy installer chính thức của ${actionName} ngay trên máy. Sau khi cài launcher, bạn có thể cần đăng nhập và tải thêm dữ liệu game.`;
   const summaries = {
-    software_install: gameInstallIds.has(action.resource_id)
-      ? gameInstallSummary
-      : `WinAssist sẽ tải và cài ${actionName} từ nguồn ứng dụng Windows đã kiểm tra.`,
+    software_install: action.resource_id === "microsoft-365"
+      ? "WinAssist sẽ cài bộ Word, Excel và PowerPoint chính thức. Bạn cần tài khoản Microsoft 365 có bản quyền; WinAssist không kích hoạt bản quyền thay bạn."
+      : (gameInstallIds.has(action.resource_id)
+        ? gameInstallSummary
+        : `WinAssist sẽ tải và cài ${actionName} từ nguồn ứng dụng Windows đã kiểm tra.`),
     software_uninstall: `WinAssist sẽ gỡ ${actionName} khỏi máy. Dữ liệu riêng của ứng dụng có thể vẫn được giữ lại.`,
+    software_purge: `WinAssist sẽ gỡ ${actionName} và dọn file cài đặt còn sót. Tài khoản, thiết lập và file cá nhân vẫn được giữ nguyên.`,
     network_repair: "WinAssist sẽ thực hiện thao tác sửa kết nối mạng này.",
+    windows_update: "WinAssist sẽ tìm, tải và cài các bản cập nhật Windows phù hợp. Máy sẽ không tự khởi động lại.",
+    system_cleanup: "WinAssist chỉ xóa những nhóm file tạm bạn đã chọn. File cá nhân và file đang dùng được giữ nguyên.",
   };
   const buttonLabels = {
     software_install: "Cài đặt",
     software_uninstall: "Gỡ cài đặt",
+    software_purge: "Gỡ sạch an toàn",
     network_repair: "Thực hiện",
+    windows_update: "Bắt đầu cập nhật",
+    system_cleanup: "Xác nhận dọn dẹp",
   };
   byId("action-summary").textContent = summaries[action.kind] || "WinAssist sẽ thực hiện thay đổi này trên máy.";
   byId("command-text").textContent = action.display_command;
   byId("command-warning").textContent = action.warning;
   byId("confirm-command").textContent = buttonLabels[action.kind] || "Tiếp tục";
-  byId("confirm-command").className = action.kind === "software_uninstall" ? "danger" : "primary";
+  byId("confirm-command").className = ["software_uninstall", "software_purge"].includes(action.kind) ? "danger" : "primary";
   byId("action-dialog").querySelector("details").open = false;
   byId("action-dialog").showModal();
 }
@@ -256,9 +290,16 @@ async function pollActions() {
             `${status.action.resource_id}: ${status.message}`,
             succeeded ? "success" : "error",
           );
-          if (status.action.kind === "software_install" || status.action.kind === "software_uninstall") {
+          if (["software_install", "software_uninstall", "software_purge"].includes(status.action.kind)) {
             rescanSoftware = true;
             softwareNeedsRescan = true;
+          }
+          if (status.action.kind === "windows_update" && document.querySelector("#view-windows-update.active")) {
+            byId("open-windows-update").disabled = false;
+            await scanWindowsUpdate();
+          }
+          if (status.action.kind === "system_cleanup" && document.querySelector("#view-cleanup.active")) {
+            await scanCleanup();
           }
         }
       } catch { state.finishAction(id); }
@@ -279,13 +320,17 @@ function startPolling() {
 async function checkHealth() {
   try {
     const health = await api.health();
-    byId("backend-status").textContent = `Backend ${health.version} hoạt động`;
+    byId("backend-status").textContent = "WinAssist đã sẵn sàng";
+    byId("backend-status").title = `Phiên bản ${health.version}`;
     byId("backend-dot").className = "status-dot online";
-    byId("ollama-status").textContent = health.ollama.status === "available"
-      ? "Trợ lý: sẵn sàng"
-      : "Trợ lý: chế độ cơ bản";
+    const availableHelp = health.ollama.status === "available"
+      ? "Có thể trò chuyện và hỗ trợ máy"
+      : "Có thể kiểm tra và cài ứng dụng";
+    byId("ollama-status").textContent = `Phiên bản ${health.version} · ${availableHelp}`;
   } catch {
-    byId("backend-status").textContent = "Backend không kết nối";
+    byId("backend-status").textContent = "WinAssist chưa sẵn sàng";
+    byId("backend-status").title = "";
+    byId("ollama-status").textContent = "Hãy chờ một chút hoặc mở lại ứng dụng";
     byId("backend-dot").className = "status-dot offline";
   }
 }
@@ -336,7 +381,7 @@ async function loadSoftware(showLoading = true, rescan = true) {
       });
     root.replaceChildren();
     const advancedOrder = ["developer", "marketing", "office", "system"];
-    const generalOrder = ["browsers", "utilities", "office_pdf", "media", "entertainment"];
+    const generalOrder = ["student", "browsers", "utilities", "office_pdf", "media", "entertainment"];
     const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
       const order = selectedAudience === "advanced" ? advancedOrder : generalOrder;
       return order.indexOf(left) - order.indexOf(right);
@@ -677,7 +722,10 @@ function softwareCard(item, active, inventory) {
   remove.append(iconSvg("trash"), element("span", "", "Gỡ"));
   remove.title = `Gỡ ${item.display_name}`;
   remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => prepareSoftware(item, "uninstall"));
+  remove.addEventListener("click", () => {
+    if (item.cleanup_available) openUninstallChoice(item);
+    else prepareSoftware(item, "uninstall");
+  });
   remove.disabled = !inventory?.installed || Boolean(active);
   actions.append(install, remove);
   if (active) {
@@ -729,7 +777,9 @@ function softwareCard(item, active, inventory) {
 
 async function prepareSoftware(item, operation) {
   try {
-    const result = operation === "install" ? await api.installSoftware(item.id) : await api.uninstallSoftware(item.id);
+    const result = operation === "install"
+      ? await api.installSoftware(item.id)
+      : (operation === "purge" ? await api.purgeSoftware(item.id) : await api.uninstallSoftware(item.id));
     if (result.pending_action) openAction(result.pending_action, `${operation === "install" ? "Cài" : "Gỡ"} ${item.display_name}`);
     else {
       addMessage(result.message);
@@ -737,6 +787,14 @@ async function prepareSoftware(item, operation) {
       await loadSoftware(true, true);
     }
   } catch (error) { addMessage(`Không thể chuẩn bị thao tác: ${error.message}`); switchView("chat"); }
+}
+
+function openUninstallChoice(item) {
+  selectedUninstallItem = item;
+  byId("uninstall-choice-title").textContent = `Gỡ ${item.display_name}`;
+  const normal = document.querySelector('input[name="uninstall-choice"][value="uninstall"]');
+  if (normal) normal.checked = true;
+  byId("uninstall-choice-dialog").showModal();
 }
 
 async function loadRepairs() {
@@ -784,6 +842,77 @@ async function loadWindowsCapabilities() {
     }));
   } catch (error) {
     root.replaceChildren(element("p", "error-text", error.message));
+  }
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 MB";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${new Intl.NumberFormat(window.WinAssistI18n?.language === "en" ? "en-US" : "vi-VN", { maximumFractionDigits: unit < 2 ? 0 : 1 }).format(value)} ${units[unit]}`;
+}
+
+function updateCleanupSelection() {
+  const selected = [...document.querySelectorAll("[data-cleanup-category]:checked")];
+  const bytes = selected.reduce((total, input) => total + Number(input.dataset.bytes || 0), 0);
+  byId("cleanup-total").textContent = selected.length
+    ? `Đã chọn ${selected.length} mục · khoảng ${formatBytes(bytes)}`
+    : "Chưa chọn mục nào";
+  byId("request-cleanup").disabled = selected.length === 0;
+}
+
+async function scanCleanup() {
+  const button = byId("scan-cleanup");
+  const root = byId("cleanup-result");
+  button.disabled = true;
+  button.textContent = "Đang quét…";
+  root.replaceChildren(element("div", "inventory-loading", "Đang tìm file tạm an toàn…"));
+  try {
+    const response = await api.scanCleanup();
+    const fragment = document.createDocumentFragment();
+    response.categories.forEach((category) => {
+      const label = element("label", "cleanup-option");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.cleanupCategory = category.id;
+      input.dataset.bytes = category.bytes;
+      input.disabled = category.file_count === 0;
+      input.addEventListener("change", updateCleanupSelection);
+      const copy = element("span", "cleanup-option-copy");
+      copy.append(
+        element("strong", "", category.title),
+        element("span", "", category.description),
+        element("small", "", category.file_count
+          ? `${category.file_count} file · ${formatBytes(category.bytes)}`
+          : "Không có file cần dọn"),
+      );
+      label.append(input, copy);
+      fragment.append(label);
+    });
+    root.replaceChildren(fragment);
+    updateCleanupSelection();
+  } catch (error) {
+    root.replaceChildren(element("div", "driver-notice", `Không thể quét file tạm: ${error.message}`));
+  } finally {
+    button.disabled = false;
+    button.textContent = "Quét lại";
+  }
+}
+
+async function requestCleanup() {
+  const categories = [...document.querySelectorAll("[data-cleanup-category]:checked")]
+    .map((input) => input.dataset.cleanupCategory);
+  if (!categories.length) return;
+  try {
+    const response = await api.requestCleanup(categories);
+    openAction(response.pending_action, "Dọn file tạm");
+  } catch (error) {
+    showToast(`Không thể chuẩn bị dọn dẹp: ${error.message}`, "error");
   }
 }
 
@@ -969,15 +1098,21 @@ async function scanWindowsUpdate() {
   }
 }
 
-async function openWindowsUpdate() {
+async function installWindowsUpdates() {
   const button = byId("open-windows-update");
   button.disabled = true;
   try {
-    const response = await api.openWindowsUpdate();
-    showToast(response.message, response.success ? "success" : "error");
+    const response = await api.installWindowsUpdates();
+    openAction(response.pending_action, "Cập nhật Windows");
   } catch (error) {
-    showToast(`Không thể mở Windows Update: ${error.message}`, "error");
+    showToast(`Chưa thể chuẩn bị cập nhật: ${error.message}`, "error");
   } finally { button.disabled = false; }
+}
+
+function formatNetworkNumber(value, maximumFractionDigits = 1) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+  const locale = window.WinAssistI18n?.language === "en" ? "en-US" : "vi-VN";
+  return new Intl.NumberFormat(locale, { maximumFractionDigits }).format(Number(value));
 }
 
 async function runDiagnostic(type, button) {
@@ -990,7 +1125,16 @@ async function runDiagnostic(type, button) {
     panel.replaceChildren(element("h3", "", result.summary || result.message));
     if (result.measurement) {
       const metrics = element("div", "metrics");
-      [["Download", `${result.measurement.download_mbps ?? "—"} Mbps`], ["Upload", `${result.measurement.upload_mbps ?? "—"} Mbps`], ["Ping", `${result.measurement.ping_ms ?? "—"} ms`], ["Jitter", `${result.measurement.jitter_ms ?? "—"} ms`]].forEach(([key, value]) => { const metric = element("div", "metric"); metric.append(element("small", "", key), element("strong", "", value)); metrics.append(metric); });
+      [
+        ["Tốc độ tải xuống", `${formatNetworkNumber(result.measurement.download_mbps)} Mbps`, "Càng cao càng nhanh"],
+        ["Tốc độ tải lên", `${formatNetworkNumber(result.measurement.upload_mbps)} Mbps`, "Càng cao càng nhanh"],
+        ["Độ trễ (Ping)", `${formatNetworkNumber(result.measurement.ping_ms)} ms`, "Càng thấp càng phản hồi nhanh"],
+        ["Độ dao động (Jitter)", `${formatNetworkNumber(result.measurement.jitter_ms)} ms`, "Càng thấp càng ổn định"],
+      ].forEach(([key, value, hint]) => {
+        const metric = element("div", "metric");
+        metric.append(element("small", "", key), element("strong", "", value), element("span", "metric-hint", hint));
+        metrics.append(metric);
+      });
       panel.append(metrics);
     }
     (result.findings || []).forEach((finding) => panel.append(element("p", "", `${finding.title}: ${finding.detail}`)));
@@ -1017,10 +1161,84 @@ async function runDiagnostic(type, button) {
 }
 function showDiagnosticError(error) { const panel = byId("diagnostic-result"); panel.hidden = false; panel.replaceChildren(element("p", "error-text", `Không thể chạy: ${error.message}`)); }
 
+function activityTitle(item, catalogNames) {
+  const resource = item.action.resource_id;
+  const appName = catalogNames.get(resource)
+    || resource.replace(/^cleanup:/, "").replaceAll("-", " ");
+  const titles = {
+    software_install: `Cài ${appName}`,
+    software_uninstall: `Gỡ ${appName}`,
+    software_purge: `Gỡ sạch ${appName}`,
+    windows_update: "Cập nhật Windows",
+    system_cleanup: "Dọn file tạm",
+  };
+  if (titles[item.action.kind]) return titles[item.action.kind];
+  if (item.action.kind === "network_repair") {
+    return {
+      "flush-dns": "Làm mới kết nối tên miền",
+      "release-ip": "Làm mới địa chỉ mạng",
+      "renew-ip": "Xin lại địa chỉ mạng",
+    }[resource] || "Sửa kết nối mạng";
+  }
+  return "Thao tác trên máy";
+}
+
+function activityMessage(item) {
+  if (item.action.state === "expired") {
+    return "Bạn chưa xác nhận kịp thời nên WinAssist đã tự hủy yêu cầu. Máy không bị thay đổi.";
+  }
+  if (item.action.state === "cancelled") return "Yêu cầu đã được hủy. Máy không bị thay đổi thêm.";
+  if (item.action.state === "completed" && item.message === "Thao tác đã hoàn tất.") {
+    return {
+      software_install: "Ứng dụng đã được cài và WinAssist đã kiểm tra lại trạng thái.",
+      software_uninstall: "Ứng dụng đã được gỡ và WinAssist đã kiểm tra lại trạng thái.",
+      software_purge: "Ứng dụng và các dữ liệu an toàn đã chọn đã được dọn.",
+      network_repair: "Đã hoàn thành thao tác sửa kết nối mạng.",
+      windows_update: "Windows đã hoàn thành tác vụ cập nhật. Hãy xem tab Cập nhật Windows để biết có cần khởi động lại không.",
+      system_cleanup: "Đã dọn xong các nhóm file tạm bạn chọn.",
+    }[item.action.kind] || "Thao tác đã hoàn tất.";
+  }
+  return item.message;
+}
+
+function activityTechnicalDetails(item) {
+  const details = element("details", "technical-details activity-technical-details");
+  details.append(element("summary", "", "Thông tin kỹ thuật"));
+  const list = element("dl", "activity-debug-list");
+  const add = (label, value) => {
+    list.append(element("dt", "", label), element("dd", "", String(value)));
+  };
+  add("Mã hành động", item.action.id);
+  add("Loại thao tác", item.action.kind);
+  add("Mã lệnh", item.action.command_id);
+  if (item.result) {
+    add("Kết quả", item.result.exit_code ?? "Không có mã trả về");
+    if (item.result.timed_out) add("Thời gian", "Đã quá thời gian chờ");
+  }
+  details.append(list);
+  const commandDetails = element("details", "activity-command-details");
+  commandDetails.append(
+    element("summary", "", "Xem lệnh hệ thống"),
+    element("code", "activity-command", item.action.display_command),
+  );
+  details.append(commandDetails);
+  if (item.result?.stderr) {
+    const errorDetails = element("details", "activity-command-details");
+    errorDetails.append(
+      element("summary", "", "Chi tiết lỗi"),
+      element("code", "activity-command", item.result.stderr.slice(0, 2000)),
+    );
+    details.append(errorDetails);
+  }
+  return details;
+}
+
 async function loadActivity() {
   const root = byId("activity-list");
   try {
     const actions = await api.actions();
+    const catalog = await api.software().catch(() => []);
+    const catalogNames = new Map(catalog.map((software) => [software.id, software.display_name]));
     if (!actions.length) { root.replaceChildren(element("div", "empty-state", "Chưa có hoạt động nào.")); return; }
     const stateNames = {
       pending: "Chờ xác nhận",
@@ -1034,7 +1252,32 @@ async function loadActivity() {
     root.replaceChildren(...actions.map((item) => {
       const row = element("article", "activity-row");
       const info = element("div");
-      info.append(element("strong", "", item.action.display_command), element("p", "muted", `${item.message} · ${elapsed(item.action.created_at)}`));
+      const created = new Date(item.action.created_at).toLocaleString(
+        window.WinAssistI18n?.language === "en" ? "en-US" : "vi-VN",
+        { dateStyle: "short", timeStyle: "short" },
+      );
+      info.append(
+        element("strong", "activity-title", activityTitle(item, catalogNames)),
+        element("p", "activity-message", activityMessage(item)),
+        element("p", "muted activity-time", `Bắt đầu lúc ${created} · cách đây ${elapsed(item.action.created_at)}`),
+      );
+      if (item.failure_summary) {
+        const explanation = element("div", "activity-failure");
+        explanation.append(element("strong", "", item.failure_summary));
+        (item.failure_suggestions || []).forEach((suggestion) => explanation.append(element("p", "", suggestion)));
+        const failureActions = element("div", "activity-failure-actions");
+        const details = element("details", "technical-details");
+        details.append(
+          element("summary", "", "Xem mã lỗi"),
+          element("code", "", `Exit code: ${item.result?.exit_code ?? "không có"}${item.result?.timed_out ? " · quá thời gian" : ""}`),
+        );
+        const report = element("button", "secondary", "Báo lỗi này");
+        report.addEventListener("click", () => prepareFailedActionReport(item));
+        failureActions.append(details, report);
+        explanation.append(failureActions);
+        info.append(explanation);
+      }
+      info.append(activityTechnicalDetails(item));
       const badge = element("span", `badge ${item.action.state}`, stateNames[item.action.state] || item.action.state);
       row.append(info, badge);
       if (item.indeterminate) { const progress = element("div", "progress wide"); progress.append(element("span", "indeterminate")); row.append(progress); }
@@ -1043,13 +1286,41 @@ async function loadActivity() {
   } catch (error) { root.replaceChildren(element("p", "error-text", error.message)); }
 }
 
+function prepareFailedActionReport(item) {
+  pendingSupportDiagnostic = {
+    action_id: item.action.id,
+    action_kind: item.action.kind,
+    resource_id: item.action.resource_id,
+    command_id: item.result?.command_id || item.action.command_id,
+    exit_code: item.result?.exit_code ?? null,
+    timed_out: Boolean(item.result?.timed_out),
+    failure_summary: item.failure_summary || "Thao tác không hoàn tất.",
+  };
+  byId("support-issue-type").value = ["software_uninstall", "software_purge"].includes(item.action.kind) ? "uninstall" : "install";
+  byId("support-description").value = `Tôi gặp lỗi khi dùng WinAssist: ${pendingSupportDiagnostic.failure_summary}\n\nMô tả thêm: `;
+  byId("support-diagnostic-note").hidden = false;
+  switchView("support");
+  byId("support-description").focus();
+}
+
 document.querySelectorAll(".nav-item").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
 document.querySelectorAll("[data-view-target]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.viewTarget)));
 document.querySelectorAll("[data-message]").forEach((button) => button.addEventListener("click", () => { byId("message-input").value = button.dataset.message; byId("message-input").focus(); }));
 document.querySelectorAll(".diagnostic-run").forEach((button) => button.addEventListener("click", () => runDiagnostic(button.dataset.diagnostic, button)));
 byId("scan-graphics-driver").addEventListener("click", scanGraphicsDriver);
 byId("scan-windows-update").addEventListener("click", scanWindowsUpdate);
-byId("open-windows-update").addEventListener("click", openWindowsUpdate);
+byId("scan-cleanup").addEventListener("click", scanCleanup);
+byId("request-cleanup").addEventListener("click", requestCleanup);
+byId("open-windows-update").addEventListener("click", installWindowsUpdates);
+byId("confirm-uninstall-choice").addEventListener("click", async (event) => {
+  event.preventDefault();
+  if (!selectedUninstallItem) return;
+  const choice = document.querySelector('input[name="uninstall-choice"]:checked')?.value || "uninstall";
+  const item = selectedUninstallItem;
+  selectedUninstallItem = null;
+  byId("uninstall-choice-dialog").close();
+  await prepareSoftware(item, choice);
+});
 byId("check-update").addEventListener("click", () => checkForUpdates(true));
 byId("required-update-dialog").addEventListener("cancel", (event) => event.preventDefault());
 byId("refresh-software").addEventListener("click", () => loadSoftware(true, true));
@@ -1120,11 +1391,21 @@ byId("message-input").addEventListener("keydown", (event) => {
 byId("confirm-command").addEventListener("click", async (event) => {
   event.preventDefault();
   if (!selectedAction) return;
+  const confirmedAction = selectedAction;
   try {
-    const response = await api.confirmAction(selectedAction.id);
-    state.trackAction(selectedAction.id);
+    const response = await api.confirmAction(confirmedAction.id);
+    state.trackAction(confirmedAction.id);
     addMessage(response.message);
     byId("action-dialog").close();
+    if (confirmedAction.kind === "windows_update") {
+      const target = byId("windows-update-result");
+      byId("open-windows-update").disabled = true;
+      target.replaceChildren(
+        element("div", "loader"),
+        element("strong", "", "Windows đang cập nhật…"),
+        element("p", "muted", "Bạn có thể tiếp tục dùng WinAssist. Không cần mở hoặc đóng cửa sổ nào khác."),
+      );
+    }
     if (document.querySelector("#view-suggestions.active")) await loadSoftware(false, false);
     if (document.querySelector("#view-activity.active")) await loadActivity();
     startPolling();
@@ -1196,6 +1477,14 @@ function readAttachment(file) {
   });
 }
 
+const supportEmail = byId("support-email");
+supportEmail.addEventListener("input", () => {
+  const hasEmail = Boolean(supportEmail.value.trim());
+  byId("support-reply-consent-row").hidden = !hasEmail;
+  byId("support-reply-consent").required = hasEmail;
+  if (!hasEmail) byId("support-reply-consent").checked = false;
+});
+
 byId("support-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -1220,6 +1509,9 @@ byId("support-form").addEventListener("submit", async (event) => {
       body: JSON.stringify({
         issue_type: byId("support-issue-type").value,
         description: byId("support-description").value.trim(),
+        contact_email: supportEmail.value.trim() || null,
+        consent_to_reply: byId("support-reply-consent").checked,
+        diagnostic: pendingSupportDiagnostic,
         website: byId("support-website").value,
         attachment,
       }),
@@ -1228,10 +1520,15 @@ byId("support-form").addEventListener("submit", async (event) => {
     if (!response.ok || !body.ticket_id) throw new Error(body.error || "Máy chủ hỗ trợ chưa sẵn sàng.");
     result.replaceChildren(
       element("h3", "", `Đã gửi ${body.ticket_id}`),
-      element("p", "", "Hãy lưu mã này để đối chiếu khi cần hỗ trợ tiếp."),
+      element("p", "", body.reply_available
+        ? "WinAssist sẽ phản hồi qua email bạn đã cung cấp. Hãy lưu mã ticket để đối chiếu."
+        : "Hãy lưu mã này để đối chiếu khi cần hỗ trợ tiếp."),
     );
     result.hidden = false;
     form.reset();
+    pendingSupportDiagnostic = null;
+    byId("support-diagnostic-note").hidden = true;
+    byId("support-reply-consent-row").hidden = true;
   } catch (error) {
     showToast(`Không thể gửi báo cáo: ${error.message}`, "error");
   } finally {

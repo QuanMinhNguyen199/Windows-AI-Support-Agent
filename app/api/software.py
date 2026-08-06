@@ -110,3 +110,14 @@ async def uninstall_software(
         return await service.request_uninstall(request.software_id)
     except SoftwareCatalogError as exc:
         raise _catalog_error(exc) from exc
+
+
+@router.post("/purge", response_model=SoftwareInstallResponse)
+async def purge_software(
+    request: SoftwareRequest,
+    service: SoftwareService = Depends(get_software_service),
+) -> SoftwareInstallResponse:
+    try:
+        return await service.request_purge(request.software_id)
+    except SoftwareCatalogError as exc:
+        raise _catalog_error(exc) from exc

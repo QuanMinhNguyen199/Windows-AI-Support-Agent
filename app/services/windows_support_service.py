@@ -4,12 +4,15 @@ from typing import Any, Protocol
 
 from app.core.command_registry import CommandRegistry
 from app.core.command_runner import CommandRunner
+from app.database.repositories import PendingActionRepository
+from app.models.actions import ActionKind
 from app.models.command import CommandDefinition, CommandResult
 from app.models.windows_support import (
     CapabilityState,
     WindowsCapability,
     WindowsActionResponse,
     WindowsOverviewResponse,
+    WindowsUpdateRequestResponse,
 )
 
 
@@ -35,9 +38,11 @@ class WindowsSupportService:
         self,
         runner: Runner | None = None,
         registry: CommandRegistry | None = None,
+        repository: PendingActionRepository | None = None,
     ) -> None:
         self.registry = registry or CommandRegistry()
         self.runner = runner or CommandRunner(registry=self.registry)
+        self.repository = repository
 
     def list_capabilities(self) -> list[dict[str, str]]:
         return [
@@ -103,6 +108,23 @@ class WindowsSupportService:
                 else "Không mở được Windows Update Settings."
             ),
             result=result,
+        )
+
+    def request_update_install(self) -> WindowsUpdateRequestResponse:
+        if self.repository is None:
+            raise RuntimeError("Kho thao tác Windows chưa được khởi tạo.")
+        record = self.repository.create(
+            resource_id="windows-updates",
+            kind=ActionKind.WINDOWS_UPDATE,
+            definition=self.registry.get("windows.install_updates"),
+            warning=(
+                "Windows sẽ xin quyền quản trị, tải và cài mọi bản cập nhật phù hợp "
+                "đang chờ. Hãy lưu công việc; WinAssist sẽ không tự khởi động lại máy."
+            ),
+        )
+        return WindowsUpdateRequestResponse(
+            pending_action=self.repository.public(record),
+            message="Đã chuẩn bị cập nhật; chưa có thay đổi nào trước khi bạn xác nhận.",
         )
 
     def _analyze(
