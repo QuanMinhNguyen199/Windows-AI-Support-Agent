@@ -38,12 +38,15 @@ jobs:
           $installer = Get-ChildItem dist/installer/WinAssist-*-Setup.exe | Select-Object -First 1
           $install = Start-Process -FilePath $installer.FullName -ArgumentList @(
             "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART",
-            "/DIR=`"$smokeDir`"", "/LOG=`"$installLog`""
+            "/DIR=`"$smokeDir`"", "/LOG=`"$installLog`"",
+            "/MERGETASKS=desktopicon", "/UPDATE=1"
           ) -Wait -PassThru
           if ($install.ExitCode -ne 0 -or -not (Test-Path (Join-Path $smokeDir "WinAssist.exe"))) {
             if (Test-Path $installLog) { Get-Content $installLog }
             throw "Installer smoke test failed."
           }
+          $desktopShortcut = Join-Path ([Environment]::GetFolderPath("Desktop")) "WinAssist.lnk"
+          if (-not (Test-Path $desktopShortcut)) { throw "Desktop shortcut was not preserved." }
           $uninstaller = Join-Path $smokeDir "unins000.exe"
           $uninstall = Start-Process -FilePath $uninstaller -ArgumentList @(
             "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/PURGEDATA=1"
@@ -53,6 +56,7 @@ jobs:
             Start-Sleep -Milliseconds 250
           }
           if (Test-Path $smokeDir) { throw "Uninstaller left installation files behind." }
+          if (Test-Path $desktopShortcut) { throw "Uninstaller left the desktop shortcut behind." }
       - name: Create SHA-256 checksum
         shell: pwsh
         run: |

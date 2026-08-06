@@ -54,3 +54,11 @@ def test_successful_request_is_not_stored_in_debug_log() -> None:
     log_text = Path("data/logs/debug-errors.jsonl").read_text(encoding="utf-8")
     assert marker not in log_text
     assert '"status_code": 200' not in log_text
+
+
+def test_silent_update_preserves_desktop_shortcut() -> None:
+    installer = Path("packaging/WinAssist.iss").read_text(encoding="utf-8")
+    desktop = Path("app/desktop.py").read_text(encoding="utf-8")
+
+    assert "ShouldCreateDesktopShortcut" in installer
+    assert "/MERGETASKS=desktopicon" in desktop

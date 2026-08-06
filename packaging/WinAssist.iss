@@ -34,7 +34,7 @@ Source: "MicrosoftEdgeWebview2Setup.exe"; DestDir: "{tmp}"; Flags: deleteafterin
 
 [Icons]
 Name: "{group}\WinAssist"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\WinAssist"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\WinAssist"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Check: ShouldCreateDesktopShortcut
 
 [Tasks]
 Name: "desktopicon"; Description: "Tạo biểu tượng ngoài Desktop"; GroupDescription: "Biểu tượng bổ sung:"
@@ -55,5 +55,11 @@ end;
 function ShouldLaunchWinAssist(): Boolean;
 begin
   Result := (not WizardSilent) or
+    (CompareText(ExpandConstant('{param:UPDATE|0}'), '1') = 0);
+end;
+
+function ShouldCreateDesktopShortcut(): Boolean;
+begin
+  Result := WizardIsTaskSelected('desktopicon') or
     (CompareText(ExpandConstant('{param:UPDATE|0}'), '1') = 0);
 end;

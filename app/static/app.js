@@ -20,6 +20,7 @@ let systemSpecsLoaded = false;
 let systemSpecsLoading = false;
 let updateCheckStarted = false;
 let updateProgressTimer = null;
+let updateRetryTimer = null;
 let pendingSupportDiagnostic = null;
 
 const byId = (id) => document.getElementById(id);
@@ -493,6 +494,8 @@ async function checkForUpdates(showLoading = true) {
   }
   try {
     const status = await api.updateStatus();
+    clearTimeout(updateRetryTimer);
+    updateRetryTimer = null;
     if (status.update_required) showRequiredUpdate(status);
     const text = element("div");
     text.append(
@@ -519,7 +522,11 @@ async function checkForUpdates(showLoading = true) {
       root.append(retry);
     }
   } catch (error) {
+    updateCheckStarted = false;
     root.firstElementChild?.querySelector("p")?.replaceChildren(`Không thể kiểm tra cập nhật: ${error.message}`);
+    if (!showLoading && !updateRetryTimer) {
+      updateRetryTimer = setTimeout(() => checkForUpdates(false), 30000);
+    }
   } finally {
     button.disabled = false;
     button.textContent = "Kiểm tra ngay";

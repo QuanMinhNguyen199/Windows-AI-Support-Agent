@@ -46,6 +46,10 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 - Website giới thiệu sản phẩm theo đúng trình tự sử dụng và dùng câu dễ hiểu hơn.
 - Website hiển thị đúng nội dung **Có gì mới?** và ngày phát hành của `0.11.1`,
   không còn giữ ba dòng mô tả từ phiên bản trước.
+- Bản vá thay thế installer `0.11.1`: cập nhật ẩn luôn tạo lại shortcut WinAssist
+  ngoài Desktop, không còn làm mất biểu tượng sau khi nâng cấp.
+- Nếu lần kiểm tra phiên bản lúc mở app bị lỗi tạm thời, WinAssist tự thử lại;
+  từ `0.11.1`, phiên bản cũ hơn bản mới tiếp theo sẽ hiện cửa sổ cập nhật bắt buộc.
 
 ### An toàn và dữ liệu
 

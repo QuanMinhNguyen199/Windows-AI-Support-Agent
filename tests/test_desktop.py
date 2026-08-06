@@ -158,6 +158,7 @@ def test_desktop_controller_installs_verified_update_and_exits(tmp_path, monkeyp
     update_script = base64.b64decode(calls[0][-1]).decode("utf-16-le")
     assert "/VERYSILENT" in update_script
     assert "/UPDATE=1" in update_script
+    assert "/MERGETASKS=desktopicon" in update_script
     assert "Wait-Process" in update_script
     assert controller.exit_requested is True
     assert window.destroyed is True
@@ -174,6 +175,7 @@ def test_delayed_update_runs_hidden_without_setup_wizard(tmp_path) -> None:
     assert "/VERYSILENT" in script
     assert "/SP-" in script
     assert "/NORESTART" in script
+    assert "/MERGETASKS=desktopicon" in script
 
 
 def test_loopback_port_check_detects_collision() -> None:

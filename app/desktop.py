@@ -154,7 +154,7 @@ def delayed_update_command(installer: Path, process_id: int) -> list[str]:
         f"Wait-Process -Id {process_id} -ErrorAction SilentlyContinue;"
         f"$setup=Start-Process -FilePath '{escaped_installer}' "
         "-ArgumentList @('/VERYSILENT','/SP-','/SUPPRESSMSGBOXES','/NORESTART',"
-        "'/CLOSEAPPLICATIONS','/UPDATE=1') -Wait -PassThru;"
+        "'/CLOSEAPPLICATIONS','/MERGETASKS=desktopicon','/UPDATE=1') -Wait -PassThru;"
         "if($setup.ExitCode -ne 0){exit $setup.ExitCode}"
     )
     encoded_script = base64.b64encode(script.encode("utf-16-le")).decode("ascii")

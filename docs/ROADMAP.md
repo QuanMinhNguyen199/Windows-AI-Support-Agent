@@ -30,6 +30,8 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
 - [x] Bản `0.11.1` hoàn thiện đợt đầu Giai đoạn 10: dọn file tạm an toàn, mở
   rộng Tiện ích, cải thiện Hoạt động, nhật ký lỗi và trải nghiệm cập nhật.
 - [x] Website đồng bộ thẻ **Có gì mới?** và ngày phát hành với bản `0.11.1`.
+- [x] Bản vá `0.11.1` giữ/tạo lại shortcut Desktop khi cập nhật ẩn và tự thử lại
+  việc kiểm tra phiên bản nếu lần kiểm tra lúc khởi động thất bại.
 
 ## Hiện trạng
 

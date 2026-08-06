@@ -44,6 +44,8 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 Tiện ích và làm rõ kết quả kiểm tra cho người dùng phổ thông. Bản này vẫn giữ
 cơ chế cập nhật bắt buộc cho phiên bản cũ; bản mới được tải ngay trong ứng dụng,
 có tiến trình, nút hủy và bước kiểm tra SHA-256 trước khi cài.
+Khi cập nhật ẩn, WinAssist giữ lại biểu tượng ngoài Desktop và tự mở lại sau khi
+cài xong.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
 - [Xem thay đổi của phiên bản](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest)
