@@ -17,8 +17,6 @@ async function updateRelease() {
       const installer = item.assets.find((asset) => asset.name === "WinAssist-Setup.exe");
       return total + (installer?.download_count || 0);
     }, 0);
-    title.textContent = `WinAssist ${release.tag_name}`;
-    date.textContent = new Intl.DateTimeFormat("vi-VN", { day: "numeric", month: "long", year: "numeric" }).format(new Date(release.published_at));
     if (hasInstaller) {
       download.querySelector("span").textContent = `Tải WinAssist ${release.tag_name}`;
       download.href = stableDownload;
@@ -27,8 +25,8 @@ async function updateRelease() {
       count.lastChild.textContent = ` ${new Intl.NumberFormat("vi-VN").format(totalDownloads)} lượt tải WinAssist`;
     }
   } catch (_error) {
-    title.textContent = "Phiên bản Community Beta";
-    date.textContent = "Bạn vẫn có thể tải bản ổn định gần nhất.";
+    title.textContent = "WinAssist 0.10.0";
+    date.textContent = "Bản thay đổi lớn gần nhất";
   }
 }
 

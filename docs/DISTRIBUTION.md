@@ -54,6 +54,12 @@ https://quanminhnguyen199.github.io/Windows-AI-Support-Agent/
 
 ## Tạo bản phát hành
 
+Không tạo release riêng cho sửa lỗi nhỏ, chỉnh chữ hoặc tinh chỉnh giao diện.
+Những thay đổi này được gom vào chu kỳ hiện tại và không làm tăng số phiên bản.
+Chỉ phát hành khi có thay đổi đáng kể cho người dùng. Trước khi tạo tag, phải
+hoàn thiện và duyệt mục `Bản kế tiếp` trong `docs/RELEASE_NOTES.md`; sau khi phát
+hành mới đồng bộ nội dung đã duyệt sang Patch Notes trong ứng dụng.
+
 Mỗi phiên bản được phát hành bằng tag tương ứng, ví dụ:
 
 ```powershell

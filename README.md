@@ -48,6 +48,10 @@ Từ `0.10.0`, WinAssist tải bản mới ở nền, kiểm tra SHA-256 rồi t
 mở lại. Người dùng `0.9.9` cần cài `0.10.0` thủ công một lần để nhận updater mới.
 Hotfix `0.10.1` cũng sửa luồng gỡ cài đặt để không còn sót file đang bị Windows khóa.
 
+Các bản vá nhỏ được gom vào chu kỳ phát triển hiện tại, không tạo Patch Note và
+không tăng phiên bản riêng. Chỉ bản có thay đổi đáng kể mới được lập nội dung tại
+[`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md), duyệt xong rồi mới phát hành.
+
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản ngay trên trang; người dùng phổ thông không cần mở GitHub.
 Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu

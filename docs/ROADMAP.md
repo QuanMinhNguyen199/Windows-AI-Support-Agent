@@ -22,6 +22,9 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
   change hoặc bản phát hành mới.
 - Các tinh chỉnh UI nhỏ được ghi ngắn trong README/ROADMAP, không tăng phiên bản
   và không thêm release note riêng.
+- Bản vá nhỏ được gom vào bản phát hành lớn kế tiếp; không tạo tag, release hoặc
+  Patch Note riêng. Mọi bản phát hành đáng kể phải soạn và duyệt
+  `docs/RELEASE_NOTES.md` trước khi tạo tag.
 
 ## Hiện trạng
 
