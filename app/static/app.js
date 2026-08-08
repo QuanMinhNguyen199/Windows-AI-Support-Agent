@@ -15,6 +15,10 @@ let softwareNeedsRescan = false;
 let softwareEventSource = null;
 let softwareEventDebounce = null;
 let selectedAudience = "general";
+let softwareCatalog = [];
+let activeSoftwareActions = new Map();
+let softwareSearchQuery = "";
+let softwareSearchTimer = null;
 let patchNotesLoaded = false;
 let systemSpecsLoaded = false;
 let systemSpecsLoading = false;
@@ -22,6 +26,8 @@ let updateCheckStarted = false;
 let updateProgressTimer = null;
 let updateRetryTimer = null;
 let pendingSupportDiagnostic = null;
+let latestHealth = null;
+let localAiPromptShown = false;
 
 const byId = (id) => document.getElementById(id);
 
@@ -121,6 +127,57 @@ function switchView(name) {
     checkForUpdates();
   }
   if (name === "uninstall") loadUninstallStatus();
+  if (name === "chat") promptForLocalAi();
+}
+
+function promptForLocalAi() {
+  if (localAiPromptShown || latestHealth?.ollama?.status === "available") return;
+  localAiPromptShown = true;
+  const dialog = byId("local-ai-dialog");
+  const bridge = window.pywebview?.api;
+  if (!dialog || dialog.open || !bridge) return;
+  byId("local-ai-message").textContent = latestHealth?.ollama?.detail
+    || "Chưa kiểm tra được trạng thái Ollama và model AI.";
+  dialog.showModal();
+}
+
+async function installLocalAi() {
+  const bridge = window.pywebview?.api;
+  const button = byId("install-local-ai");
+  const message = byId("local-ai-message");
+  if (!bridge) {
+    message.textContent = "Bản chạy này không có bộ cài native. Hãy dùng bản WinAssist đã cài bằng Setup.";
+    return;
+  }
+  button.disabled = true;
+  byId("skip-local-ai").disabled = true;
+  try {
+    const started = await bridge.install_local_ai();
+    if (!started.success) throw new Error(started.message);
+    const poll = async () => {
+      const status = await bridge.local_ai_status();
+      message.textContent = status.message;
+      button.textContent = status.percent ? `${status.message} ${status.percent}%` : status.message;
+      if (status.state === "ready") {
+        byId("local-ai-dialog").close();
+        showToast("Local AI đã sẵn sàng.", "success");
+        try { latestHealth = await api.health(); } catch { latestHealth = null; }
+        return;
+      }
+      if (status.state === "failed") {
+        button.disabled = false;
+        byId("skip-local-ai").disabled = false;
+        button.textContent = "Thử cài lại";
+        return;
+      }
+      setTimeout(poll, 1000);
+    };
+    await poll();
+  } catch (error) {
+    message.textContent = `Không thể bắt đầu cài Local AI: ${error.message}`;
+    button.disabled = false;
+    byId("skip-local-ai").disabled = false;
+  }
 }
 
 async function loadUninstallStatus() {
@@ -321,6 +378,7 @@ function startPolling() {
 async function checkHealth() {
   try {
     const health = await api.health();
+    latestHealth = health;
     byId("backend-status").textContent = "WinAssist đã sẵn sàng";
     byId("backend-status").title = `Phiên bản ${health.version}`;
     byId("backend-dot").className = "status-dot online";
@@ -329,6 +387,7 @@ async function checkHealth() {
       : "Có thể kiểm tra và cài ứng dụng";
     byId("ollama-status").textContent = `Phiên bản ${health.version} · ${availableHelp}`;
   } catch {
+    latestHealth = null;
     byId("backend-status").textContent = "WinAssist chưa sẵn sàng";
     byId("backend-status").title = "";
     byId("ollama-status").textContent = "Hãy chờ một chút hoặc mở lại ứng dụng";
@@ -343,6 +402,78 @@ async function scanSoftwareInventory() {
   const inventory = await softwareScanPromise;
   softwareInventory = new Map(inventory.items.map((item) => [item.software.id, item]));
   return inventory;
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .trim();
+}
+
+function softwareMatchesSearch(item, query) {
+  if (!query) return true;
+  const groupName = item.advanced_group ? advancedGroupNames[item.advanced_group] : "";
+  const categoryName = categoryNames[item.category] || "";
+  return normalizeSearchText([
+    item.display_name, item.publisher, item.description, item.id, groupName, categoryName,
+  ].join(" ")).includes(query);
+}
+
+function renderSoftwareCatalog() {
+  const root = byId("software-groups");
+  const query = normalizeSearchText(softwareSearchQuery);
+  const visibleSoftware = softwareCatalog
+    .filter((item) => selectedAudience === "general"
+      ? item.audience === "general"
+      : item.audience === "advanced" || Boolean(item.advanced_group))
+    .filter((item) => softwareMatchesSearch(item, query));
+  const groups = new Map();
+  visibleSoftware.forEach((item) => {
+    const fallbackAdvancedGroup = item.category === "developer_tools"
+      ? "developer"
+      : (item.category === "office_pdf" ? "office" : "system");
+    const group = selectedAudience === "advanced"
+      ? (item.advanced_group || fallbackAdvancedGroup)
+      : item.category;
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(item);
+  });
+  root.replaceChildren();
+  const count = byId("software-search-count");
+  if (count) count.textContent = query ? `${visibleSoftware.length} ứng dụng phù hợp` : "";
+  if (!visibleSoftware.length) {
+    const empty = element("div", "empty-state software-search-empty");
+    empty.append(
+      element("strong", "", "Không tìm thấy ứng dụng phù hợp"),
+      element("p", "muted", "Thử tên khác hoặc mô tả việc bạn muốn làm, ví dụ: đọc PDF, chỉnh ảnh, kế toán."),
+    );
+    root.append(empty);
+    return;
+  }
+  const advancedOrder = ["developer", "marketing", "office", "system"];
+  const generalOrder = ["student", "browsers", "utilities", "office_pdf", "media", "entertainment"];
+  const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
+    const order = selectedAudience === "advanced" ? advancedOrder : generalOrder;
+    return order.indexOf(left) - order.indexOf(right);
+  });
+  orderedGroups.forEach(([category, items]) => {
+    const section = element("section", "software-section");
+    section.append(element("h2", "", selectedAudience === "advanced"
+      ? (advancedGroupNames[category] || category)
+      : (categoryNames[category] || category)));
+    const grid = element("div", "software-grid");
+    const riotItems = items.filter((item) => ["league-of-legends", "valorant"].includes(item.id));
+    if (riotItems.length) grid.append(riotGamesCard(riotItems, activeSoftwareActions));
+    items
+      .filter((item) => !["league-of-legends", "valorant"].includes(item.id))
+      .forEach((item) => grid.append(softwareCard(item, activeSoftwareActions.get(item.id), softwareInventory.get(item.id))));
+    section.append(grid);
+    root.append(section);
+  });
 }
 
 async function loadSoftware(showLoading = true, rescan = true) {
@@ -363,52 +494,16 @@ async function loadSoftware(showLoading = true, rescan = true) {
       api.actions(),
       shouldScan ? scanSoftwareInventory() : Promise.resolve(null),
     ]);
-    const activeByResource = new Map(actions.filter((item) => !terminalStates.has(item.action.state)).map((item) => [item.action.resource_id, item]));
-    activeByResource.forEach((item) => state.trackAction(item.action.id));
-    const groups = new Map();
-    software
-      .filter((item) => selectedAudience === "general"
-        ? item.audience === "general"
-        : item.audience === "advanced" || Boolean(item.advanced_group))
-      .forEach((item) => {
-        const fallbackAdvancedGroup = item.category === "developer_tools"
-          ? "developer"
-          : (item.category === "office_pdf" ? "office" : "system");
-        const group = selectedAudience === "advanced"
-          ? (item.advanced_group || fallbackAdvancedGroup)
-          : item.category;
-        if (!groups.has(group)) groups.set(group, []);
-        groups.get(group).push(item);
-      });
-    root.replaceChildren();
-    const advancedOrder = ["developer", "marketing", "office", "system"];
-    const generalOrder = ["student", "browsers", "utilities", "office_pdf", "media", "entertainment"];
-    const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
-      const order = selectedAudience === "advanced" ? advancedOrder : generalOrder;
-      return order.indexOf(left) - order.indexOf(right);
-    });
-    orderedGroups.forEach(([category, items]) => {
-      const section = element("section", "software-section");
-      section.append(element("h2", "", selectedAudience === "advanced"
-        ? (advancedGroupNames[category] || category)
-        : (categoryNames[category] || category)));
-      const grid = element("div", "software-grid");
-      const riotItems = items.filter((item) => ["league-of-legends", "valorant"].includes(item.id));
-      if (riotItems.length) {
-        grid.append(riotGamesCard(riotItems, activeByResource));
-      }
-      items
-        .filter((item) => !["league-of-legends", "valorant"].includes(item.id))
-        .forEach((item) => grid.append(softwareCard(item, activeByResource.get(item.id), softwareInventory.get(item.id))));
-      section.append(grid);
-      root.append(section);
-    });
+    softwareCatalog = software;
+    activeSoftwareActions = new Map(actions.filter((item) => !terminalStates.has(item.action.state)).map((item) => [item.action.resource_id, item]));
+    activeSoftwareActions.forEach((item) => state.trackAction(item.action.id));
+    renderSoftwareCatalog();
     softwareViewLoaded = true;
     if (shouldScan) softwareNeedsRescan = false;
     const liveStatus = byId("software-live-text");
     if (liveStatus) {
-      liveStatus.textContent = activeByResource.size
-        ? `Đang theo dõi ${activeByResource.size} thao tác`
+      liveStatus.textContent = activeSoftwareActions.size
+        ? `Đang theo dõi ${activeSoftwareActions.size} thao tác`
         : `Cập nhật lúc ${new Date().toLocaleTimeString("vi-VN")}`;
     }
   } catch (error) { root.replaceChildren(element("p", "error-text", `Không thể tải danh sách ứng dụng: ${error.message}`)); }
@@ -1331,6 +1426,11 @@ byId("confirm-uninstall-choice").addEventListener("click", async (event) => {
 byId("check-update").addEventListener("click", () => checkForUpdates(true));
 byId("required-update-dialog").addEventListener("cancel", (event) => event.preventDefault());
 byId("refresh-software").addEventListener("click", () => loadSoftware(true, true));
+byId("software-search-input").addEventListener("input", (event) => {
+  softwareSearchQuery = event.currentTarget.value;
+  clearTimeout(softwareSearchTimer);
+  softwareSearchTimer = setTimeout(renderSoftwareCatalog, 180);
+});
 document.querySelectorAll(".audience-tab").forEach((button) => {
   button.addEventListener("click", () => {
     selectedAudience = button.dataset.audience;
@@ -1339,7 +1439,8 @@ document.querySelectorAll(".audience-tab").forEach((button) => {
       tab.classList.toggle("active", selected);
       tab.setAttribute("aria-selected", String(selected));
     });
-    loadSoftware(false, false);
+    if (softwareCatalog.length) renderSoftwareCatalog();
+    else loadSoftware(false, false);
   });
 });
 byId("refresh-activity").addEventListener("click", loadActivity);
@@ -1388,6 +1489,9 @@ byId("chat-form").addEventListener("submit", async (event) => {
     if (response.pending_action) openAction(response.pending_action);
   } catch (error) { addMessage(`Không thể xử lý: ${error.message}`); } finally { input.disabled = false; input.focus(); }
 });
+
+byId("skip-local-ai").addEventListener("click", () => byId("local-ai-dialog").close());
+byId("install-local-ai").addEventListener("click", installLocalAi);
 
 byId("message-input").addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;

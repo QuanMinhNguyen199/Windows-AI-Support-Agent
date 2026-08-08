@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
-    <link rel="stylesheet" href="/static/styles.css?v=0.11.1">
+    <link rel="stylesheet" href="/static/styles.css?v=0.11.2">
     <link rel="stylesheet" href="/static/overview.css?v=sidebar-alignment">
   </head>
   <body>
@@ -103,6 +103,13 @@
             <button class="audience-tab" data-audience="advanced" role="tab" aria-selected="false">
               <strong>Chuyên sâu</strong><span>Lập trình, marketing, văn phòng và quản trị hệ thống</span>
             </button>
+          </div>
+          <div class="software-search">
+            <label class="sr-only" for="software-search-input">Tìm ứng dụng</label>
+            <input id="software-search-input" type="search" autocomplete="off"
+              placeholder="Tìm theo tên hoặc nhu cầu, ví dụ: chỉnh ảnh, học tập, AI…"
+              aria-controls="software-groups">
+            <span id="software-search-count" class="muted" aria-live="polite"></span>
           </div>
           <div id="software-groups" class="content-stack" aria-live="polite"></div>
         </section>
@@ -339,9 +346,22 @@
       </section>
     </dialog>
 
+    <dialog id="local-ai-dialog" aria-labelledby="local-ai-title">
+      <section class="dialog-card local-ai-card">
+        <p class="eyebrow">Trợ lý AI local</p>
+        <h2 id="local-ai-title">Cài Local AI để dùng trợ lý thông minh</h2>
+        <p id="local-ai-message" class="action-summary">WinAssist chưa phát hiện Ollama hoặc model AI trên máy này.</p>
+        <p class="muted">Bạn vẫn có thể dùng kiểm tra mạng, chẩn đoán và các tiện ích bình thường nếu chưa cài.</p>
+        <div class="dialog-actions">
+          <button id="skip-local-ai" class="secondary" type="button">Tiếp tục không dùng AI</button>
+          <button id="install-local-ai" class="primary" type="button">Mở trang cài Local AI</button>
+        </div>
+      </section>
+    </dialog>
+
     <script src="/static/i18n.js?v=required-update" defer></script>
     <script src="/static/api-client.js?v=loading-progress" defer></script>
-    <script src="/static/state.js?v=0.11.1" defer></script>
+    <script src="/static/state.js?v=0.11.2" defer></script>
     <script src="/static/app.js?v=required-update" defer></script>
   </body>
 </html>

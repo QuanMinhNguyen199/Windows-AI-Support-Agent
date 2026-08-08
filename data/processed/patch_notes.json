@@ -1,19 +1,18 @@
 {
   "releases": [
     {
-      "version": "0.11.1",
-      "released_at": "2026-08-06",
-      "title": "Dọn máy và sử dụng WinAssist dễ hơn",
-      "summary": "Bạn có thêm công cụ dọn file tạm, nhiều tiện ích hơn và các thông báo dễ hiểu hơn.",
+      "version": "0.11.2",
+      "released_at": "2026-08-08",
+      "title": "Trợ lý AI local tùy chọn và cài ứng dụng đáng tin cậy hơn",
+      "summary": "Cài Local AI ngay trong WinAssist khi cần, tìm ứng dụng nhanh hơn và không còn báo thất bại giả sau khi cài thành công.",
       "highlights": [
-        "Quét dung lượng file tạm rồi tự chọn mục muốn dọn.",
-        "Có thêm nhóm ứng dụng học tập cho sinh viên và công cụ thường dùng tại Việt Nam.",
-        "Cập nhật Windows và WinAssist ngay trong ứng dụng với các bước rõ ràng."
+        "Mở tab Trợ lý sẽ hỏi trước khi cài Ollama và model AI; bạn có thể từ chối.",
+        "Nếu đồng ý, Local AI được tải và cài ngay trong WinAssist theo cấu hình máy.",
+        "Tìm ứng dụng theo tên, nhà phát hành, mô tả hoặc nhu cầu, không phân biệt dấu tiếng Việt."
       ],
       "fixes": [
-        "Tab Hoạt động không còn hiện các lệnh kỹ thuật dài.",
-        "Kết quả mạng, lỗi cài ứng dụng và trạng thái tải dễ hiểu hơn.",
-        "Giao diện thanh điều hướng, Hỗ trợ và website đã được căn chỉnh lại."
+        "Giữ trạng thái hoàn tất khi installer thành công nhưng bước xác minh cần thêm thời gian.",
+        "Bổ sung kiểm thử cho trường hợp cài thành công nhưng xác minh chưa có kết quả."
       ],
       "security": [
         "Mọi thay đổi vẫn cần xác nhận; dọn dẹp không đụng file cá nhân và nhật ký lỗi tự che thông tin nhạy cảm."

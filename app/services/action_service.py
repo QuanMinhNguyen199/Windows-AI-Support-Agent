@@ -137,18 +137,14 @@ class ActionService:
             if self.repository.get(record.id).state is ActionState.CANCELLING:
                 self.repository.finish_execution_cancel(record.id)
                 return
+            verification_warning: str | None = None
             if result.success and self.verifier is not None:
                 self.repository.set_verifying(record.id, "Đang xác minh kết quả.")
                 verified = await self.verifier(record)
                 if not verified:
-                    result = result.model_copy(
-                        update={
-                            "success": False,
-                            "stderr": (
-                                f"{result.stderr}\nKhông xác minh được trạng thái "
-                                "sau thao tác."
-                            ).strip(),
-                        }
+                    verification_warning = (
+                        "Thao tác đã chạy thành công nhưng chưa xác minh được "
+                        "trạng thái ứng dụng."
                     )
             if not result.success:
                 logger.error(
@@ -173,6 +169,8 @@ class ActionService:
                     )
                 except (json.JSONDecodeError, TypeError, ValueError, AttributeError):
                     success_message = "Đã dọn xong các nhóm file tạm bạn chọn."
+            if result.success and verification_warning:
+                success_message = verification_warning
             self.repository.finish(record.id, result, success_message=success_message)
         except asyncio.CancelledError:
             if self.repository.get(record.id).state is ActionState.CANCELLING:

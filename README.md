@@ -20,6 +20,8 @@ theo dõi cập nhật trong một giao diện đơn giản.
   sáng tạo nội dung thường dùng tại Việt Nam.
 - Có nhóm học tập riêng với Anki, Zotero, GeoGebra, draw.io và Calibre; mỗi ứng
   dụng được chọn cài riêng để tránh trùng chức năng.
+- Tìm nhanh Tiện ích theo tên hoặc nhu cầu; danh sách được lọc ngay khi nhập mà
+  không quét lại máy.
 - Quét dung lượng rồi dọn file tạm an toàn theo đúng các mục bạn tự chọn.
   Nếu phép quét lỗi, WinAssist báo để thử lại thay vì hiển thị kết quả trống.
 - Kiểm tra card màn hình, Windows Update và phiên bản mới của WinAssist.
@@ -40,12 +42,18 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-**WinAssist 0.11.1 Community Beta** bổ sung dọn file tạm an toàn, mở rộng kho
+**WinAssist 0.11.2 Community Beta** bổ sung cài Local AI tùy chọn ngay trong app,
+dễ tìm ứng dụng hơn và sửa lỗi trạng thái cài đặt; đồng thời vẫn giữ dọn file tạm an toàn, mở rộng kho
 Tiện ích và làm rõ kết quả kiểm tra cho người dùng phổ thông. Bản này vẫn giữ
 cơ chế cập nhật bắt buộc cho phiên bản cũ; bản mới được tải ngay trong ứng dụng,
 có tiến trình, nút hủy và bước kiểm tra SHA-256 trước khi cài.
 Khi cập nhật ẩn, WinAssist giữ lại biểu tượng ngoài Desktop và tự mở lại sau khi
 cài xong.
+
+Đợt tiếp theo đang được lên kế hoạch để bổ sung một nhóm nhỏ ứng dụng liên lạc,
+học tập và công cụ cho Marketing, Thiết kế, Kế toán, trong đó có một số trợ lý
+AI chính hãng. Danh sách này chưa có trong bản tải hiện tại và chỉ được phát hành
+sau khi nguồn cài, cài/gỡ và cách sử dụng dữ liệu đã được kiểm tra.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
 - [Xem thay đổi của phiên bản](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest)
@@ -77,7 +85,7 @@ ghi các thao tác thành công và không lưu mật khẩu, token hay command 
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản theo luồng dễ hiểu; người dùng phổ thông không cần mở GitHub.
-Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.1` và lấy ngày phát hành
+Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.2` và lấy ngày phát hành
 thật từ GitHub Release.
 Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu
 ước tính hoặc social proof giả.

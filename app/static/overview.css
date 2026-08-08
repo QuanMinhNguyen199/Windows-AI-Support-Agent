@@ -532,6 +532,8 @@ svg {
 .dialog-card {
   border: 1px solid #334a63;
 }
+.local-ai-card { width: min(560px, calc(100vw - 30px)); }
+.local-ai-card .muted { margin: 0; }
 .dialog-card code {
   border: 1px solid #22364f;
   background: #081522;
@@ -1008,6 +1010,12 @@ svg {
 .cleanup-option-copy { display: grid; gap: 5px; }
 .cleanup-option-copy span, .cleanup-option-copy small { color: var(--muted); line-height: 1.45; }
 .cleanup-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; }
+.software-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; margin: 0 0 22px; }
+.software-search input { width: 100%; border: 1px solid #2a405e; border-radius: 12px; background: #0b192b; color: #eaf2ff; padding: 13px 15px; font: inherit; outline: none; }
+.software-search input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(84, 217, 238, .12); }
+.software-search input::placeholder { color: #74869e; }
+.software-search-empty { grid-column: 1 / -1; }
+.software-search-empty p { margin: 7px 0 0; }
 @media (max-width: 900px) {
   .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .patch-grid, .driver-grid, .support-grid { grid-template-columns: 1fr; }
@@ -1031,4 +1039,5 @@ svg {
   .support-form-footer { align-items: stretch; flex-direction: column; }
   .support-form-footer button { width: 100%; }
   .software-toolbar { align-items: flex-end; flex-direction: column; }
+  .software-search { grid-template-columns: 1fr; }
 }

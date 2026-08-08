@@ -21,6 +21,8 @@ from urllib.error import URLError
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
+from app.core.model_selection import select_ollama_model
+
 DESKTOP_HOST = "127.0.0.1"
 DESKTOP_PORT = 8000
 DESKTOP_URL = f"http://{DESKTOP_HOST}:{DESKTOP_PORT}"
@@ -333,10 +335,130 @@ class DesktopUpdater:
         return digest.hexdigest().lower()
 
 
+class LocalAiInstaller:
+    """Install Ollama and its selected model from the native WinAssist window."""
+
+    _OLLAMA_URL = "https://ollama.com/download/OllamaSetup.exe"
+    _MAX_INSTALLER_BYTES = 512 * 1024 * 1024
+
+    def __init__(self, *, runtime_root: Path | None = None) -> None:
+        self.runtime_root = runtime_root or (
+            Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            / "WinAssist Local"
+        )
+        self._lock = threading.Lock()
+        self._thread: threading.Thread | None = None
+        self._state: dict[str, object] = {
+            "state": "idle",
+            "model": select_ollama_model(),
+            "percent": 0,
+            "message": "Local AI chưa được cài.",
+        }
+
+    def status(self) -> dict[str, object]:
+        with self._lock:
+            return dict(self._state)
+
+    def start(self) -> dict[str, object]:
+        with self._lock:
+            if self._state["state"] in {"downloading", "installing", "pulling"}:
+                return {"success": False, "message": "Local AI đang được cài."}
+            self._state.update(
+                state="downloading", percent=0, message="Đang tải bộ cài Local AI…"
+            )
+            self._thread = threading.Thread(
+                target=self._install,
+                name="winassist-local-ai-installer",
+                daemon=True,
+            )
+            self._thread.start()
+        return {"success": True, "message": "Đã bắt đầu cài Local AI."}
+
+    def _install(self) -> None:
+        installer = self.runtime_root / "local-ai" / "OllamaSetup.exe"
+        temporary = installer.with_suffix(".part")
+        model = str(self._state["model"])
+        try:
+            installer.parent.mkdir(parents=True, exist_ok=True)
+            request = Request(self._OLLAMA_URL, headers={"User-Agent": "WinAssist"})
+            with urlopen(request, timeout=30) as response, temporary.open("wb") as stream:
+                total = int(response.headers.get("Content-Length") or 0)
+                downloaded = 0
+                while True:
+                    chunk = response.read(128 * 1024)
+                    if not chunk:
+                        break
+                    stream.write(chunk)
+                    downloaded += len(chunk)
+                    if downloaded > self._MAX_INSTALLER_BYTES:
+                        raise ValueError("Bộ cài Local AI lớn bất thường.")
+                    self._set_state(
+                        percent=round(downloaded * 35 / total) if total else 0,
+                        message="Đang tải bộ cài Local AI…",
+                    )
+            os.replace(temporary, installer)
+            self._set_state(state="installing", percent=40, message="Đang cài Ollama…")
+            completed = subprocess.run(
+                [str(installer), "/VERYSILENT", "/NORESTART"],
+                shell=False,
+                capture_output=True,
+                timeout=300,
+                check=False,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            if completed.returncode != 0:
+                raise RuntimeError("Bộ cài Ollama trả về mã lỗi.")
+            executable = self._ollama_executable()
+            if executable is None:
+                raise RuntimeError("Không tìm thấy Ollama sau khi cài.")
+            subprocess.Popen(
+                [str(executable), "serve"],
+                shell=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            self._set_state(state="pulling", percent=50, message=f"Đang tải model {model}…")
+            pulled = None
+            for attempt in range(5):
+                pulled = subprocess.run(
+                    [str(executable), "pull", model],
+                    shell=False,
+                    capture_output=True,
+                    timeout=1800,
+                    check=False,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
+                if pulled.returncode == 0 or attempt == 4:
+                    break
+                time.sleep(2)
+            if pulled.returncode != 0:
+                raise RuntimeError("Không tải được model Local AI.")
+            self._set_state(state="ready", percent=100, message=f"Local AI đã sẵn sàng với model {model}.")
+        except (OSError, URLError, TimeoutError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
+            temporary.unlink(missing_ok=True)
+            self._set_state(state="failed", message=f"Không thể cài Local AI: {exc}")
+
+    @staticmethod
+    def _ollama_executable() -> Path | None:
+        candidates = [
+            Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama.exe",
+            Path(os.environ.get("ProgramFiles", "C:\\Program Files")) / "Ollama" / "ollama.exe",
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
+        return None
+
+    def _set_state(self, **values: object) -> None:
+        with self._lock:
+            self._state.update(values)
+
+
 class DesktopController:
     """Coordinates close confirmation, tray hiding and final shutdown."""
 
-    def __init__(self, updater: DesktopUpdater | None = None) -> None:
+    def __init__(self, updater: DesktopUpdater | None = None, local_ai: LocalAiInstaller | None = None) -> None:
         # Keep native objects private. pywebview inspects public js_api members and
         # recursively walking a Window reaches WinForms Font/Families/SyncRoot.
         self._window: Any | None = None
@@ -344,6 +466,7 @@ class DesktopController:
         self.exit_requested = False
         self._close_dialog_pending = False
         self._updater = updater or DesktopUpdater()
+        self._local_ai = local_ai or LocalAiInstaller()
 
     def bind(self, window: Any) -> None:
         self._window = window
@@ -440,6 +563,12 @@ class DesktopController:
         if result["success"]:
             self.exit_app()
         return result
+
+    def local_ai_status(self) -> dict[str, object]:
+        return self._local_ai.status()
+
+    def install_local_ai(self) -> dict[str, object]:
+        return self._local_ai.start()
 
 
 class DesktopTray:

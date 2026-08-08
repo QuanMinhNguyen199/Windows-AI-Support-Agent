@@ -34,8 +34,8 @@ async function updateRelease() {
       count.lastChild.textContent = ` ${new Intl.NumberFormat("vi-VN").format(totalDownloads)} lượt tải WinAssist`;
     }
   } catch (_error) {
-    title.textContent = "WinAssist 0.11.1";
-    date.textContent = "Phát hành ngày 06/08/2026";
+    title.textContent = "WinAssist 0.11.2";
+    date.textContent = "Phát hành ngày 08/08/2026";
   }
 }
 

@@ -111,9 +111,14 @@ section **Học tập cho sinh viên**. Danh sách dưới đây chỉ còn ứn
 | Ưu tiên | Ứng dụng | Dành cho ai? | Cách tích hợp dự kiến |
 |---|---|---|---|
 | P1 | Microsoft Clipchamp | Người cần dựng video đơn giản trên Windows. | Store |
+| P1 | Google Ads Editor | Người quản lý và sửa nhiều chiến dịch Google Ads. | Nguồn Google chính hãng |
 | P2 | TikTok LIVE Studio | Người phát trực tiếp trên TikTok. | Nguồn chính hãng |
 | P2 | Meta Business Suite | Người quản lý Facebook và Instagram. | Web app/PWA, không giả cài desktop |
 | P2 | Buffer | Người lên lịch nội dung mạng xã hội. | Web app/PWA |
+| P2 | Metricool | Theo dõi và lên lịch nội dung nhiều mạng xã hội. | Web app/PWA |
+| P2 | Mailchimp | Soạn email marketing và quản lý danh sách người nhận. | Web app/PWA |
+| P2 | HubSpot | Quản lý khách hàng, nội dung và chiến dịch marketing. | Web app/PWA |
+| P2 | Google Web Designer | Thiết kế banner và quảng cáo HTML5. | Nguồn Google chính hãng |
 | P3 | Adobe Creative Cloud | Nhóm dùng Photoshop, Illustrator hoặc Premiere có license. | Official hub |
 
 ### Thiết kế, ảnh và sáng tạo nội dung
@@ -128,7 +133,47 @@ section **Học tập cho sinh viên**. Danh sách dưới đây chỉ còn ứn
 | P2 | Darktable | Quản lý và chỉnh ảnh RAW. | WinGet |
 | P2 | RawTherapee | Chỉnh ảnh chụp định dạng RAW. | WinGet |
 | P2 | MuseScore Studio | Viết và nghe bản nhạc. | WinGet |
+| P2 | Adobe Firefly | Tạo và chỉnh hình ảnh bằng AI của Adobe. | Web app, cần tài khoản Adobe |
+| P2 | Microsoft Designer | Tạo ảnh và bài đăng nhanh bằng mẫu và AI. | Store/web, cần tài khoản Microsoft |
 | P3 | Affinity | Thiết kế ảnh/vector cho người đã mua license. | Store/official hub |
+
+### Kế toán, thuế và vận hành doanh nghiệp Việt Nam
+
+Các ứng dụng trong nhóm này liên quan dữ liệu tài chính và thường phụ thuộc hợp
+đồng, phiên bản dữ liệu hoặc chữ ký số. WinAssist chỉ dùng bộ cài chính hãng,
+không tự cấu hình doanh nghiệp, không nhập dữ liệu và không kích hoạt license.
+
+| Ưu tiên | Ứng dụng | Dành cho ai? | Cách tích hợp dự kiến |
+|---|---|---|---|
+| P1 | MISA SME | Kế toán doanh nghiệp vừa và nhỏ tại Việt Nam. | Bộ cài MISA chính hãng, cần license |
+| P1 | MISA AMIS Kế toán | Doanh nghiệp muốn làm kế toán trên nền tảng online. | Web app/PWA chính hãng |
+| P1 | HTKK | Người kê khai thuế theo công cụ của cơ quan thuế. | Nguồn cơ quan thuế, kiểm tra phiên bản bắt buộc |
+| P1 | iTaxViewer | Đọc tờ khai thuế định dạng XML. | Nguồn cơ quan thuế, kiểm tra phiên bản bắt buộc |
+| P2 | FAST Accounting | Doanh nghiệp đang sử dụng hệ sinh thái FAST. | Nguồn FAST chính hãng, cần license |
+| P2 | MISA meInvoice | Doanh nghiệp sử dụng hóa đơn điện tử MISA. | Official hub/web, cần tài khoản |
+| P2 | MISA eSign | Người cần ký số tài liệu trong hệ sinh thái MISA. | Official hub, cần chứng thư số |
+| P3 | KiotViet | Cửa hàng quản lý bán hàng và doanh thu. | Web/ứng dụng chính hãng, cần tài khoản |
+
+Không tự động cài driver USB token hoặc phần mềm ký số chỉ dựa vào tên. WinAssist
+phải xác định đúng nhà cung cấp chứng thư số và hỏi người dùng trước.
+
+### Trợ lý AI cho công việc
+
+Nhóm AI không thay thế các nhóm nghề. Mỗi công cụ sẽ có nhãn **AI** và xuất hiện
+ở đúng ngữ cảnh sử dụng; người dùng tự đăng nhập và tự chịu trách nhiệm kiểm tra
+nội dung trước khi dùng cho quảng cáo, thiết kế, báo cáo hoặc sổ sách.
+
+| Ưu tiên | Ứng dụng | Dùng để làm gì? | Cách tích hợp dự kiến |
+|---|---|---|---|
+| P1 | ChatGPT | Soạn nội dung, tóm tắt và hỗ trợ ý tưởng chung. | Microsoft Store chính thức |
+| P1 | Claude Desktop | Đọc, viết và làm việc với tài liệu dài. | Bộ cài Anthropic chính thức |
+| P1 | Microsoft Copilot | Hỏi đáp và hỗ trợ công việc trong hệ sinh thái Microsoft. | Store/web chính thức |
+| P2 | Perplexity | Tìm và tổng hợp thông tin có nguồn tham khảo. | Ứng dụng/web chính thức |
+| P2 | Grammarly | Kiểm tra và viết tiếng Anh rõ hơn. | Nguồn chính hãng, cần tài khoản |
+| P2 | LM Studio | Chạy mô hình AI local cho máy đủ cấu hình. | WinGet/chính hãng, kiểm tra dung lượng |
+
+WinAssist phải ghi rõ công cụ nào chạy trên Internet, công cụ nào tải mô hình về
+máy, dung lượng có thể phát sinh và dữ liệu có thể được gửi tới nhà cung cấp.
 
 ### Dữ liệu, phân tích và nghiên cứu
 
@@ -220,17 +265,35 @@ nhưng hành vi nâng quyền vẫn phụ thuộc từng installer. Tham khảo:
 [Microsoft Learn — WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/)
 và [winget-pkgs](https://github.com/microsoft/winget-pkgs).
 
-## Thứ tự đề xuất
+## Thứ tự đề xuất đã rà soát
 
 Đợt tiếp theo chỉ nên thêm khoảng 10–15 app P1, không nhập toàn bộ backlog cùng
-lúc. Nhóm đầu nên cân bằng nhiều nhu cầu:
+lúc. Nhóm đầu đề xuất gồm các app có nhu cầu rõ và nguồn cài có thể kiểm tra:
 
-1. WhatsApp, Viber và LINE.
-2. Microsoft To Do và Thunderbird.
-3. HWiNFO, WinDirStat và LocalSend.
-4. Krita, Inkscape và Kdenlive.
-5. Power BI Desktop, RStudio và Arduino IDE.
-6. MISA chỉ qua nguồn chính hãng, không tự động cấp license.
+1. Liên lạc: WhatsApp và Viber.
+2. Học tập/văn phòng: Thunderbird.
+3. Chuyển file và chăm sóc máy: LocalSend, HWiNFO và Rufus.
+4. Sáng tạo: Krita và Inkscape.
+5. Dữ liệu/kỹ thuật: Power BI Desktop và Arduino IDE.
+6. Giải trí và quản trị: Battle.net và Sysinternals Suite.
+
+Sau đợt nền tảng trên, nên triển khai theo ba gói nghề nghiệp độc lập để dễ kiểm
+thử và không làm tab Chuyên sâu quá dài:
+
+1. **Marketing:** Google Ads Editor, Clipchamp, Metricool và HubSpot/Buffer dạng web.
+2. **Thiết kế:** Krita, Inkscape, Microsoft Designer và Adobe Firefly dạng web.
+3. **Kế toán:** MISA SME, HTKK và iTaxViewer; chỉ dùng nguồn chính hãng Việt Nam.
+4. **AI dùng chung:** ChatGPT, Claude Desktop và Microsoft Copilot.
+
+LINE và Windows PC Manager chỉ chuyển sang đợt triển khai sau khi xác minh ổn
+định package Store, nhận diện cài đặt và thao tác gỡ. Các app rất lớn hoặc có
+installer/license phức tạp như Adobe Creative Cloud, DaVinci Resolve, Android
+Studio và Unreal Engine không nằm trong đợt đầu.
+
+Trước khi mở rộng tiếp, catalog cần bổ sung cho từng app: dung lượng dự kiến,
+kiến trúc hỗ trợ, yêu cầu quyền quản trị, khả năng cần khởi động lại, yêu cầu tài
+khoản/bản quyền, cách nhận diện executable/registry và phạm vi dữ liệu được giữ
+lại hoặc xóa khi gỡ sạch.
 
 Sau mỗi đợt cần đo tỷ lệ cài thành công, lỗi hủy, nhận diện app đã có và phản hồi
 người dùng trước khi mở rộng tiếp.

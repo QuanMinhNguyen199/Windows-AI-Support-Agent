@@ -22,6 +22,8 @@
     "Đang chuẩn bị": "Getting ready", "Quét lại": "Scan again", "Phổ thông": "Everyday",
     "Trình duyệt, văn phòng, nghe nhạc và game": "Browsers, office, music and games", "Chuyên sâu": "Professional",
     "Lập trình, marketing, văn phòng và quản trị hệ thống": "Development, marketing, office and system tools",
+    "Tìm ứng dụng": "Search apps", "Tìm theo tên hoặc nhu cầu, ví dụ: chỉnh ảnh, học tập, AI…": "Search by name or need, for example: photo editing, study, AI…",
+    "Không tìm thấy ứng dụng phù hợp": "No matching apps found", "Thử tên khác hoặc mô tả việc bạn muốn làm, ví dụ: đọc PDF, chỉnh ảnh, kế toán.": "Try another name or describe what you want to do, for example: read PDFs, edit photos or accounting.",
     "Kiểm tra và khắc phục": "Check and troubleshoot", "Việc kiểm tra không làm thay đổi máy. Mọi thao tác sửa chữa đều cần bạn xác nhận.": "Checks do not change your PC. Every repair requires your confirmation.",
     "Kiểm tra mạng đầy đủ": "Full network check", "Adapter, IP, gateway, DNS, Wi-Fi và kết nối Internet.": "Adapter, IP, gateway, DNS, Wi-Fi and internet connection.",
     "Chạy kiểm tra": "Run check", "Đo tốc độ mạng": "Internet speed test", "Download, upload, ping và jitter qua Ookla CLI.": "Download, upload, ping and jitter using Ookla.",

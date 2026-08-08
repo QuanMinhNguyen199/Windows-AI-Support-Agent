@@ -378,6 +378,21 @@ cầu đổi backend AI hiện tại.
   trong software catalog và trả về qua API, không hardcode theo tên ở frontend.
 - [x] Xác minh Discord bằng file cài đặt thực tế ngoài kết quả Winget tổng, xử lý
   trường hợp Winget trả ARP ID khác package ID chuẩn.
+- [ ] Đợt catalog kế tiếp chỉ thêm khoảng 10–12 ứng dụng đã xác minh; ưu tiên
+  WhatsApp, Viber, Thunderbird, LocalSend, HWiNFO, Rufus, Battle.net, Krita,
+  Inkscape, Power BI Desktop, Arduino IDE và Sysinternals Suite.
+- [ ] Chuẩn hóa metadata mỗi app: dung lượng, quyền quản trị, đăng nhập/license,
+  restart, cách nhận diện cài đặt và phạm vi dữ liệu khi gỡ sạch.
+- [ ] Kiểm thử cài/hủy/gỡ và thay đổi từ bên ngoài trên Windows 10/11 trước khi
+  mở rộng catalog; không phát hành chỉ vì đã thêm đủ số lượng app.
+- [ ] Thêm bộ lọc nghề nghiệp trong tab Chuyên sâu: Marketing, Thiết kế và Kế
+  toán; AI là nhãn khả năng trong từng nhóm, không tạo catalog lẫn lộn.
+- [ ] Thử nghiệm gói Marketing với Google Ads Editor và công cụ web chính hãng;
+  gói Thiết kế với Krita/Inkscape; gói Kế toán với MISA SME, HTKK và iTaxViewer.
+- [ ] Với app AI, hiển thị rõ yêu cầu tài khoản, kết nối Internet, chi phí có thể
+  có, nơi xử lý dữ liệu và dung lượng mô hình local trước khi cài.
+- [x] Thêm ô tìm kiếm Tiện ích lọc trực tiếp theo tên, nhà phát hành, mô tả và
+  nhóm nhu cầu; không phân biệt dấu, không quét máy lại theo mỗi ký tự.
 
 ## Thứ tự phụ thuộc
 
