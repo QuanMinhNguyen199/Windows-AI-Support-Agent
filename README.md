@@ -42,25 +42,12 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-> Nếu WinAssist bị khóa ở thông báo cập nhật `0.11.3.1` nhưng báo phiên bản
-> không hợp lệ, đây là lỗi updater đã được sửa local. Bản tính năng `0.11.4` dự
-> kiến sẽ phục hồi cập nhật cho các client cũ và bổ sung cách tìm Tiện ích theo
-> nhu cầu nghề nghiệp. Bản này chưa được phát hành.
+**WinAssist 0.11.4.1 Community Beta** sửa vòng lặp kiểm tra mạng và hoàn thiện
+quá trình cài Local AI ngay trong ứng dụng. Người dùng được hỏi trước, thấy tiến
+trình tải và có thể ẩn popup để tiếp tục dùng WinAssist.
 
-**WinAssist 0.11.4 Community Beta** sửa trình cập nhật, cải thiện Local AI và
-bổ sung ứng dụng theo nhu cầu công việc,
-dễ tìm ứng dụng hơn và sửa lỗi trạng thái cài đặt; đồng thời vẫn giữ dọn file tạm an toàn, mở rộng kho
-Tiện ích và làm rõ kết quả kiểm tra cho người dùng phổ thông. Bản này vẫn giữ
-cơ chế cập nhật bắt buộc cho phiên bản cũ; bản mới được tải ngay trong ứng dụng,
-có tiến trình, nút hủy và bước kiểm tra SHA-256 trước khi cài.
-Khi cập nhật ẩn, WinAssist giữ lại biểu tượng ngoài Desktop và tự mở lại sau khi
-cài xong.
-
-Phạm vi `0.11.4` đã được ghi trong Release Notes: sửa updater, thêm bộ lọc nghề
-nghiệp và nhóm công cụ đầu tiên cho Marketing, Thiết kế, Kế toán và AI. Các ứng
-dụng mới chỉ được phát hành sau khi nguồn cài, cài/gỡ và cách sử dụng dữ liệu đã
-được kiểm tra. Đây vẫn là kế hoạch local, chưa phải tính năng của bản công khai.
-Quá trình chuẩn bị Local AI trong bản nháp có thể chạy nền và không tải lại model
+Nếu Ollama hoặc model phù hợp đã có trên máy, WinAssist tự nhận diện và không
+tải lại. Việc chọn model dựa trên RAM và không yêu cầu người dùng biết tên model.
 đã có trên máy. Báo cáo lỗi mới cũng tự kèm phiên bản WinAssist để hỗ trợ nhanh hơn.
 
 - [Tải bản mới nhất](https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/latest/download/WinAssist-Setup.exe)
@@ -93,7 +80,7 @@ ghi các thao tác thành công và không lưu mật khẩu, token hay command 
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản theo luồng dễ hiểu; người dùng phổ thông không cần mở GitHub.
-Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.4` và lấy ngày phát hành
+Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.4.1` và lấy ngày phát hành
 thật từ GitHub Release.
 Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu
 ước tính hoặc social proof giả.

@@ -23,6 +23,42 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 - Chỉ sau lệnh triển khai mới chốt version, đồng bộ Patch Notes, build, tạo tag
   và phát hành installer.
 
+## 0.11.4.1 — Hotfix phát hành ngày 08/08/2026
+
+### Đã sửa local
+
+- Sửa câu gợi ý **Kiểm tra kết nối mạng của tôi** bị hiểu thành yêu cầu không
+  xác định khi Local AI chưa sẵn sàng. Câu này sẽ chạy thẳng kiểm tra mạng bằng
+  bộ định tuyến có sẵn trên máy và không còn hiện cảnh báo Local AI không liên quan.
+- Nhận đúng các cách nói phổ biến như **không vào được mạng**, tránh quay lại
+  cùng danh sách gợi ý nhiều lần.
+- Sửa trường hợp hộp thiết lập Local AI bị đánh dấu là đã hiện trước khi cầu nối
+  desktop sẵn sàng. Khi một câu thực sự cần AI nhưng AI chưa có, WinAssist sẽ
+  mở lại lựa chọn cài hoặc tiếp tục không dùng AI.
+- Hộp thiết lập hiển thị tiến trình tải/cài ngay trong WinAssist. Nếu Ollama đã
+  có, ứng dụng bỏ qua bước cài và tự chọn model theo RAM; nếu model phù hợp cũng
+  đã có thì hoàn tất ngay, không tải lại.
+- Trong lúc tải, người dùng có thể chọn **Ẩn và tiếp tục tải** để dùng các tab
+  khác. Tiến trình vẫn chạy nền, trạng thái xuất hiện ở góc ứng dụng và WinAssist
+  thông báo khi trợ lý đã sẵn sàng hoặc cài thất bại.
+
+### Checklist của chủ dự án — 0.11.4.1
+
+- [x] Đã thử câu “Kiểm tra kết nối mạng của tôi” và nhận được kết quả mạng,
+  không quay lại danh sách gợi ý.
+- [x] Đã thử câu “Máy của tôi không vào được mạng” và không còn vòng lặp.
+- [x] Máy chưa có Ollama hiển thị popup cho phép cài hoặc từ chối.
+- [x] Quá trình cài hiển thị tiến trình và có thể ẩn để tiếp tục dùng WinAssist.
+- [x] Máy đã có Ollama bỏ qua bước cài và tự kiểm tra model phù hợp.
+- [x] Model phù hợp đã có thì không bị tải lại.
+- [x] Đã kiểm tra nội dung README, Patch Notes và website cho hotfix 0.11.4.1.
+- [x] Test tự động, build installer và smoke test đều đạt.
+- [x] Đã đồng ý phát hành version `0.11.4.1`.
+- [x] Đã đưa ra lệnh triển khai sau khi hoàn tất các mục trên.
+
+**Trạng thái: ĐÃ BUILD LOCAL** — 159 test đã đạt; installer 0.11.4.1 đã được
+tạo và kiểm tra SHA-256 trước khi tải lên GitHub Release.
+
 ## 0.11.4 — Phát hành ngày 08/08/2026
 
 ### Mục tiêu

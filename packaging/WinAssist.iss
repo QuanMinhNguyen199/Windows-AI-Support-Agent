@@ -1,5 +1,5 @@
 #define MyAppName "WinAssist"
-#define MyAppVersion "0.11.4"
+#define MyAppVersion "0.11.4.1"
 #define MyAppPublisher "WinAssist Local"
 #define MyAppExeName "WinAssist.exe"
 

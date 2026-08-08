@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Trợ lý hỗ trợ Windows chạy local.">
     <title>WinAssist Local</title>
-    <link rel="stylesheet" href="/static/styles.css?v=0.11.4">
+    <link rel="stylesheet" href="/static/styles.css?v=0.11.4.1">
     <link rel="stylesheet" href="/static/overview.css?v=sidebar-alignment">
   </head>
   <body>
@@ -351,6 +351,12 @@
         <p class="eyebrow">Trợ lý AI local</p>
         <h2 id="local-ai-title">Cài trợ lý AI để dùng trợ lý thông minh</h2>
         <p id="local-ai-message" class="action-summary">WinAssist chưa phát hiện Ollama hoặc model AI trên máy này.</p>
+        <div id="local-ai-progress-wrap" class="local-ai-progress" hidden aria-live="polite">
+          <div class="progress" role="progressbar" aria-label="Tiến trình chuẩn bị trợ lý AI" aria-valuemin="0" aria-valuemax="100">
+            <span id="local-ai-progress-bar"></span>
+          </div>
+          <small id="local-ai-progress-label" class="muted">Đang chuẩn bị…</small>
+        </div>
         <p class="muted">Lần đầu chuẩn bị có thể mất vài phút. Những lần sau thường nhanh hơn.</p>
         <p class="muted">Bạn vẫn có thể dùng kiểm tra mạng, chẩn đoán và các tiện ích bình thường nếu chưa cài.</p>
         <div class="dialog-actions">
@@ -362,7 +368,7 @@
 
     <script src="/static/i18n.js?v=required-update" defer></script>
     <script src="/static/api-client.js?v=loading-progress" defer></script>
-    <script src="/static/state.js?v=0.11.4" defer></script>
+    <script src="/static/state.js?v=0.11.4.1" defer></script>
     <script src="/static/app.js?v=required-update" defer></script>
   </body>
 </html>

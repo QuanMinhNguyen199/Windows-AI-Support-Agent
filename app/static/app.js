@@ -130,13 +130,17 @@ function switchView(name) {
   if (name === "chat") promptForLocalAi();
 }
 
-async function promptForLocalAi() {
-  if (localAiPromptShown || latestHealth?.ollama?.status === "available") return;
-  localAiPromptShown = true;
+async function promptForLocalAi(force = false) {
+  if ((!force && localAiPromptShown) || latestHealth?.ollama?.status === "available") return;
   const dialog = byId("local-ai-dialog");
   const bridge = window.pywebview?.api;
   if (!dialog || dialog.open || !bridge) return;
   const nativeStatus = await bridge.local_ai_status().catch(() => ({}));
+  if (nativeStatus.state === "ready") {
+    latestHealth = await api.health().catch(() => latestHealth);
+    return;
+  }
+  localAiPromptShown = true;
   byId("local-ai-title").textContent = nativeStatus.installed
     ? "Hoàn tất thiết lập Local AI"
     : "Cài trợ lý AI để dùng trợ lý thông minh";
@@ -146,7 +150,28 @@ async function promptForLocalAi() {
   byId("local-ai-message").textContent = nativeStatus.installed
     ? "Ollama đã có trên máy. WinAssist chỉ cần khởi động Ollama và kiểm tra model AI."
     : (latestHealth?.ollama?.detail || "Chưa kiểm tra được trạng thái Ollama và model AI.");
+  renderLocalAiProgress(nativeStatus);
   dialog.showModal();
+}
+
+function renderLocalAiProgress(status = {}) {
+  const wrap = byId("local-ai-progress-wrap");
+  const progress = wrap.querySelector(".progress");
+  const bar = byId("local-ai-progress-bar");
+  const label = byId("local-ai-progress-label");
+  const active = ["downloading", "installing", "pulling"].includes(status.state);
+  wrap.hidden = !(active || status.state === "failed");
+  wrap.classList.toggle("is-failed", status.state === "failed");
+  const percent = Math.max(0, Math.min(100, Number(status.percent) || 0));
+  const indeterminate = active && (status.state === "pulling" || percent === 0);
+  bar.classList.toggle("indeterminate", indeterminate);
+  bar.style.width = indeterminate ? "38%" : `${percent}%`;
+  if (indeterminate) progress.removeAttribute("aria-valuenow");
+  else progress.setAttribute("aria-valuenow", String(percent));
+  label.textContent = status.message || "Đang chuẩn bị trợ lý AI…";
+  if (active) {
+    byId("ollama-status").textContent = status.message || "Đang chuẩn bị trợ lý AI ở chế độ nền…";
+  }
 }
 
 async function installLocalAi() {
@@ -160,12 +185,13 @@ async function installLocalAi() {
   button.disabled = true;
   const backgroundButton = byId("skip-local-ai");
   backgroundButton.disabled = false;
-  backgroundButton.textContent = "Chạy nền";
+  backgroundButton.textContent = "Ẩn và tiếp tục tải";
   try {
     const started = await bridge.install_local_ai();
     if (!started.success) throw new Error(started.message);
     const poll = async () => {
       const status = await bridge.local_ai_status();
+      renderLocalAiProgress(status);
       message.textContent = status.message;
       button.textContent = status.state === "pulling"
         ? status.message
@@ -182,6 +208,7 @@ async function installLocalAi() {
         backgroundButton.textContent = "Đóng";
         button.textContent = "Thử cài lại";
         showToast(status.message, "error");
+        byId("ollama-status").textContent = "Trợ lý AI chưa cài xong · Bạn có thể thử lại";
         return;
       }
       setTimeout(poll, 1000);
@@ -401,6 +428,9 @@ async function checkHealth() {
       ? "Có thể trò chuyện và hỗ trợ máy"
       : "Có thể kiểm tra và cài ứng dụng";
     byId("ollama-status").textContent = `Phiên bản ${health.version} · ${availableHelp}`;
+    if (health.ollama.status !== "available" && document.querySelector("#view-chat.active")) {
+      await promptForLocalAi();
+    }
   } catch {
     latestHealth = null;
     byId("backend-status").textContent = "WinAssist chưa sẵn sàng";
@@ -1517,12 +1547,21 @@ byId("chat-form").addEventListener("submit", async (event) => {
     addMessage(response.message);
     addChatSuggestions(response.suggestions);
     (response.recommendations || []).forEach((item) => addMessage(item));
-    if (response.warning) addMessage(`Lưu ý: ${response.warning}`);
+    if (response.warning) {
+      addMessage(`Lưu ý: ${response.warning}`);
+      if (response.warning.includes("Local AI chưa sẵn sàng")) await promptForLocalAi(true);
+    }
     if (response.pending_action) openAction(response.pending_action);
   } catch (error) { addMessage(`Không thể xử lý: ${error.message}`); } finally { input.disabled = false; input.focus(); }
 });
 
-byId("skip-local-ai").addEventListener("click", () => byId("local-ai-dialog").close());
+byId("skip-local-ai").addEventListener("click", () => {
+  const installing = byId("install-local-ai").disabled;
+  byId("local-ai-dialog").close();
+  if (installing) {
+    showToast("Trợ lý AI vẫn đang được tải ở chế độ nền.", "info");
+  }
+});
 byId("install-local-ai").addEventListener("click", installLocalAi);
 
 byId("message-input").addEventListener("keydown", (event) => {

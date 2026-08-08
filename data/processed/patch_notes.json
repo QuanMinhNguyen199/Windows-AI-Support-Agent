@@ -1,6 +1,25 @@
 {
   "releases": [
     {
+      "version": "0.11.4.1",
+      "released_at": "2026-08-08",
+      "title": "Trợ lý AI dễ cài và không làm gián đoạn công việc",
+      "summary": "Sửa vòng lặp khi kiểm tra mạng và hoàn thiện quá trình cài Local AI ngay trong WinAssist.",
+      "highlights": [
+        "WinAssist hỏi trước khi cài trợ lý AI và cho phép tiếp tục không dùng AI.",
+        "Có thanh tiến trình khi tải, cài Ollama và chuẩn bị model phù hợp với máy.",
+        "Có thể ẩn cửa sổ cài để tiếp tục dùng các chức năng khác."
+      ],
+      "fixes": [
+        "Không còn lặp lại gợi ý với câu kiểm tra kết nối mạng phổ biến.",
+        "Không cài lại Ollama hoặc tải lại model nếu máy đã có.",
+        "Sửa trường hợp popup Local AI không xuất hiện khi giao diện vừa khởi động."
+      ],
+      "security": [
+        "Local AI vẫn là lựa chọn tự nguyện và dữ liệu xử lý được giữ trên máy."
+      ]
+    },
+    {
       "version": "0.11.4",
       "released_at": "2026-08-08",
       "title": "Cập nhật dễ hơn, thêm công cụ cho công việc",

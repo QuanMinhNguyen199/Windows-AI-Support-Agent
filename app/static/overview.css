@@ -4,6 +4,11 @@
   --line: #2b3743;
   --muted: #9aa8b7;
 }
+
+.local-ai-progress { margin: 16px 0; }
+.local-ai-progress .progress { height: 9px; margin-bottom: 8px; }
+.local-ai-progress small { display: block; }
+.local-ai-progress.is-failed .progress span { background: #fb7185; }
 body {
   background: #0f151d;
   color: #f2f5f8;
