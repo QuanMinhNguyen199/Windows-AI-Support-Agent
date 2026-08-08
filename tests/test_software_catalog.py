@@ -10,8 +10,8 @@ def test_default_catalog_contains_general_and_developer_software() -> None:
     catalog = SoftwareCatalog()
     items = catalog.list()
 
-    assert len(items) == 82
-    assert catalog.catalog_version == "2026.08.3"
+    assert len(items) == 86
+    assert catalog.catalog_version == "2026.08.4"
     assert {item.id for item in items} >= {
         "firefox", "7zip", "vscode", "python", "speedtest", "steam",
         "epic-games", "discord", "league-of-legends", "valorant",

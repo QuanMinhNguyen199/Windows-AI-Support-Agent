@@ -3,7 +3,7 @@ const state = window.WinAssistState;
 const SUPPORT_ENDPOINT = "https://winassist-support.minhquanpro65.workers.dev/";
 const terminalStates = new Set(["completed", "failed", "cancelled", "expired"]);
 const categoryNames = { student: "Học tập cho sinh viên", browsers: "Trình duyệt", office_pdf: "Văn phòng & PDF", utilities: "Tiện ích", media: "Đa phương tiện", entertainment: "Game & giải trí", developer_tools: "Công cụ phát triển" };
-const advancedGroupNames = { developer: "Dành cho lập trình", marketing: "Marketing & sáng tạo", office: "Văn phòng chuyên sâu", system: "Quản trị hệ thống" };
+const advancedGroupNames = { developer: "Dành cho lập trình", marketing: "Marketing", design: "Thiết kế", accounting: "Kế toán", ai: "Công cụ AI", office: "Văn phòng chuyên sâu", system: "Quản trị hệ thống" };
 let selectedAction = null;
 let selectedUninstallItem = null;
 let pollTimer = null;
@@ -158,7 +158,9 @@ async function installLocalAi() {
     return;
   }
   button.disabled = true;
-  byId("skip-local-ai").disabled = true;
+  const backgroundButton = byId("skip-local-ai");
+  backgroundButton.disabled = false;
+  backgroundButton.textContent = "Chạy nền";
   try {
     const started = await bridge.install_local_ai();
     if (!started.success) throw new Error(started.message);
@@ -170,14 +172,16 @@ async function installLocalAi() {
         : (status.percent ? `${status.message} ${status.percent}%` : status.message);
       if (status.state === "ready") {
         byId("local-ai-dialog").close();
+        backgroundButton.textContent = "Tiếp tục không dùng AI";
         showToast("Local AI đã sẵn sàng.", "success");
         try { latestHealth = await api.health(); } catch { latestHealth = null; }
         return;
       }
       if (status.state === "failed") {
         button.disabled = false;
-        byId("skip-local-ai").disabled = false;
+        backgroundButton.textContent = "Đóng";
         button.textContent = "Thử cài lại";
+        showToast(status.message, "error");
         return;
       }
       setTimeout(poll, 1000);
@@ -186,7 +190,8 @@ async function installLocalAi() {
   } catch (error) {
     message.textContent = `Không thể bắt đầu cài Local AI: ${error.message}`;
     button.disabled = false;
-    byId("skip-local-ai").disabled = false;
+    backgroundButton.disabled = false;
+    backgroundButton.textContent = "Đóng";
   }
 }
 
@@ -464,7 +469,7 @@ function renderSoftwareCatalog() {
     root.append(empty);
     return;
   }
-  const advancedOrder = ["developer", "marketing", "office", "system"];
+  const advancedOrder = ["developer", "marketing", "design", "accounting", "ai", "office", "system"];
   const generalOrder = ["student", "browsers", "utilities", "office_pdf", "media", "entertainment"];
   const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
     const order = selectedAudience === "advanced" ? advancedOrder : generalOrder;
@@ -661,6 +666,25 @@ function updateProgressView(root, progress, allowCancel = true) {
   root.replaceChildren(box);
 }
 
+function showUpdateFailure(root, status, error, required = false) {
+  const controls = element("div", "dialog-actions");
+  const retry = element("button", "secondary", "Thử lại");
+  retry.addEventListener("click", () => checkForUpdates(true));
+  controls.append(retry);
+  if (required && status.installer_url) {
+    const download = element("button", "primary", "Tải từ trang chính thức");
+    download.addEventListener("click", () => {
+      window.open(status.installer_url, "_blank", "noopener,noreferrer");
+      download.textContent = "Đã mở trang tải";
+    });
+    controls.append(download);
+  }
+  root.replaceChildren(
+    element("p", "error-text", `Không thể cập nhật: ${error.message}`),
+    controls,
+  );
+}
+
 async function startInAppUpdate(status, root, allowCancel = true) {
   const bridge = window.pywebview?.api;
   if (!bridge) return;
@@ -690,13 +714,11 @@ async function startInAppUpdate(status, root, allowCancel = true) {
       } catch (error) {
         clearInterval(updateProgressTimer);
         updateProgressTimer = null;
-        root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`));
+        showUpdateFailure(root, status, error, !allowCancel);
       }
     }, 500);
   } catch (error) {
-    const retry = element("button", "secondary", "Thử lại");
-    retry.addEventListener("click", () => checkForUpdates(true));
-    root.replaceChildren(element("p", "error-text", `Không thể cập nhật: ${error.message}`), retry);
+    showUpdateFailure(root, status, error, !allowCancel);
   }
 }
 
@@ -1632,6 +1654,8 @@ byId("support-form").addEventListener("submit", async (event) => {
         description: byId("support-description").value.trim(),
         contact_email: supportEmail.value.trim() || null,
         consent_to_reply: byId("support-reply-consent").checked,
+        client_version: latestHealth?.version || null,
+        client_language: window.WinAssistI18n?.language || "vi",
         diagnostic: pendingSupportDiagnostic,
         website: byId("support-website").value,
         attachment,

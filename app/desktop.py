@@ -175,7 +175,9 @@ def delayed_update_command(installer: Path, process_id: int) -> list[str]:
 class DesktopUpdater:
     """Download and verify a trusted WinAssist installer outside the AI agent."""
 
-    _VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
+    # Main releases use three components; a hotfix may append one component.
+    # Keep this aligned with update_service._version_tuple.
+    _VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+(?:\.\d+)?$")
     _SHA256_PATTERN = re.compile(r"^[a-fA-F0-9]{64}$")
     _RELEASE_PATH = "/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/"
     _MAX_INSTALLER_BYTES = 512 * 1024 * 1024
@@ -510,13 +512,21 @@ class LocalAiInstaller:
                 executable = self._ollama_executable()
                 if executable is None:
                     raise RuntimeError("Không tìm thấy Ollama sau khi cài.")
-            subprocess.Popen(
-                [str(executable), "serve"],
-                shell=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
+            installed_models = self._wait_for_ollama(1)
+            if installed_models is None:
+                subprocess.Popen(
+                    [str(executable), "serve"],
+                    shell=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
+                installed_models = self._wait_for_ollama(30)
+            if installed_models is None:
+                raise RuntimeError("Ollama không khởi động được. Hãy mở lại Ollama rồi thử lại.")
+            if model in installed_models:
+                self._set_state(state="ready", percent=100, message="Trợ lý AI đã sẵn sàng.")
+                return
             self._set_state(state="pulling", percent=0, message="Đang chuẩn bị trợ lý AI…")
             pulled = None
             for attempt in range(5):
@@ -552,6 +562,28 @@ class LocalAiInstaller:
                 process.wait()
                 raise TimeoutError("Tải trợ lý AI quá lâu. Hãy kiểm tra kết nối mạng rồi thử lại.")
             time.sleep(2)
+
+    def _wait_for_ollama(self, timeout_seconds: int) -> set[str] | None:
+        deadline = time.monotonic() + timeout_seconds
+        started = time.monotonic()
+        while time.monotonic() < deadline:
+            try:
+                request = Request(
+                    "http://127.0.0.1:11434/api/tags",
+                    headers={"Accept": "application/json", "User-Agent": "WinAssist"},
+                )
+                with urlopen(request, timeout=2) as response:
+                    payload = json.loads(response.read().decode("utf-8"))
+                return {
+                    str(item.get("name") or item.get("model") or "")
+                    for item in payload.get("models", [])
+                    if item.get("name") or item.get("model")
+                }
+            except (OSError, URLError, TimeoutError, ValueError, json.JSONDecodeError):
+                waited = max(1, int(time.monotonic() - started))
+                self._set_state(message=f"Đang khởi động trợ lý AI… đã chờ {waited} giây")
+                time.sleep(1)
+        return None
 
     @staticmethod
     def _ollama_executable() -> Path | None:

@@ -147,3 +147,15 @@ def test_agent_localizes_response_and_suggestions_to_english(tmp_path) -> None:
     }
     assert runner.calls == []
     assert ollama.classify_calls == 0
+
+
+def test_agent_explains_local_ai_fallback_without_reporting_false_failure(tmp_path) -> None:
+    agent, runner, _, ollama = make_agent(tmp_path)
+
+    response = asyncio.run(agent.handle("Việc này không giống như tôi mong đợi"))
+
+    assert response.warning is not None
+    assert response.warning.startswith("Local AI chưa sẵn sàng")
+    assert "kiểm tra cơ bản" in response.warning
+    assert ollama.classify_calls == 1
+    assert runner.calls == []

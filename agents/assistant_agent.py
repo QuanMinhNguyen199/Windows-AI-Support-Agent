@@ -104,7 +104,10 @@ class AssistantAgent:
         except OllamaUnavailableError:
             return (
                 deterministic,
-                "Trợ lý thông minh chưa phản hồi; tôi đang dùng hướng dẫn có sẵn trên máy.",
+                (
+                    "Local AI chưa sẵn sàng. WinAssist vẫn có thể hướng dẫn và "
+                    "chạy các kiểm tra cơ bản bằng dữ liệu có sẵn trên máy."
+                ),
             )
 
     async def _dispatch(

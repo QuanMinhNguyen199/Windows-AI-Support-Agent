@@ -30,6 +30,18 @@ Roadmap này là định hướng, không phải lịch phát hành cố định
 - [x] Bản `0.11.1` hoàn thiện đợt đầu Giai đoạn 10: dọn file tạm an toàn, mở
   rộng Tiện ích, cải thiện Hoạt động, nhật ký lỗi và trải nghiệm cập nhật.
 - [x] Website đồng bộ thẻ **Có gì mới?** và ngày phát hành với bản `0.11.1`.
+- [x] Đồng bộ updater để chấp nhận cả bản chính ba phần và hotfix bốn phần; thêm
+  test ngăn lỗi “phiên bản cập nhật không hợp lệ” tái diễn.
+- [ ] Phát hành một bản phục hồi ba phần cho các client cũ không thể tự tải
+  `0.11.3.1` trong bản tính năng `0.11.4`; chỉ thực hiện sau khi checklist riêng
+  của `0.11.4` được duyệt.
+- [x] Hoàn thiện `0.11.4` với nhóm Marketing, Thiết kế, Công cụ AI và
+  nhóm app đã chốt trong Release Notes: Google Ads Editor, Krita, Inkscape,
+  MISA SME, HTKK, iTaxViewer, ChatGPT, Claude Desktop và Microsoft Copilot.
+- [x] Không khóa giao diện khi chuẩn bị Local AI; kiểm tra Ollama sẵn sàng trước
+  khi tải model và bỏ qua tải nếu model phù hợp đã tồn tại.
+- [x] Ticket hỗ trợ tự kèm version/ngôn ngữ; thông báo fallback Local AI không
+  còn khiến người dùng hiểu nhầm rằng toàn bộ Trợ lý bị lỗi.
 - [x] Bản vá `0.11.1` giữ/tạo lại shortcut Desktop khi cập nhật ẩn và tự thử lại
   việc kiểm tra phiên bản nếu lần kiểm tra lúc khởi động thất bại.
 

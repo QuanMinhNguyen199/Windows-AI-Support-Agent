@@ -1,6 +1,25 @@
 {
   "releases": [
     {
+      "version": "0.11.4",
+      "released_at": "2026-08-08",
+      "title": "Cập nhật dễ hơn, thêm công cụ cho công việc",
+      "summary": "Sửa lỗi cập nhật bắt buộc, chuẩn bị trợ lý AI rõ ràng hơn và bổ sung ứng dụng chính hãng.",
+      "highlights": [
+        "Thêm Google Ads Editor, Krita, Inkscape và Claude Desktop vào Tiện ích.",
+        "Chia ứng dụng chuyên sâu theo Marketing, Thiết kế và Công cụ AI.",
+        "Có thể tiếp tục dùng WinAssist trong lúc trợ lý AI được chuẩn bị."
+      ],
+      "fixes": [
+        "Sửa lỗi bản cập nhật hợp lệ nhưng WinAssist báo không thể cập nhật.",
+        "Không tải lại model AI nếu model phù hợp đã có trên máy.",
+        "Ticket gửi kèm phiên bản và ngôn ngữ để hỗ trợ nhanh hơn."
+      ],
+      "security": [
+        "Ứng dụng mới chỉ được cài từ gói WinGet đã xác minh."
+      ]
+    },
+    {
       "version": "0.11.3.1",
       "released_at": "2026-08-08",
       "title": "Trợ lý AI chuẩn bị rõ ràng hơn",

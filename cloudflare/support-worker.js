@@ -62,6 +62,12 @@ export default {
       return response({ error: "Please check the reply email and consent" }, 400, origin);
     }
     const diagnostic = payload.diagnostic && typeof payload.diagnostic === "object" ? payload.diagnostic : null;
+    const clientVersion = /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(String(payload.client_version || ""))
+      ? String(payload.client_version)
+      : "Không xác định";
+    const clientLanguage = ["vi", "en"].includes(String(payload.client_language))
+      ? String(payload.client_language)
+      : "Không xác định";
     const safeDiagnostic = diagnostic ? {
       action_id: String(diagnostic.action_id || "").slice(0, 80),
       action_kind: String(diagnostic.action_kind || "").slice(0, 40),
@@ -97,6 +103,8 @@ export default {
         text: [
           `Mã ticket: ${ticketId}`,
           `Nhóm lỗi: ${issueType}`,
+          `Phiên bản WinAssist: ${clientVersion}`,
+          `Ngôn ngữ: ${clientLanguage}`,
           `Email phản hồi: ${contactEmail || "Không cung cấp"}`,
           "",
           "Mô tả:",

@@ -43,7 +43,7 @@ ENGLISH_TEXT = {
     "Phần mềm được nhắc đến không nằm trong catalog đã kiểm duyệt.": "The requested app is not in the reviewed catalog.",
     "Yêu cầu chứa chỉ dẫn có thể làm suy yếu quy tắc an toàn nên không được gửi tới AI.": "The request contains instructions that may weaken safety rules, so it was not sent to AI.",
     "Tôi đang dùng hướng dẫn an toàn có sẵn trên máy.": "I am using the safe guidance available on this PC.",
-    "Trợ lý thông minh chưa phản hồi; tôi đang dùng hướng dẫn có sẵn trên máy.": "The local AI did not respond, so I am using the guidance available on this PC.",
+    "Local AI chưa sẵn sàng. WinAssist vẫn có thể hướng dẫn và chạy các kiểm tra cơ bản bằng dữ liệu có sẵn trên máy.": "Local AI is not ready. WinAssist can still provide guidance and run basic checks using data available on this PC.",
     "Không thể dùng AI để tóm tắt; đang hiển thị kết luận deterministic.": "AI could not summarize the result, so the verified conclusion is shown instead.",
 }
 

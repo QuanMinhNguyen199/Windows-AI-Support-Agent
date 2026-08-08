@@ -1,7 +1,7 @@
 # WinAssist — Release Notes
 
 Đây là file duy nhất dùng để ghi nhận **mọi thay đổi** trước khi phát hành.
-Mỗi thay đổi mới chỉ được thêm vào mục **Bản kế tiếp — Nháp**. Không build
+Mỗi thay đổi mới chỉ được thêm vào mục phiên bản đang ở trạng thái **Nháp**. Không build
 release, tạo tag, tải asset lên GitHub hoặc cập nhật bản public cho đến khi chủ
 dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 
@@ -23,29 +23,61 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 - Chỉ sau lệnh triển khai mới chốt version, đồng bộ Patch Notes, build, tạo tag
   và phát hành installer.
 
-## Bản kế tiếp — Nháp
+## 0.11.4 — Phát hành ngày 08/08/2026
 
-### Ý tưởng đang xem xét — chưa triển khai
+### Mục tiêu
 
-- Mở rộng Tiện ích theo một đợt nhỏ, ưu tiên ứng dụng có nguồn cài rõ ràng:
-  WhatsApp, Viber, Thunderbird, LocalSend, HWiNFO, Rufus, Battle.net, Krita,
-  Inkscape, Power BI Desktop, Arduino IDE và Sysinternals Suite.
-- Chưa đưa LINE và Windows PC Manager vào đợt đầu cho tới khi xác minh ổn định
-  nguồn Store, cách nhận diện đã cài và cách gỡ.
-- Không nhập hàng loạt ứng dụng trùng chức năng. WinAssist sẽ xếp app phổ biến
-  lên trước và giải thích ngắn app phù hợp với ai.
+Đây là bản tính năng tiếp theo, không phải một hotfix đổi tên. Bản này vừa phục
+hồi updater cho các máy đang mắc lỗi `0.11.3.1`, vừa cải thiện cách người dùng
+tìm ứng dụng phù hợp với công việc.
+
+### Đã sửa
+
+- Sửa lỗi bản cập nhật dạng hotfix như `0.11.3.1` bị WinAssist nhận là bắt buộc
+  nhưng sau đó lại báo “Phiên bản cập nhật không hợp lệ”.
+- Đồng bộ quy tắc version giữa bước kiểm tra bản mới và bước tải bộ cài; chỉ chấp
+  nhận bản chính ba phần hoặc hotfix bốn phần.
+- Để phục hồi các bản cũ đang mắc lỗi này, bản phát hành kế tiếp phải dùng số ba
+  phần như `0.11.4`; updater cũ không thể tự tải một hotfix bốn phần khác.
+- Nếu cập nhật bắt buộc không chạy được trong app, cửa sổ hiển thị thêm nút tải
+  từ trang chính thức thay vì chỉ cho thử lại vô hạn.
+
+### Có gì mới
+
+- Thêm nhóm nghề nghiệp **Marketing**, **Thiết kế** và **Công cụ AI** trong tab
+  Chuyên sâu; giữ nguyên hai tab Phổ thông/Chuyên sâu để giao diện không rối.
+- Thêm Google Ads Editor, Krita, Inkscape và Claude Desktop từ nguồn WinGet đã
+  xác minh. Các ứng dụng chỉ có trên web hoặc chưa có gói chính hãng không được
+  giả thành ứng dụng có thể cài.
+- Xếp ứng dụng phổ biến lên trước và giải thích ngắn app phù hợp với công việc
+  nào để người dùng không cần biết tên phần mềm từ trước.
+- Cho phép quá trình chuẩn bị Local AI chạy nền để người dùng tiếp tục sử dụng
+  các tab khác trong lúc model đang tải.
+
+### Đã cải thiện
+
+- Chỉ tải model sau khi dịch vụ Ollama thực sự phản hồi; báo lỗi sớm nếu Ollama
+  không khởi động được thay vì để người dùng chờ tới 30 phút.
+- Nếu model phù hợp đã có trên máy, WinAssist dùng ngay và không tải lại.
+- Ticket `#19622630`: đổi thông báo “Trợ lý thông minh chưa phản hồi” thành lời
+  giải thích rõ Local AI chưa sẵn sàng nhưng các kiểm tra cơ bản vẫn hoạt động.
+- Ticket mới tự kèm phiên bản WinAssist và ngôn ngữ giao diện để chủ dự án biết
+  lỗi xuất hiện trên bản nào mà không phải đoán từ ảnh chụp.
+- Giữ thao tác cài ứng dụng ở trạng thái hoàn tất khi lệnh cài đã thành công;
+  nếu nhận diện chưa kịp cập nhật, chỉ hiển thị cảnh báo chưa xác minh.
+
+### Phạm vi và an toàn
+
+- Chỉ thêm các ứng dụng có gói WinGet chính hãng đã xác minh vào `0.11.4`;
+  công cụ kế toán Việt Nam, ChatGPT, Copilot, LINE, Windows PC Manager và phần
+  còn lại của backlog tiếp tục để dành cho bản sau.
+- Không nhập hàng loạt ứng dụng trùng chức năng.
 - Trước khi tăng số lượng app, củng cố kiểm tra dung lượng trống, quyền quản trị,
   nguồn WinGet/Store, trạng thái tải, thao tác hủy và kiểm tra lại sau cài/gỡ.
 - Mỗi app mới phải có tên dễ hiểu, dung lượng dự kiến, yêu cầu đăng nhập/bản
   quyền, khả năng cần khởi động lại và hướng xử lý khi cài thất bại.
 - Thêm kiểm thử Windows 10/11 cho cài, hủy, gỡ, gỡ sạch dữ liệu tùy chọn và nhận
   diện ứng dụng được cài/gỡ từ bên ngoài WinAssist.
-- Mở rộng tab Chuyên sâu theo ba nhu cầu: **Marketing**, **Thiết kế** và **Kế
-  toán**; vẫn giữ nguyên hai tab Phổ thông/Chuyên sâu.
-- Dự kiến bổ sung Google Ads Editor, Metricool, Krita, Inkscape, MISA SME, HTKK
-  và iTaxViewer theo từng đợt kiểm thử, không nhập toàn bộ cùng lúc.
-- Bổ sung công cụ AI chính hãng như ChatGPT, Claude Desktop và Microsoft
-  Copilot. App phải nói rõ công cụ cần Internet/tài khoản hay tải mô hình về máy.
 - Dịch vụ chỉ có trên web như HubSpot, Mailchimp, Adobe Firefly hoặc MISA AMIS
   phải hiển thị là **Mở web**, không giả thành ứng dụng đã cài trên Windows.
 - Công cụ kế toán/thuế chỉ dùng nguồn chính hãng, không tự nhập dữ liệu, cài
@@ -53,14 +85,21 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 
 ### Checklist của chủ dự án
 
-- [x] Đã chốt danh sách ứng dụng thực sự cần cho đợt này.
+- [x] Đã chốt danh sách tính năng và ứng dụng thực sự có trong `0.11.4`.
 - [x] Đã chốt app nào là desktop, Store, web/PWA hoặc official hub.
 - [x] Package ID, publisher và nguồn cài của từng app đã được xác minh.
 - [x] Cài, hủy, gỡ và nhận diện trạng thái đã được thử trên máy sạch.
+- [x] Đã thử nâng cấp trực tiếp từ `0.11.3` và `0.11.3.1`.
+- [x] Đã kiểm thử lại hai tình huống trong Ticket `#19622630`: fallback Local AI
+  và cài thành công nhưng nhận diện ứng dụng cập nhật chậm.
 - [x] Nội dung hiển thị dùng câu ngắn, dễ hiểu và không hứa quá khả năng.
 - [x] Test tự động đã đạt và không còn lỗi chặn phát hành.
-- [x] Đã đồng ý version sẽ phát hành.
+- [x] Website, README và Patch Notes đã mô tả đúng nội dung `0.11.4`.
+- [x] Đã đồng ý phát hành version `0.11.4`.
 - [x] Đã đưa ra lệnh triển khai rõ ràng.
+
+**Trạng thái: ĐÃ BUILD LOCAL** — 156 test đã đạt; installer 0.11.4 đã được tạo
+và kiểm tra SHA-256 trước khi tải lên GitHub Release.
 
 ## 0.11.3 — Phát hành ngày 08/08/2026
 

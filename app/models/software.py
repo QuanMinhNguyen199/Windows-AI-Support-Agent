@@ -24,6 +24,9 @@ class SoftwareAudience(StrEnum):
 class SoftwareAdvancedGroup(StrEnum):
     DEVELOPER = "developer"
     MARKETING = "marketing"
+    DESIGN = "design"
+    ACCOUNTING = "accounting"
+    AI = "ai"
     OFFICE = "office"
     SYSTEM = "system"
 

@@ -55,6 +55,8 @@
     "Chỉ gỡ WinAssist": "Remove WinAssist only", "Các ứng dụng như Chrome, Discord, Steam hoặc VS Code vẫn được giữ nguyên.": "Apps such as Chrome, Discord, Steam and VS Code will remain installed.",
     "Đang kiểm tra bộ gỡ cài đặt…": "Checking the uninstaller…", "Xác nhận": "Confirm", "Xem lại thao tác": "Review action",
     "Cần cập nhật WinAssist": "WinAssist update required", "Có phiên bản mới bắt buộc": "A required update is available",
+    "Tải từ trang chính thức": "Download from the official page", "Đã mở trang tải": "Download page opened",
+    "Chạy nền": "Run in background", "Đóng": "Close",
     "Email nhận phản hồi": "Reply email", "Tôi đồng ý để WinAssist dùng email này để phản hồi ticket.": "I agree that WinAssist may use this email to reply to my ticket.",
     "Đã kèm thông tin lỗi an toàn": "Safe error details attached", "Không bao gồm mật khẩu hoặc dữ liệu tài khoản.": "Passwords and account data are not included.",
     "Xem mã lỗi": "View error code", "Báo lỗi này": "Report this error",

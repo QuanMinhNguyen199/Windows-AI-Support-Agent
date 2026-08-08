@@ -13,6 +13,7 @@ from app.desktop import (
     DESKTOP_HOST,
     DesktopController,
     DesktopUpdater,
+    LocalAiInstaller,
     SingleInstance,
     active_monitor_work_area,
     centered_window_geometry,
@@ -102,6 +103,56 @@ def test_desktop_updater_downloads_and_verifies_official_release(tmp_path, monke
     assert updater.status()["state"] == "ready"
     assert updater.status()["percent"] == 100
     assert (tmp_path / "updates" / "WinAssist-1.0.0-Setup.exe").read_bytes() == body
+
+
+def test_desktop_updater_accepts_four_part_hotfix_version(tmp_path, monkeypatch) -> None:
+    body = b"verified hotfix installer"
+    expected = hashlib.sha256(body).hexdigest()
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+    monkeypatch.setattr(desktop, "urlopen", lambda *_args, **_kwargs: FakeDownloadResponse(body))
+
+    started = updater.start(
+        "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v0.11.3.1/WinAssist-0.11.3.1-Setup.exe",
+        "0.11.3.1",
+        expected,
+    )
+    updater._thread.join(timeout=2)  # type: ignore[union-attr]
+
+    assert started["success"] is True
+    assert updater.status()["state"] == "ready"
+    assert (tmp_path / "updates" / "WinAssist-0.11.3.1-Setup.exe").read_bytes() == body
+
+
+def test_desktop_updater_rejects_version_with_more_than_four_parts(tmp_path) -> None:
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+
+    response = updater.start(
+        "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v0.11.3.1.1/WinAssist-0.11.3.1.1-Setup.exe",
+        "0.11.3.1.1",
+        "a" * 64,
+    )
+
+    assert response["success"] is False
+    assert response["message"] == "Phiên bản cập nhật không hợp lệ."
+
+
+def test_local_ai_installer_skips_pull_when_selected_model_is_installed(tmp_path, monkeypatch) -> None:
+    installer = LocalAiInstaller(runtime_root=tmp_path)
+    executable = tmp_path / "ollama.exe"
+    executable.write_bytes(b"ollama")
+    model = str(installer.status()["model"])
+    monkeypatch.setattr(installer, "_ollama_executable", lambda: executable)
+    monkeypatch.setattr(installer, "_wait_for_ollama", lambda _timeout: {model})
+    monkeypatch.setattr(
+        installer,
+        "_pull_model",
+        lambda *_args: (_ for _ in ()).throw(AssertionError("model must not be pulled again")),
+    )
+
+    installer._install()
+
+    assert installer.status()["state"] == "ready"
+    assert installer.status()["percent"] == 100
 
 
 def test_desktop_updater_resumes_pending_download_on_startup(tmp_path, monkeypatch) -> None:

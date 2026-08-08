@@ -1,5 +1,5 @@
 {
-  "catalog_version": "2026.08.3",
+  "catalog_version": "2026.08.4",
   "software": {
     "anki": {
       "display_name": "Anki",
@@ -993,6 +993,58 @@
       "check_commands": [["winget", "list", "--id", "Microsoft.VisualStudio.2022.Community", "--exact", "--disable-interactivity"]],
       "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/VisualStudio/2022/Community",
       "license_note": "Microsoft Visual Studio Community License; installer có thể yêu cầu chọn workload"
+    },
+    "google-ads-editor": {
+      "display_name": "Google Ads Editor",
+      "description": "Chỉnh sửa và quản lý nhiều chiến dịch quảng cáo Google trên máy.",
+      "publisher": "Google LLC",
+      "category": "utilities",
+      "audience": "advanced",
+      "advanced_group": "marketing",
+      "display_rank": 20,
+      "winget_id": "Google.AdsEditor",
+      "check_commands": [["winget", "list", "--id", "Google.AdsEditor", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/AdsEditor",
+      "license_note": "Google Ads Editor Terms; cần Internet và tài khoản Google Ads"
+    },
+    "krita": {
+      "display_name": "Krita",
+      "description": "Vẽ minh họa, truyện tranh và chỉnh sửa hình ảnh miễn phí.",
+      "publisher": "KDE",
+      "category": "media",
+      "audience": "advanced",
+      "advanced_group": "design",
+      "display_rank": 20,
+      "winget_id": "KDE.Krita",
+      "check_commands": [["winget", "list", "--id", "KDE.Krita", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/k/KDE/Krita",
+      "license_note": "GNU General Public License; tải từ nguồn WinGet đã xác minh"
+    },
+    "inkscape": {
+      "display_name": "Inkscape",
+      "description": "Thiết kế logo, biểu tượng và hình vẽ vector miễn phí.",
+      "publisher": "Inkscape Project",
+      "category": "media",
+      "audience": "advanced",
+      "advanced_group": "design",
+      "display_rank": 21,
+      "winget_id": "Inkscape.Inkscape",
+      "check_commands": [["winget", "list", "--id", "Inkscape.Inkscape", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/i/Inkscape/Inkscape",
+      "license_note": "GNU General Public License; tải từ nguồn WinGet đã xác minh"
+    },
+    "claude-desktop": {
+      "display_name": "Claude Desktop",
+      "description": "Trợ lý AI hỗ trợ viết, tóm tắt và xử lý tài liệu.",
+      "publisher": "Anthropic PBC",
+      "category": "utilities",
+      "audience": "advanced",
+      "advanced_group": "ai",
+      "display_rank": 20,
+      "winget_id": "Anthropic.Claude",
+      "check_commands": [["winget", "list", "--id", "Anthropic.Claude", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Anthropic/Claude",
+      "license_note": "Anthropic Consumer Terms; cần Internet và tài khoản Claude"
     },
     "brave": {
       "display_name": "Brave",
