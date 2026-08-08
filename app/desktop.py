@@ -190,6 +190,7 @@ class DesktopUpdater:
         self._thread: threading.Thread | None = None
         self._installer: Path | None = None
         self._expected_sha256: str | None = None
+        self._metadata = self.runtime_root / "updates" / "pending-update.json"
         self._state: dict[str, object] = {
             "state": "idle",
             "downloaded_bytes": 0,
@@ -216,6 +217,17 @@ class DesktopUpdater:
             update_dir.mkdir(parents=True, exist_ok=True)
             self._installer = update_dir / f"WinAssist-{version}-Setup.exe"
             self._expected_sha256 = sha256.lower()
+            self._metadata.write_text(
+                json.dumps(
+                    {
+                        "url": url,
+                        "version": version,
+                        "sha256": self._expected_sha256,
+                        "installer": str(self._installer),
+                    }
+                ),
+                encoding="utf-8",
+            )
             self._cancel.clear()
             self._state = {
                 "state": "downloading",
@@ -233,6 +245,46 @@ class DesktopUpdater:
             )
             self._thread.start()
         return {"success": True, "message": "Đã bắt đầu tải bản cập nhật."}
+
+    def resume_pending(self) -> None:
+        """Resume an interrupted download left by a previous app shutdown."""
+        if not self.available or not self._metadata.is_file():
+            return
+        try:
+            pending = json.loads(self._metadata.read_text(encoding="utf-8"))
+            url = str(pending["url"])
+            version = str(pending["version"])
+            expected = str(pending["sha256"])
+            installer = Path(str(pending["installer"])).resolve()
+            self._validate_release(url, version, expected)
+            update_dir = (self.runtime_root / "updates").resolve()
+            if installer.parent != update_dir or not installer.name.endswith("-Setup.exe"):
+                return
+            temporary = installer.with_suffix(installer.suffix + ".part")
+            if not temporary.is_file() or temporary.stat().st_size == 0:
+                return
+            with self._lock:
+                if self._state["state"] != "idle":
+                    return
+                self._installer = installer
+                self._expected_sha256 = expected.lower()
+                self._state.update(
+                    state="downloading",
+                    version=version,
+                    downloaded_bytes=temporary.stat().st_size,
+                    total_bytes=0,
+                    percent=0,
+                    message="Đang tiếp tục tải bản cập nhật…",
+                )
+                self._thread = threading.Thread(
+                    target=self._download,
+                    args=(url,),
+                    name="winassist-updater-resume",
+                    daemon=True,
+                )
+                self._thread.start()
+        except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+            return
 
     def cancel(self) -> dict[str, object]:
         with self._lock:
@@ -262,6 +314,7 @@ class DesktopUpdater:
             self._set_state("failed", "Không thể mở trình cập nhật.")
             return {"success": False, "message": "Không thể mở trình cập nhật."}
         self._set_state("installing", "WinAssist sẽ tự khởi động lại để hoàn tất cập nhật…")
+        self._metadata.unlink(missing_ok=True)
         return {"success": True, "message": "WinAssist đang tự cập nhật và sẽ mở lại."}
 
     def _download(self, url: str) -> None:
@@ -271,37 +324,64 @@ class DesktopUpdater:
             return
         temporary = installer.with_suffix(installer.suffix + ".part")
         try:
-            request = Request(url, headers={"User-Agent": "WinAssist-Updater"})
-            with urlopen(request, timeout=30) as response, temporary.open("wb") as stream:
-                total = int(response.headers.get("Content-Length") or 0)
+            resume_from = temporary.stat().st_size if temporary.exists() else 0
+            headers = {"User-Agent": "WinAssist-Updater"}
+            if resume_from:
+                headers["Range"] = f"bytes={resume_from}-"
+            request = Request(url, headers=headers)
+            with urlopen(request, timeout=30) as response:
+                response_status = getattr(response, "status", None)
+                if response_status is None:
+                    getcode = getattr(response, "getcode", None)
+                    response_status = getcode() if callable(getcode) else 200
+                is_resume = resume_from > 0 and response_status == 206
+                if not is_resume:
+                    resume_from = 0
+                total_length = int(response.headers.get("Content-Length") or 0)
+                total = total_length + resume_from if is_resume else total_length
                 if total > self._MAX_INSTALLER_BYTES:
                     raise ValueError("Gói cập nhật lớn bất thường")
                 digest = hashlib.sha256()
-                downloaded = 0
-                while True:
-                    if self._cancel.is_set():
-                        raise InterruptedError
-                    chunk = response.read(128 * 1024)
-                    if not chunk:
-                        break
-                    stream.write(chunk)
-                    digest.update(chunk)
-                    downloaded += len(chunk)
-                    if downloaded > self._MAX_INSTALLER_BYTES:
-                        raise ValueError("Gói cập nhật lớn bất thường")
-                    percent = round(downloaded * 100 / total) if total else 0
-                    with self._lock:
-                        self._state.update(
-                            downloaded_bytes=downloaded,
-                            total_bytes=total,
-                            percent=min(percent, 100),
+                downloaded = resume_from
+                if resume_from:
+                    with temporary.open("rb") as existing:
+                        for previous in iter(lambda: existing.read(1024 * 1024), b""):
+                            digest.update(previous)
+                with temporary.open("ab" if is_resume else "wb") as stream:
+                    started_at = time.perf_counter()
+                    while True:
+                        if self._cancel.is_set():
+                            raise InterruptedError
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        stream.write(chunk)
+                        digest.update(chunk)
+                        downloaded += len(chunk)
+                        if downloaded > self._MAX_INSTALLER_BYTES:
+                            raise ValueError("Gói cập nhật lớn bất thường")
+                        percent = round(downloaded * 100 / total) if total else 0
+                        elapsed = max(time.perf_counter() - started_at, 0.001)
+                        speed = (downloaded - resume_from) / elapsed / (1024 * 1024)
+                        progress_message = (
+                            f"Đang tải bản cập nhật… {downloaded / (1024 * 1024):.1f} MB"
+                            + (f" / {total / (1024 * 1024):.1f} MB · {speed:.1f} MB/s" if total else "")
                         )
+                        with self._lock:
+                            self._state.update(
+                                downloaded_bytes=downloaded,
+                                total_bytes=total,
+                                percent=min(percent, 100),
+                                message=progress_message,
+                            )
             if digest.hexdigest().lower() != expected:
                 raise ValueError("SHA-256 không khớp")
             os.replace(temporary, installer)
+            self._metadata.unlink(missing_ok=True)
             self._set_state("ready", "Đã tải và kiểm tra an toàn. Sẵn sàng cập nhật.", percent=100)
         except InterruptedError:
             temporary.unlink(missing_ok=True)
+            self._metadata.unlink(missing_ok=True)
             self._set_state("cancelled", "Đã hủy tải bản cập nhật.")
         except (OSError, URLError, TimeoutError, ValueError) as exc:
             temporary.unlink(missing_ok=True)
@@ -467,6 +547,7 @@ class DesktopController:
         self._close_dialog_pending = False
         self._updater = updater or DesktopUpdater()
         self._local_ai = local_ai or LocalAiInstaller()
+        self._updater.resume_pending()
 
     def bind(self, window: Any) -> None:
         self._window = window

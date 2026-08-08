@@ -633,7 +633,7 @@ function updateProgressView(root, progress, allowCancel = true) {
   const row = element("div", "self-update-row");
   row.append(
     element("strong", "", progress.state === "ready" ? "Đã tải xong" : "Đang cập nhật WinAssist"),
-    element("span", "", progress.total_bytes ? `${progress.percent}%` : "Đang tải…"),
+    element("span", "", progress.total_bytes ? `${progress.percent}%` : "Đang tải dữ liệu…"),
   );
   const track = element("div", "self-update-track");
   const fill = element("span", progress.total_bytes ? "" : "indeterminate");

@@ -3,6 +3,7 @@ import socket
 import sys
 import hashlib
 import base64
+import json
 from uuid import uuid4
 
 import pytest
@@ -101,6 +102,35 @@ def test_desktop_updater_downloads_and_verifies_official_release(tmp_path, monke
     assert updater.status()["state"] == "ready"
     assert updater.status()["percent"] == 100
     assert (tmp_path / "updates" / "WinAssist-1.0.0-Setup.exe").read_bytes() == body
+
+
+def test_desktop_updater_resumes_pending_download_on_startup(tmp_path, monkeypatch) -> None:
+    body = b"verified installer after restart"
+    expected = hashlib.sha256(body).hexdigest()
+    update_dir = tmp_path / "updates"
+    update_dir.mkdir()
+    installer = update_dir / "WinAssist-1.0.0-Setup.exe"
+    installer.with_suffix(".exe.part").write_bytes(b"partial")
+    (update_dir / "pending-update.json").write_text(
+        json.dumps(
+            {
+                "url": "https://github.com/QuanMinhNguyen199/Windows-AI-Support-Agent/releases/download/v1.0.0/WinAssist-1.0.0-Setup.exe",
+                "version": "1.0.0",
+                "sha256": expected,
+                "installer": str(installer),
+            }
+        ),
+        encoding="utf-8",
+    )
+    updater = DesktopUpdater(runtime_root=tmp_path, available=True)
+    monkeypatch.setattr(desktop, "urlopen", lambda *_args, **_kwargs: FakeDownloadResponse(body))
+
+    updater.resume_pending()
+    updater._thread.join(timeout=2)  # type: ignore[union-attr]
+
+    assert updater.status()["state"] == "ready"
+    assert installer.read_bytes() == body
+    assert not (update_dir / "pending-update.json").exists()
 
 
 def test_desktop_updater_rejects_untrusted_url(tmp_path) -> None:
