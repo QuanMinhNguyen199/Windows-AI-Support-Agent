@@ -517,26 +517,41 @@ class LocalAiInstaller:
                 stderr=subprocess.DEVNULL,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
-            self._set_state(state="pulling", percent=50, message="Đang chuẩn bị trợ lý AI…")
+            self._set_state(state="pulling", percent=0, message="Đang chuẩn bị trợ lý AI…")
             pulled = None
             for attempt in range(5):
-                pulled = subprocess.run(
-                    [str(executable), "pull", model],
-                    shell=False,
-                    capture_output=True,
-                    timeout=1800,
-                    check=False,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                )
+                pulled = self._pull_model(executable, model)
                 if pulled.returncode == 0 or attempt == 4:
                     break
+                self._set_state(message="Đang kết nối lại để chuẩn bị trợ lý AI…")
                 time.sleep(2)
             if pulled.returncode != 0:
-                raise RuntimeError("Không tải được model Local AI.")
+                raise RuntimeError("Không tải được dữ liệu trợ lý AI.")
             self._set_state(state="ready", percent=100, message="Trợ lý AI đã sẵn sàng.")
         except (OSError, URLError, TimeoutError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
             temporary.unlink(missing_ok=True)
-            self._set_state(state="failed", message=f"Không thể cài Local AI: {exc}")
+            self._set_state(state="failed", message=f"Không thể cài trợ lý AI: {exc}")
+
+    def _pull_model(self, executable: Path, model: str) -> subprocess.CompletedProcess[bytes]:
+        started = time.monotonic()
+        process = subprocess.Popen(
+            [str(executable), "pull", model],
+            shell=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        while True:
+            return_code = process.poll()
+            if return_code is not None:
+                return subprocess.CompletedProcess(process.args, return_code)
+            elapsed = int(time.monotonic() - started)
+            self._set_state(message=f"Đang tải dữ liệu trợ lý AI… đã chờ {elapsed // 60} phút")
+            if elapsed >= 1800:
+                process.kill()
+                process.wait()
+                raise TimeoutError("Tải trợ lý AI quá lâu. Hãy kiểm tra kết nối mạng rồi thử lại.")
+            time.sleep(2)
 
     @staticmethod
     def _ollama_executable() -> Path | None:

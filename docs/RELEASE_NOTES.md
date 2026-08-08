@@ -79,6 +79,17 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 
 **Trạng thái: ĐÃ CHỐT LOCAL** — chờ test, build và phát hành installer `0.11.3`.
 
+## 0.11.3.1 — Hotfix ngày 08/08/2026
+
+### Đã sửa
+
+- Không còn hiển thị cố định `50%` khi đang chuẩn bị trợ lý AI.
+- Hiển thị thời gian đã chờ và thông báo rõ khi lần đầu tải trợ lý AI có thể mất
+  vài phút.
+- Tự thử lại khi Ollama khởi động chậm và báo lỗi rõ nếu quá thời gian.
+
+**Trạng thái: ĐÃ CHỐT LOCAL** — sẵn sàng test, build và phát hành hotfix.
+
 ## 0.11.2 — Phát hành ngày 08/08/2026
 
 ### Có gì mới?

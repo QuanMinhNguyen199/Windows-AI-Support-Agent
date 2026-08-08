@@ -165,7 +165,9 @@ async function installLocalAi() {
     const poll = async () => {
       const status = await bridge.local_ai_status();
       message.textContent = status.message;
-      button.textContent = status.percent ? `${status.message} ${status.percent}%` : status.message;
+      button.textContent = status.state === "pulling"
+        ? status.message
+        : (status.percent ? `${status.message} ${status.percent}%` : status.message);
       if (status.state === "ready") {
         byId("local-ai-dialog").close();
         showToast("Local AI đã sẵn sàng.", "success");

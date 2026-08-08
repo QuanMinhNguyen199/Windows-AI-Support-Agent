@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "0.11.3.1",
+      "released_at": "2026-08-08",
+      "title": "Trợ lý AI chuẩn bị rõ ràng hơn",
+      "summary": "Sửa trạng thái tải trợ lý AI để người dùng biết ứng dụng vẫn đang hoạt động.",
+      "highlights": [
+        "Không còn hiển thị cố định 50% khi đang chuẩn bị trợ lý AI.",
+        "Hiển thị thời gian đã chờ khi dữ liệu trợ lý AI đang được tải.",
+        "Thông báo rõ rằng lần đầu chuẩn bị có thể mất vài phút."
+      ],
+      "fixes": [
+        "Tự thử lại khi Ollama khởi động chậm và báo lỗi rõ nếu quá thời gian."
+      ],
+      "security": [
+        "Không thay đổi quyền truy cập hoặc dữ liệu cá nhân trên máy."
+      ]
+    },
+    {
       "version": "0.11.3",
       "released_at": "2026-08-08",
       "title": "Hotfix cập nhật và thêm tiện ích",
