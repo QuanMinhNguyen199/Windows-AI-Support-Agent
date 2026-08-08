@@ -322,7 +322,7 @@ function openAction(action, title = "Xem lại thao tác") {
     software_purge: `WinAssist sẽ gỡ ${actionName} và dọn file cài đặt còn sót. Tài khoản, thiết lập và file cá nhân vẫn được giữ nguyên.`,
     network_repair: "WinAssist sẽ thực hiện thao tác sửa kết nối mạng này.",
     windows_update: "WinAssist sẽ tìm, tải và cài các bản cập nhật Windows phù hợp. Máy sẽ không tự khởi động lại.",
-    system_cleanup: "WinAssist chỉ xóa những nhóm file tạm bạn đã chọn. File cá nhân và file đang dùng được giữ nguyên.",
+    system_cleanup: "WinAssist chỉ xóa mục bạn đã chọn. File cá nhân vẫn được giữ nguyên.",
   };
   const buttonLabels = {
     software_install: "Cài đặt",
@@ -980,8 +980,8 @@ async function scanCleanup() {
   const button = byId("scan-cleanup");
   const root = byId("cleanup-result");
   button.disabled = true;
-  button.textContent = "Đang quét…";
-  root.replaceChildren(element("div", "inventory-loading", "Đang tìm file tạm an toàn…"));
+  button.textContent = "Đang kiểm tra…";
+  root.replaceChildren(element("div", "inventory-loading", "Đang kiểm tra…"));
   try {
     const response = await api.scanCleanup();
     const fragment = document.createDocumentFragment();
@@ -999,7 +999,7 @@ async function scanCleanup() {
         element("span", "", category.description),
         element("small", "", category.file_count
           ? `${category.file_count} file · ${formatBytes(category.bytes)}`
-          : "Không có file cần dọn"),
+          : "Không có mục cần xóa"),
       );
       label.append(input, copy);
       fragment.append(label);
@@ -1007,10 +1007,10 @@ async function scanCleanup() {
     root.replaceChildren(fragment);
     updateCleanupSelection();
   } catch (error) {
-    root.replaceChildren(element("div", "driver-notice", `Không thể quét file tạm: ${error.message}`));
+    root.replaceChildren(element("div", "driver-notice", `Không thể kiểm tra: ${error.message}`));
   } finally {
     button.disabled = false;
-    button.textContent = "Quét lại";
+    button.textContent = "Kiểm tra lại";
   }
 }
 
@@ -1020,7 +1020,7 @@ async function requestCleanup() {
   if (!categories.length) return;
   try {
     const response = await api.requestCleanup(categories);
-    openAction(response.pending_action, "Dọn file tạm");
+    openAction(response.pending_action, "Dọn dẹp máy");
   } catch (error) {
     showToast(`Không thể chuẩn bị dọn dẹp: ${error.message}`, "error");
   }
@@ -1280,7 +1280,7 @@ function activityTitle(item, catalogNames) {
     software_uninstall: `Gỡ ${appName}`,
     software_purge: `Gỡ sạch ${appName}`,
     windows_update: "Cập nhật Windows",
-    system_cleanup: "Dọn file tạm",
+    system_cleanup: "Dọn dẹp máy",
   };
   if (titles[item.action.kind]) return titles[item.action.kind];
   if (item.action.kind === "network_repair") {
@@ -1305,7 +1305,7 @@ function activityMessage(item) {
       software_purge: "Ứng dụng và các dữ liệu an toàn đã chọn đã được dọn.",
       network_repair: "Đã hoàn thành thao tác sửa kết nối mạng.",
       windows_update: "Windows đã hoàn thành tác vụ cập nhật. Hãy xem tab Cập nhật Windows để biết có cần khởi động lại không.",
-      system_cleanup: "Đã dọn xong các nhóm file tạm bạn chọn.",
+      system_cleanup: "Đã xóa mục bạn chọn.",
     }[item.action.kind] || "Thao tác đã hoàn tất.";
   }
   return item.message;
