@@ -130,14 +130,22 @@ function switchView(name) {
   if (name === "chat") promptForLocalAi();
 }
 
-function promptForLocalAi() {
+async function promptForLocalAi() {
   if (localAiPromptShown || latestHealth?.ollama?.status === "available") return;
   localAiPromptShown = true;
   const dialog = byId("local-ai-dialog");
   const bridge = window.pywebview?.api;
   if (!dialog || dialog.open || !bridge) return;
-  byId("local-ai-message").textContent = latestHealth?.ollama?.detail
-    || "Chưa kiểm tra được trạng thái Ollama và model AI.";
+  const nativeStatus = await bridge.local_ai_status().catch(() => ({}));
+  byId("local-ai-title").textContent = nativeStatus.installed
+    ? "Hoàn tất thiết lập Local AI"
+    : "Cài trợ lý AI để dùng trợ lý thông minh";
+  byId("install-local-ai").textContent = nativeStatus.installed
+    ? "Khởi động và chuẩn bị model"
+    : "Cài trợ lý AI";
+  byId("local-ai-message").textContent = nativeStatus.installed
+    ? "Ollama đã có trên máy. WinAssist chỉ cần khởi động Ollama và kiểm tra model AI."
+    : (latestHealth?.ollama?.detail || "Chưa kiểm tra được trạng thái Ollama và model AI.");
   dialog.showModal();
 }
 

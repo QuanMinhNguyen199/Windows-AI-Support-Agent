@@ -7,6 +7,7 @@ import json
 import os
 import re
 import secrets
+import shutil
 import socket
 import subprocess
 import sys
@@ -437,14 +438,30 @@ class LocalAiInstaller:
 
     def status(self) -> dict[str, object]:
         with self._lock:
-            return dict(self._state)
+            result = dict(self._state)
+        installed = self._ollama_executable() is not None
+        result["installed"] = installed
+        if result["state"] == "idle":
+            result["message"] = (
+                "Ollama đã được cài nhưng chưa sẵn sàng."
+                if installed
+                else "Local AI chưa được cài."
+            )
+        return result
 
     def start(self) -> dict[str, object]:
         with self._lock:
             if self._state["state"] in {"downloading", "installing", "pulling"}:
                 return {"success": False, "message": "Local AI đang được cài."}
+            installed = self._ollama_executable() is not None
             self._state.update(
-                state="downloading", percent=0, message="Đang tải bộ cài Local AI…"
+                state="installing" if installed else "downloading",
+                percent=40 if installed else 0,
+                message=(
+                    "Đã tìm thấy Ollama. Đang chuẩn bị model…"
+                    if installed
+                    else "Đang tải bộ cài Local AI…"
+                ),
             )
             self._thread = threading.Thread(
                 target=self._install,
@@ -459,38 +476,40 @@ class LocalAiInstaller:
         temporary = installer.with_suffix(".part")
         model = str(self._state["model"])
         try:
-            installer.parent.mkdir(parents=True, exist_ok=True)
-            request = Request(self._OLLAMA_URL, headers={"User-Agent": "WinAssist"})
-            with urlopen(request, timeout=30) as response, temporary.open("wb") as stream:
-                total = int(response.headers.get("Content-Length") or 0)
-                downloaded = 0
-                while True:
-                    chunk = response.read(128 * 1024)
-                    if not chunk:
-                        break
-                    stream.write(chunk)
-                    downloaded += len(chunk)
-                    if downloaded > self._MAX_INSTALLER_BYTES:
-                        raise ValueError("Bộ cài Local AI lớn bất thường.")
-                    self._set_state(
-                        percent=round(downloaded * 35 / total) if total else 0,
-                        message="Đang tải bộ cài Local AI…",
-                    )
-            os.replace(temporary, installer)
-            self._set_state(state="installing", percent=40, message="Đang cài Ollama…")
-            completed = subprocess.run(
-                [str(installer), "/VERYSILENT", "/NORESTART"],
-                shell=False,
-                capture_output=True,
-                timeout=300,
-                check=False,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
-            if completed.returncode != 0:
-                raise RuntimeError("Bộ cài Ollama trả về mã lỗi.")
             executable = self._ollama_executable()
             if executable is None:
-                raise RuntimeError("Không tìm thấy Ollama sau khi cài.")
+                installer.parent.mkdir(parents=True, exist_ok=True)
+                request = Request(self._OLLAMA_URL, headers={"User-Agent": "WinAssist"})
+                with urlopen(request, timeout=30) as response, temporary.open("wb") as stream:
+                    total = int(response.headers.get("Content-Length") or 0)
+                    downloaded = 0
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        stream.write(chunk)
+                        downloaded += len(chunk)
+                        if downloaded > self._MAX_INSTALLER_BYTES:
+                            raise ValueError("Bộ cài Local AI lớn bất thường.")
+                        self._set_state(
+                            percent=round(downloaded * 35 / total) if total else 0,
+                            message="Đang tải bộ cài Local AI…",
+                        )
+                os.replace(temporary, installer)
+                self._set_state(state="installing", percent=40, message="Đang cài Ollama…")
+                completed = subprocess.run(
+                    [str(installer), "/VERYSILENT", "/NORESTART"],
+                    shell=False,
+                    capture_output=True,
+                    timeout=300,
+                    check=False,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
+                if completed.returncode != 0:
+                    raise RuntimeError("Bộ cài Ollama trả về mã lỗi.")
+                executable = self._ollama_executable()
+                if executable is None:
+                    raise RuntimeError("Không tìm thấy Ollama sau khi cài.")
             subprocess.Popen(
                 [str(executable), "serve"],
                 shell=False,
@@ -498,7 +517,7 @@ class LocalAiInstaller:
                 stderr=subprocess.DEVNULL,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
-            self._set_state(state="pulling", percent=50, message=f"Đang tải model {model}…")
+            self._set_state(state="pulling", percent=50, message="Đang chuẩn bị trợ lý AI…")
             pulled = None
             for attempt in range(5):
                 pulled = subprocess.run(
@@ -514,7 +533,7 @@ class LocalAiInstaller:
                 time.sleep(2)
             if pulled.returncode != 0:
                 raise RuntimeError("Không tải được model Local AI.")
-            self._set_state(state="ready", percent=100, message=f"Local AI đã sẵn sàng với model {model}.")
+            self._set_state(state="ready", percent=100, message="Trợ lý AI đã sẵn sàng.")
         except (OSError, URLError, TimeoutError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
             temporary.unlink(missing_ok=True)
             self._set_state(state="failed", message=f"Không thể cài Local AI: {exc}")
@@ -528,6 +547,9 @@ class LocalAiInstaller:
         for candidate in candidates:
             if candidate.is_file():
                 return candidate
+        on_path = shutil.which("ollama")
+        if on_path:
+            return Path(on_path).resolve()
         return None
 
     def _set_state(self, **values: object) -> None:
