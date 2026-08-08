@@ -10,8 +10,8 @@ def test_default_catalog_contains_general_and_developer_software() -> None:
     catalog = SoftwareCatalog()
     items = catalog.list()
 
-    assert len(items) == 79
-    assert catalog.catalog_version == "2026.08.2"
+    assert len(items) == 82
+    assert catalog.catalog_version == "2026.08.3"
     assert {item.id for item in items} >= {
         "firefox", "7zip", "vscode", "python", "speedtest", "steam",
         "epic-games", "discord", "league-of-legends", "valorant",
@@ -21,6 +21,7 @@ def test_default_catalog_contains_general_and_developer_software() -> None:
         "sublime-text", "visual-studio-community",
         "brave", "opera", "vivaldi", "librewolf",
         "zalo", "coc-coc", "unikey", "capcut", "figma", "foxit-reader",
+        "rufus", "thunderbird", "localsend",
         "anki", "zotero", "geogebra", "draw-io", "calibre", "microsoft-365",
     }
     assert catalog.get("FIREFOX").winget_id == "Mozilla.Firefox"

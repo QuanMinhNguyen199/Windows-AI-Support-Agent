@@ -48,7 +48,7 @@ def test_list_check_install_confirm_flow(tmp_path) -> None:
         app.dependency_overrides.clear()
 
     assert listed.status_code == 200
-    assert len(listed.json()) == 79
+    assert len(listed.json()) == 82
     assert checked.status_code == 200
     assert checked.json()["installed"] is False
     assert install.status_code == 200

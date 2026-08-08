@@ -10,12 +10,13 @@ GITHUB_LATEST_RELEASE = (
 )
 
 
-def _version_tuple(value: str) -> tuple[int, int, int]:
+def _version_tuple(value: str) -> tuple[int, int, int, int]:
     normalized = value.strip().removeprefix("v")
     parts = normalized.split(".")
-    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+    if len(parts) not in {3, 4} or not all(part.isdigit() for part in parts):
         raise ValueError("Phiên bản GitHub không hợp lệ.")
-    return tuple(int(part) for part in parts)  # type: ignore[return-value]
+    values = tuple(int(part) for part in parts)
+    return values + (0,) if len(values) == 3 else values
 
 
 class UpdateService:

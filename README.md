@@ -42,7 +42,7 @@ gỡ ứng dụng hoặc thay đổi hệ thống, ứng dụng sẽ cho bạn x
 
 ## Phiên bản hiện tại
 
-**WinAssist 0.11.2 Community Beta** bổ sung cài Local AI tùy chọn ngay trong app,
+**WinAssist 0.11.3 Community Beta** bổ sung cài Local AI tùy chọn ngay trong app,
 dễ tìm ứng dụng hơn và sửa lỗi trạng thái cài đặt; đồng thời vẫn giữ dọn file tạm an toàn, mở rộng kho
 Tiện ích và làm rõ kết quả kiểm tra cho người dùng phổ thông. Bản này vẫn giữ
 cơ chế cập nhật bắt buộc cho phiên bản cũ; bản mới được tải ngay trong ứng dụng,
@@ -85,7 +85,7 @@ ghi các thao tác thành công và không lưu mật khẩu, token hay command 
 
 Website tải WinAssist có giao diện responsive, hiển thị tính năng, hướng dẫn cài
 và ghi chú phiên bản theo luồng dễ hiểu; người dùng phổ thông không cần mở GitHub.
-Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.2` và lấy ngày phát hành
+Mục **Có gì mới?** hiển thị đúng nội dung của bản `0.11.3` và lấy ngày phát hành
 thật từ GitHub Release.
 Số lượt tải trên website được lấy trực tiếp từ GitHub Release, không dùng số liệu
 ước tính hoặc social proof giả.

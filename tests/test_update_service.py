@@ -4,6 +4,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 
 from app.services.update_service import UpdateService
+from app.services.update_service import _version_tuple
 
 
 class FakeResponse:
@@ -43,6 +44,12 @@ def test_update_service_finds_new_windows_installer() -> None:
     assert status.installer_sha256 == "a" * 64
 
 
+def test_version_tuple_supports_hotfix_versions() -> None:
+    assert _version_tuple("0.11.2") == (0, 11, 2, 0)
+    assert _version_tuple("v0.11.2.1") == (0, 11, 2, 1)
+    assert _version_tuple("0.11.2.1") > _version_tuple("0.11.2")
+
+
 def test_update_service_explains_missing_release() -> None:
     error = HTTPError("https://example.test", 404, "Not Found", {}, None)
     with patch("app.services.update_service.urlopen", side_effect=error):
@@ -66,3 +73,8 @@ def test_update_is_not_required_until_installer_is_available() -> None:
     assert status.update_available is True
     assert status.update_required is False
     assert status.installer_available is False
+
+
+
+
+

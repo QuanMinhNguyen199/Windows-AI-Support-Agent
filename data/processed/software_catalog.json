@@ -1,5 +1,5 @@
 {
-  "catalog_version": "2026.08.2",
+  "catalog_version": "2026.08.3",
   "software": {
     "anki": {
       "display_name": "Anki",
@@ -1038,6 +1038,42 @@
       "check_commands": [["winget", "list", "--id", "LibreWolf.LibreWolf", "--exact", "--disable-interactivity"]],
       "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/LibreWolf/LibreWolf",
       "license_note": "MPL-2.0"
+    },
+    "rufus": {
+      "display_name": "Rufus",
+      "description": "Tạo USB cài Windows hoặc USB khởi động từ file ISO.",
+      "publisher": "Pete Batard",
+      "category": "utilities",
+      "audience": "general",
+      "display_rank": 13,
+      "winget_id": "Rufus.Rufus",
+      "check_commands": [["winget", "list", "--id", "Rufus.Rufus", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/r/Rufus/Rufus",
+      "license_note": "GNU General Public License 3.0"
+    },
+    "thunderbird": {
+      "display_name": "Mozilla Thunderbird",
+      "description": "Email và lịch làm việc trên máy tính, hỗ trợ nhiều tài khoản.",
+      "publisher": "Mozilla Foundation",
+      "category": "utilities",
+      "audience": "general",
+      "display_rank": 14,
+      "winget_id": "Mozilla.Thunderbird",
+      "check_commands": [["winget", "list", "--id", "Mozilla.Thunderbird", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Mozilla/Thunderbird",
+      "license_note": "Mozilla Public License 2.0"
+    },
+    "localsend": {
+      "display_name": "LocalSend",
+      "description": "Gửi file giữa các thiết bị trong cùng mạng mà không cần tài khoản.",
+      "publisher": "LocalSend",
+      "category": "utilities",
+      "audience": "general",
+      "display_rank": 15,
+      "winget_id": "LocalSend.LocalSend",
+      "check_commands": [["winget", "list", "--id", "LocalSend.LocalSend", "--exact", "--disable-interactivity"]],
+      "provenance": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/LocalSend/LocalSend",
+      "license_note": "GNU General Public License 3.0"
     }
   }
 }

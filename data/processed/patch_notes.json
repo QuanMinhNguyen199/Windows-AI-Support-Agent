@@ -1,6 +1,24 @@
 {
   "releases": [
     {
+      "version": "0.11.3",
+      "released_at": "2026-08-08",
+      "title": "Hotfix cập nhật và thêm tiện ích",
+      "summary": "Cập nhật ổn định hơn, nhận diện Local AI tốt hơn và có thêm ba tiện ích mới.",
+      "highlights": [
+        "Tự tiếp tục tải bản cập nhật nếu ứng dụng bị đóng giữa chừng.",
+        "Có thêm Rufus, Thunderbird và LocalSend trong Tiện ích.",
+        "Trợ lý tự nhận Ollama đã có trên máy và không tải lại bộ cài không cần thiết."
+      ],
+      "fixes": [
+        "Không còn yêu cầu cài lại Ollama khi Local AI đã có trên máy.",
+        "Nội dung Dọn dẹp máy được viết ngắn gọn, dễ hiểu hơn."
+      ],
+      "security": [
+        "Nguồn cài ứng dụng vẫn dùng package đã được kiểm tra; mọi thay đổi máy đều cần xác nhận."
+      ]
+    },
+    {
       "version": "0.11.2",
       "released_at": "2026-08-08",
       "title": "Trợ lý AI local tùy chọn và cài ứng dụng đáng tin cậy hơn",

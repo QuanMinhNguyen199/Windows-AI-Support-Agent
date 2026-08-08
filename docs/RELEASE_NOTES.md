@@ -13,8 +13,11 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 
 ## Quy tắc phiên bản
 
-- Tăng tuần tự: `0.10.1` → `0.10.2` → ... → `0.10.9`.
-- Thành phần cuối chỉ từ `0` đến `9`; sau `0.10.9` chuyển sang `0.11.0`.
+- Bản phát hành chính tăng tuần tự: `0.11.1` → `0.11.2` → `0.11.3`.
+- Hotfix của một bản giữ ba thành phần chính và thêm số sửa lỗi: `0.11.2.1`,
+  `0.11.2.2`...; khi có thay đổi lớn tiếp theo mới chuyển thành `0.11.3`.
+- Hotfix không thay đổi tính năng lớn sẽ dùng cùng nhánh release và được updater
+  nhận diện như một version mới hơn bản ba thành phần tương ứng.
 - Việc ghi thay đổi vào file này không tự tăng version trong code.
 - Nhiều bản vá nhỏ có thể được gom chung vào phiên bản kế tiếp đang ở trạng thái nháp.
 - Chỉ sau lệnh triển khai mới chốt version, đồng bộ Patch Notes, build, tạo tag
@@ -58,6 +61,23 @@ dự án kiểm tra đủ và đưa ra lệnh triển khai rõ ràng.
 - [x] Test tự động đã đạt và không còn lỗi chặn phát hành.
 - [x] Đã đồng ý version sẽ phát hành.
 - [x] Đã đưa ra lệnh triển khai rõ ràng.
+
+## 0.11.3 — Phát hành ngày 08/08/2026
+
+### Có gì mới?
+
+- Cập nhật tự tiếp tục tải phần còn thiếu nếu WinAssist bị đóng giữa chừng.
+- Thêm **Rufus**, **Mozilla Thunderbird** và **LocalSend** vào Tiện ích.
+- Trợ lý tự nhận Ollama đã có trên máy và chọn thiết lập phù hợp mà không hiện
+  tên model cho người dùng phổ thông.
+
+### Đã sửa
+
+- Không còn tải lại bộ cài Ollama khi máy đã có Ollama.
+- Nội dung **Dọn dẹp máy** được rút gọn, dễ hiểu hơn.
+- Updater hỗ trợ hotfix bốn thành phần như `0.11.3.1`.
+
+**Trạng thái: ĐÃ CHỐT LOCAL** — chờ test, build và phát hành installer `0.11.3`.
 
 ## 0.11.2 — Phát hành ngày 08/08/2026
 

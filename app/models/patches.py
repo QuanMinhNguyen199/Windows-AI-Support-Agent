@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class PatchRelease(BaseModel):
-    version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    version: str = Field(pattern=r"^\d+\.\d+\.\d+(?:\.\d+)?$")
     released_at: str
     title: str
     summary: str
